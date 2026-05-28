@@ -16,6 +16,7 @@ This tracker reflects the current local implementation against the Irhal Enterpr
 - Payload is the canonical CMS data source and uses the isolated `payload` Postgres schema.
 - The old `public.irhal_*` tables have been archived into `legacy_irhal_public`; nothing in the application reads them.
 - Payload CMS has been seeded and verified in Supabase: 1 country, 1 city, 2 districts, 3 neighborhoods, 5 anchor listings, 15 guide sections, 410 guide item documents, and 1 itinerary.
+- Public city reads use a short-lived server cache around the Payload-backed city loader to avoid repeated Supabase/Payload work during navigation.
 - Dev server runs at `http://localhost:3001` because another Next app is using port `3000`.
 - Latest verification completed: `npm run seed:karachi-guide`, `npm run typecheck`, `npm run lint`, `npm run build`, and `curl -I http://localhost:3001/city/karachi`.
 
@@ -61,6 +62,7 @@ This tracker reflects the current local implementation against the Irhal Enterpr
 | City Section Pages | Completed | Codex | High | Full guide import | `/city/{city-name}/section/{section}` renders section landing pages with cards and separate item/article links. |
 | Section Article Pages | Completed | Codex | Medium | Guide section headings | `/city/{city-name}/section/{section}/{article}` exists for section-level editorial documents. |
 | Payload-first Frontend Data Source | Completed | Codex | High | Payload CMS env vars | Public routes attempt Payload first and fall back to local JSON only when database env vars are missing or unavailable. Verified with Supabase-backed local env. |
+| City Frontend Read Cache | Completed | Codex | High | Payload-first frontend data source | Added in-process city cache and homepage preload for faster `/city/karachi` navigation. Local verification improved repeated city response time to roughly 0.18s. |
 | Guide Item Documents | Completed | Codex | High | Payload GuideItems collection, seed script | Public item pages exist and 410 Karachi guide items are seeded as Payload CMS documents. |
 | Places Directory | In Progress | Codex | High | Guide item model, map links | `/city/{city-name}/place/{slug}` exists for imported attractions. Many records still need verified coordinates/images/provider IDs. |
 | Hotel Directory | In Progress | Codex | High | Guide item model, CMS seed | `/city/{city-name}/hotel/{slug}` exists. Needs live hotel enrichment, affiliate fields, photos, and verification. |

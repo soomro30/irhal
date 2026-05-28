@@ -4,8 +4,10 @@ import Link from "next/link";
 import { MapPanel } from "@/components/map-panel";
 import { PageShell } from "@/components/page-shell";
 import { cities } from "@/lib/city-data";
+import { preloadCityBySlug } from "@/lib/city-source";
 
 export default function Home() {
+  preloadCityBySlug("karachi");
   const city = cities[0];
 
   return (

@@ -8,6 +8,15 @@ type CMSDoc = Record<string, unknown> & {
   id: number | string;
 };
 
+type CityCacheEntry = {
+  expiresAt: number;
+  value: CityGuide | undefined;
+};
+
+const cityCache = new Map<string, CityCacheEntry>();
+const cityRequests = new Map<string, Promise<CityGuide | undefined>>();
+const cityCacheTtlMs = Number(process.env.IRHAL_CITY_CACHE_SECONDS ?? 300) * 1000;
+
 const isCMSConfigured = () =>
   Boolean(process.env.DATABASE_URL && !process.env.DATABASE_URL.includes("<") && process.env.PAYLOAD_SECRET);
 
@@ -126,7 +135,7 @@ const normalizeItinerary = (doc: CMSDoc): Itinerary => ({
   }),
 });
 
-export const getCityBySlug = async (slug: string): Promise<CityGuide | undefined> => {
+const loadCityBySlug = async (slug: string): Promise<CityGuide | undefined> => {
   const fallbackCity = getLocalCityBySlug(slug);
 
   if (!isCMSConfigured()) {
@@ -212,4 +221,38 @@ export const getCityBySlug = async (slug: string): Promise<CityGuide | undefined
     console.warn(`Payload city source failed for ${slug}; falling back to local import.`, error);
     return fallbackCity;
   }
+};
+
+export const getCityBySlug = async (slug: string): Promise<CityGuide | undefined> => {
+  const cacheKey = slug.toLowerCase();
+  const cached = cityCache.get(cacheKey);
+
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.value;
+  }
+
+  const inFlight = cityRequests.get(cacheKey);
+
+  if (inFlight) {
+    return inFlight;
+  }
+
+  const request = loadCityBySlug(cacheKey)
+    .then((city) => {
+      cityCache.set(cacheKey, {
+        expiresAt: Date.now() + cityCacheTtlMs,
+        value: city,
+      });
+      return city;
+    })
+    .finally(() => {
+      cityRequests.delete(cacheKey);
+    });
+
+  cityRequests.set(cacheKey, request);
+  return request;
+};
+
+export const preloadCityBySlug = (slug: string) => {
+  void getCityBySlug(slug);
 };
