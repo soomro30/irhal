@@ -1,0 +1,45 @@
+import type { CollectionConfig } from "payload";
+
+import { editorsOnly, publishedOrEditor } from "./access";
+import { seoFields, sourceFields, workflowStatusField } from "./shared";
+
+export const Itineraries: CollectionConfig = {
+  slug: "itineraries",
+  access: {
+    create: editorsOnly,
+    delete: editorsOnly,
+    read: publishedOrEditor,
+    update: editorsOnly,
+  },
+  admin: {
+    defaultColumns: ["title", "city", "durationDays", "audience", "workflowStatus"],
+    useAsTitle: "title",
+  },
+  fields: [
+    { name: "title", type: "text", required: true },
+    { name: "slug", type: "text", required: true },
+    { name: "city", type: "relationship", relationTo: "cities", required: true },
+    { name: "durationDays", type: "number", required: true },
+    {
+      name: "audience",
+      type: "select",
+      options: ["first-time", "family", "muslim-traveler", "business", "budget", "luxury"],
+      required: true,
+    },
+    { name: "summary", type: "textarea", required: true },
+    {
+      name: "days",
+      type: "array",
+      required: true,
+      fields: [
+        { name: "dayNumber", type: "number", required: true },
+        { name: "theme", type: "text", required: true },
+        { name: "stops", type: "relationship", relationTo: "listings", hasMany: true },
+        { name: "routeNotes", type: "textarea" },
+      ],
+    },
+    workflowStatusField,
+    seoFields,
+    sourceFields,
+  ],
+};

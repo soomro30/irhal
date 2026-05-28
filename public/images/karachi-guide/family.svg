@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 620" role="img" aria-label="Karachi family placeholder image">
+  <rect width="900" height="620" fill="#e8f0dc"/>
+  <circle cx="300" cy="230" r="72" fill="#f59e0b"/>
+  <circle cx="500" cy="210" r="92" fill="#0f766e"/>
+  <circle cx="650" cy="280" r="62" fill="#334155"/>
+  <rect x="220" y="315" width="520" height="150" rx="75" fill="#f8fafc"/>
+  <path d="M140 465h620v58H140z" fill="#20262b"/>
+  <text x="52" y="82" font-family="Arial, sans-serif" font-size="38" font-weight="700" fill="#20262b">Karachi With Kids</text>
+  <text x="54" y="130" font-family="Arial, sans-serif" font-size="20" fill="#475569">CMS media placeholder</text>
+</svg>

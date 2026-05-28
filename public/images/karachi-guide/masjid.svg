@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 620" role="img" aria-label="Karachi masjid placeholder image">
+  <rect width="900" height="620" fill="#dce7dd"/>
+  <rect x="215" y="330" width="470" height="190" fill="#1f473a"/>
+  <path d="M282 330c28-102 108-154 168-154s140 52 168 154z" fill="#0f766e"/>
+  <rect x="155" y="230" width="70" height="290" fill="#1f473a"/>
+  <rect x="675" y="230" width="70" height="290" fill="#1f473a"/>
+  <circle cx="190" cy="205" r="42" fill="#0f766e"/>
+  <circle cx="710" cy="205" r="42" fill="#0f766e"/>
+  <path d="M450 118l18 36 40 6-29 28 7 40-36-19-36 19 7-40-29-28 40-6z" fill="#f59e0b"/>
+  <text x="52" y="82" font-family="Arial, sans-serif" font-size="38" font-weight="700" fill="#20262b">Karachi Masjids</text>
+  <text x="54" y="130" font-family="Arial, sans-serif" font-size="20" fill="#475569">CMS media placeholder</text>
+</svg>
