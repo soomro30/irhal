@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 
 import { GuideItemDetail } from "@/components/guide-item-detail";
 import { ListingDetail } from "@/components/listing-detail";
-import { getCityBySlug, getListing } from "@/lib/city-data";
+import { getListing } from "@/lib/city-data";
+import { getCityBySlug } from "@/lib/city-source";
 import { getGuideItem } from "@/lib/guide-items";
 import { pageMetadata } from "@/lib/seo";
 
@@ -13,7 +14,7 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { city: citySlug, slug } = await params;
-  const city = getCityBySlug(citySlug);
+  const city = await getCityBySlug(citySlug);
   const guideItem = city ? getGuideItem(city, "hotel", slug) : undefined;
   const listing = city ? getListing(city, "hotel", slug) : undefined;
   if (!city) return {};
@@ -36,7 +37,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function HotelPage({ params }: Props) {
   const { city: citySlug, slug } = await params;
-  const city = getCityBySlug(citySlug);
+  const city = await getCityBySlug(citySlug);
   const guideItem = city ? getGuideItem(city, "hotel", slug) : undefined;
   const listing = city ? getListing(city, "hotel", slug) : undefined;
   if (!city) notFound();

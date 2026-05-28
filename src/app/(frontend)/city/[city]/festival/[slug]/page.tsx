@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { GuideItemDetail } from "@/components/guide-item-detail";
-import { getCityBySlug } from "@/lib/city-data";
+import { getCityBySlug } from "@/lib/city-source";
 import { getGuideItem } from "@/lib/guide-items";
 import { pageMetadata } from "@/lib/seo";
 
@@ -12,7 +12,7 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { city: citySlug, slug } = await params;
-  const city = getCityBySlug(citySlug);
+  const city = await getCityBySlug(citySlug);
   const item = city ? getGuideItem(city, "festival", slug) : undefined;
   if (!city || !item) return {};
 
@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function FestivalPage({ params }: Props) {
   const { city: citySlug, slug } = await params;
-  const city = getCityBySlug(citySlug);
+  const city = await getCityBySlug(citySlug);
   const item = city ? getGuideItem(city, "festival", slug) : undefined;
   if (!city || !item) notFound();
 

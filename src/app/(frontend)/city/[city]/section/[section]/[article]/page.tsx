@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { GuideContent } from "@/components/guide-content";
 import { JsonLd } from "@/components/json-ld";
 import { PageShell } from "@/components/page-shell";
-import { getCityBySlug } from "@/lib/city-data";
+import { getCityBySlug } from "@/lib/city-source";
 import { getGuideArticle, sectionCards } from "@/lib/guide-items";
 import { breadcrumbJsonLd, pageMetadata } from "@/lib/seo";
 
@@ -15,7 +15,7 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { city: citySlug, section, article: articleSlug } = await params;
-  const city = getCityBySlug(citySlug);
+  const city = await getCityBySlug(citySlug);
   const article = city ? getGuideArticle(city, section, articleSlug) : undefined;
   if (!city || !article) return {};
 
@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function GuideArticlePage({ params }: Props) {
   const { city: citySlug, section, article: articleSlug } = await params;
-  const city = getCityBySlug(citySlug);
+  const city = await getCityBySlug(citySlug);
   const article = city ? getGuideArticle(city, section, articleSlug) : undefined;
   if (!city || !article) notFound();
 

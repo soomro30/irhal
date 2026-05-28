@@ -8,6 +8,7 @@ import { fileURLToPath } from "url";
 
 import { AIJobs } from "./collections/AIJobs";
 import { Cities } from "./collections/Cities";
+import { Countries } from "./collections/Countries";
 import { Districts } from "./collections/Districts";
 import { GuideItems } from "./collections/GuideItems";
 import { GuideSections } from "./collections/GuideSections";
@@ -31,6 +32,7 @@ export default buildConfig({
   collections: [
     Users,
     Media,
+    Countries,
     Cities,
     GuideSections,
     GuideItems,
@@ -54,8 +56,9 @@ export default buildConfig({
   },
   plugins: [
     searchPlugin({
-      collections: ["cities", "guide-sections", "guide-items", "neighborhoods", "listings", "itineraries"],
+      collections: ["countries", "cities", "guide-sections", "guide-items", "neighborhoods", "listings", "itineraries"],
       defaultPriorities: {
+        countries: 95,
         cities: 90,
         "guide-sections": 85,
         "guide-items": 80,

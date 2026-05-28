@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 
 import { GuideItemDetail } from "@/components/guide-item-detail";
 import { ListingDetail } from "@/components/listing-detail";
-import { getCityBySlug } from "@/lib/city-data";
+import { getCityBySlug } from "@/lib/city-source";
 import { getGuideItem } from "@/lib/guide-items";
 import { pageMetadata } from "@/lib/seo";
 
@@ -11,8 +11,8 @@ type Props = {
   params: Promise<{ city: string; slug: string }>;
 };
 
-const findPlace = (citySlug: string, slug: string) => {
-  const city = getCityBySlug(citySlug);
+const findPlace = async (citySlug: string, slug: string) => {
+  const city = await getCityBySlug(citySlug);
   const guideItem = city ? getGuideItem(city, "place", slug) : undefined;
   const listing = city?.listings.find(
     (item) => (item.listingType === "place" || item.listingType === "islamic-landmark") && item.slug === slug,
@@ -22,7 +22,7 @@ const findPlace = (citySlug: string, slug: string) => {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { city: citySlug, slug } = await params;
-  const { city, guideItem, listing } = findPlace(citySlug, slug);
+  const { city, guideItem, listing } = await findPlace(citySlug, slug);
   if (!city) return {};
 
   if (guideItem) {
@@ -43,7 +43,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function PlacePage({ params }: Props) {
   const { city: citySlug, slug } = await params;
-  const { city, guideItem, listing } = findPlace(citySlug, slug);
+  const { city, guideItem, listing } = await findPlace(citySlug, slug);
   if (!city) notFound();
   if (guideItem) return <GuideItemDetail city={city} item={guideItem} />;
   if (listing) return <ListingDetail city={city} listing={listing} />;

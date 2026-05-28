@@ -7,7 +7,8 @@ import { JsonLd } from "@/components/json-ld";
 import { ListingCard } from "@/components/listing-card";
 import { MapPanel } from "@/components/map-panel";
 import { PageShell } from "@/components/page-shell";
-import { getCityBySlug, getListingsByNeighborhood, getNeighborhood } from "@/lib/city-data";
+import { getListingsByNeighborhood, getNeighborhood } from "@/lib/city-data";
+import { getCityBySlug } from "@/lib/city-source";
 import { breadcrumbJsonLd, neighborhoodJsonLd, pageMetadata } from "@/lib/seo";
 
 type Props = {
@@ -16,7 +17,7 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { city: citySlug, area } = await params;
-  const city = getCityBySlug(citySlug);
+  const city = await getCityBySlug(citySlug);
   const neighborhood = city ? getNeighborhood(city, area) : undefined;
   if (!city || !neighborhood) return {};
 
@@ -29,7 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function NeighborhoodPage({ params }: Props) {
   const { city: citySlug, area } = await params;
-  const city = getCityBySlug(citySlug);
+  const city = await getCityBySlug(citySlug);
   const neighborhood = city ? getNeighborhood(city, area) : undefined;
   if (!city || !neighborhood) notFound();
 

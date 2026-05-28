@@ -1,6 +1,7 @@
 import { z } from "zod";
 
-import { getCityBySlug, getListingsByTypes } from "@/lib/city-data";
+import { getListingsByTypes } from "@/lib/city-data";
+import { getCityBySlug } from "@/lib/city-source";
 
 const requestSchema = z.object({
   city: z.string().min(1),
@@ -28,7 +29,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const city = getCityBySlug(parsed.data.city);
+  const city = await getCityBySlug(parsed.data.city);
 
   if (!city) {
     return Response.json({ status: "error", errors: [{ message: "City not found" }] }, { status: 404 });

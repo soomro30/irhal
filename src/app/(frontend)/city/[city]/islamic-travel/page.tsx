@@ -7,7 +7,8 @@ import { JsonLd } from "@/components/json-ld";
 import { ListingCard } from "@/components/listing-card";
 import { MapPanel } from "@/components/map-panel";
 import { PageShell } from "@/components/page-shell";
-import { getCityBySlug, getListingsByTypes } from "@/lib/city-data";
+import { getListingsByTypes } from "@/lib/city-data";
+import { getCityBySlug } from "@/lib/city-source";
 import { breadcrumbJsonLd, pageMetadata } from "@/lib/seo";
 
 type Props = {
@@ -16,7 +17,7 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { city: citySlug } = await params;
-  const city = getCityBySlug(citySlug);
+  const city = await getCityBySlug(citySlug);
   if (!city) return {};
 
   return pageMetadata({
@@ -28,7 +29,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function IslamicTravelPage({ params }: Props) {
   const { city: citySlug } = await params;
-  const city = getCityBySlug(citySlug);
+  const city = await getCityBySlug(citySlug);
   if (!city) notFound();
 
   const listings = getListingsByTypes(city, ["masjid", "prayer-area", "restaurant", "islamic-landmark"]);

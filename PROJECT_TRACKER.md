@@ -10,6 +10,8 @@ This tracker reflects the current local implementation against the Irhal Enterpr
 - Public city page: `/city/karachi` now uses a Tripadvisor/Lonely Planet-style destination homepage layout with a large city banner, essential planning cards, editor guide cards, item rails, map intelligence, neighborhoods, and fast facts.
 - Dynamic item pages exist for imported places, hotels, restaurants, masjids, shopping entries, tours, family entries, and festivals.
 - Karachi guide import exists locally at `src/data/karachi-guide.json`, extracted from the full Karachi enterprise DOCX.
+- Payload now has a first-class `countries` collection, and `cities.country` is a Payload relationship instead of plain text.
+- Public city routes use a Payload-first data loader when `DATABASE_URL` and `PAYLOAD_SECRET` are configured, with the local Karachi JSON import retained only as a development fallback.
 - Dev server runs at `http://localhost:3001` because another Next app is using port `3000`.
 - Latest verification completed: `npm run typecheck`, `npm run lint`, and `npm run build`.
 
@@ -19,11 +21,12 @@ This tracker reflects the current local implementation against the Irhal Enterpr
 | --- | --- | --- |
 | Map-first city guide architecture | In Progress | Public routes and map panels exist. Full provider-backed live map enrichment is still pending API keys and enrichment workflow. |
 | Dynamic city page template | Completed | `/city/[city]` is reusable for future cities and driven by city data plus guide item transforms. |
-| Separate document/page per place/restaurant/hotel/etc. | In Progress | Public pages exist. Payload CMS collections and seed script exist, but actual Payload seeding requires `DATABASE_URL` and `PAYLOAD_SECRET`. |
+| Separate document/page per place/restaurant/hotel/etc. | In Progress | Public pages exist, Payload collections exist, and the seed script now writes guide items into Payload. Actual local CMS seeding requires `DATABASE_URL` and `PAYLOAD_SECRET`. |
 | Karachi enterprise guide import | Completed | Imported all required guide sections and all detected tables from the attached Karachi DOCX into structured JSON. |
 | Global city import format | In Progress | Import format and extractor exist. Needs normalization rules, validation reports, and bulk import pipeline for all world cities. |
-| Payload CMS/Auth/Admin | In Progress | Collections, admin route, auth, and Payload API route are scaffolded. Admin requires real env secrets to run fully. |
+| Payload CMS/Auth/Admin | In Progress | Collections, admin route, auth, Payload API route, and Payload-first frontend loader are scaffolded. Admin requires real env secrets to run fully. |
 | PostgreSQL portability | Completed | Supabase migrations are stored in repo and use portable PostgreSQL conventions where possible. |
+| Country/city geography model | Completed | Payload has `countries`; cities relate to countries. Supabase also has `irhal_countries`, with Karachi linked to Pakistan. |
 | PostGIS | Completed | Database migration includes PostGIS extension and geo-capable schema. |
 | pgvector | Completed | Database migration includes vector extension for future embeddings. |
 | Cloudflare R2 / Cloudflare Images | Blocked | Waiting for Cloudflare R2 and Images credentials. `.env.example` lists required keys. |
@@ -43,7 +46,8 @@ This tracker reflects the current local implementation against the Irhal Enterpr
 | Next.js App Router Foundation | Completed | Codex | High | Node, npm | Next.js 16, TypeScript, Tailwind, lint, typecheck, and build scripts are configured. |
 | Public Travel Homepage Style | Completed | Codex | High | City data, guide item data, image asset | `/city/karachi` now has a large city banner, planning cards, guide cards, visual item rails, and map intelligence lower on the page. |
 | Payload CMS Foundation | In Progress | Codex | High | `DATABASE_URL`, `PAYLOAD_SECRET` | Payload config, auth, collections, admin route, and `/payload-api` route are scaffolded. Full CMS operation requires real environment secrets. |
-| Payload Collections | In Progress | Codex | High | Payload CMS foundation | Cities, guide sections, guide items, districts, neighborhoods, listings, itineraries, AI jobs, media, users, and update logs are modeled. Needs seeded production data and editor workflow testing. |
+| Payload Collections | In Progress | Codex | High | Payload CMS foundation | Countries, cities, guide sections, guide items, districts, neighborhoods, listings, itineraries, AI jobs, media, users, and update logs are modeled. Needs seeded production data and editor workflow testing. |
+| Countries Collection | Completed | Codex | High | Payload CMS foundation | Added first-class countries collection and changed cities to relate to countries. Pakistan is included in the seed workflow. |
 | Supabase/PostGIS/pgvector Schema | Completed | Codex | High | Supabase Irhal MCP | Migrations applied through the Irhal Supabase MCP. Security advisor was clean after hardening. |
 | City Page System | Completed | Codex | High | City data model | `/city/{city-name}` route exists with SSR metadata, JSON-LD, reusable destination template, internal links, and public travel design. |
 | URL Structure | In Progress | Codex | High | Dynamic routes | Required routes exist for city, neighborhoods, places, hotels, restaurants, Islamic travel, itineraries, shopping, tours, masjids, family, and festivals. Needs final production URL QA and redirects/canonical domain setup. |
@@ -51,7 +55,8 @@ This tracker reflects the current local implementation against the Irhal Enterpr
 | City Import Format Documentation | Completed | Codex | High | DOCX extraction | `docs/CITY_IMPORT_FORMAT.md` documents the import structure and directory-to-document model. |
 | City Section Pages | Completed | Codex | High | Full guide import | `/city/{city-name}/section/{section}` renders section landing pages with cards and separate item/article links. |
 | Section Article Pages | Completed | Codex | Medium | Guide section headings | `/city/{city-name}/section/{section}/{article}` exists for section-level editorial documents. |
-| Guide Item Documents | In Progress | Codex | High | Payload GuideItems collection, seed script | Public item pages exist. Actual CMS documents require running the seed script after env secrets are configured. |
+| Payload-first Frontend Data Source | In Progress | Codex | High | Payload CMS env vars | Public routes now attempt Payload first and fall back to local JSON only when database env vars are missing. Full verification awaits `DATABASE_URL` and `PAYLOAD_SECRET`. |
+| Guide Item Documents | In Progress | Codex | High | Payload GuideItems collection, seed script | Public item pages exist and seed workflow writes CMS guide item documents. Actual CMS documents require running the seed script after env secrets are configured. |
 | Places Directory | In Progress | Codex | High | Guide item model, map links | `/city/{city-name}/place/{slug}` exists for imported attractions. Many records still need verified coordinates/images/provider IDs. |
 | Hotel Directory | In Progress | Codex | High | Guide item model, CMS seed | `/city/{city-name}/hotel/{slug}` exists. Needs live hotel enrichment, affiliate fields, photos, and verification. |
 | Restaurant Directory | In Progress | Codex | High | Guide item model, halal tags | `/city/{city-name}/restaurant/{slug}` exists. Needs halal/source verification and live map enrichment. |
@@ -93,13 +98,15 @@ This tracker reflects the current local implementation against the Irhal Enterpr
 
 - Built the Next.js 16 application foundation with TypeScript and Tailwind.
 - Added Payload CMS configuration, admin route, collections, auth foundation, and Payload API route.
+- Added first-class countries in Payload and linked cities to countries.
+- Added a Payload-first frontend data source with local JSON fallback only for missing database env vars.
 - Added Supabase migrations for the Irhal V4 data foundation, including PostGIS and pgvector.
 - Extracted the full Karachi enterprise DOCX into structured JSON.
 - Built public routes for the city page, sections, articles, neighborhoods, item detail pages, Islamic travel, and itineraries.
 - Reworked the Karachi city main page into a full travel destination homepage rather than a flat CMS/article page.
 - Added separate public pages for places, hotels, restaurants, masjids, shopping, tours, festivals, and family entries.
 - Added `AGENTS.md` with active AI agent definitions and operating rules.
-- Added seed script for importing Karachi guide data into Payload once credentials are available.
+- Added seed script for importing Pakistan, Karachi, districts, neighborhoods, anchor listings, guide sections, guide items, and itineraries into Payload once credentials are available.
 - Verified the app with `npm run typecheck`, `npm run lint`, and `npm run build`.
 
 ## Remaining / Blocked Work
@@ -111,7 +118,7 @@ This tracker reflects the current local implementation against the Irhal Enterpr
   - Vercel token/project configuration.
   - Google Maps or Mapbox API key.
   - AI provider key.
-- Run the Payload seed script and verify all imported Karachi guide records inside Payload CMS.
+- Add `DATABASE_URL` and `PAYLOAD_SECRET`, then run the Payload seed script and verify all imported Karachi guide records inside Payload CMS.
 - Replace placeholder/generated category imagery with real CMS media assets stored in Cloudflare.
 - Enrich all location-based guide items with verified latitude, longitude, map provider place IDs, map URLs, neighborhood mapping, source confidence, and verification dates.
 - Add production sitemap, robots, richer JSON-LD, dynamic OG images, and canonical domain validation.

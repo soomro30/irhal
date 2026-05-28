@@ -8,6 +8,7 @@ Enterprise starter for a map-first, AI-assisted, SEO-optimized city intelligence
 - Payload CMS/Auth/Search with PostgreSQL adapter
 - Supabase PostgreSQL with PostGIS, pgvector, RLS, and portable SQL migrations
 - Cloudflare R2/Images ready media configuration
+- Payload-first city data loader with local JSON fallback for development without database env vars
 - JSON-first AI assistant route and agent governance files
 
 ## Key Routes
@@ -39,6 +40,8 @@ Copy `.env.example` values into your deployment environment. Required before pro
 - Vercel: token, project id, org id
 - AI: provider and API key
 
+Payload will not start or seed CMS documents until `DATABASE_URL` and `PAYLOAD_SECRET` are present. The public frontend falls back to the local Karachi import when those values are missing, but the intended production source is Payload CMS.
+
 ## Verification
 
 ```bash
@@ -67,7 +70,7 @@ python scripts/extract_city_guide_docx.py input.docx src/data/{city-slug}-guide.
 
 The import format preserves section hierarchy, tables, row values, and embedded map hyperlinks. Public section pages render article/item cards; directory rows become separate guide-item pages.
 
-To seed the imported sections and item documents into Payload CMS once `DATABASE_URL` and `PAYLOAD_SECRET` are configured:
+To seed the imported country, city, districts, neighborhoods, anchor listings, sections, item documents, and itineraries into Payload CMS once `DATABASE_URL` and `PAYLOAD_SECRET` are configured:
 
 ```bash
 npm run seed:karachi-guide

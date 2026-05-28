@@ -12,7 +12,8 @@ export const Cities: CollectionConfig = {
     update: editorsOnly,
   },
   admin: {
-    defaultColumns: ["name", "country", "workflowStatus", "updatedAt"],
+    defaultColumns: ["name", "country", "region", "workflowStatus", "updatedAt"],
+    group: "Geography",
     useAsTitle: "name",
   },
   versions: {
@@ -21,7 +22,7 @@ export const Cities: CollectionConfig = {
   fields: [
     { name: "name", type: "text", required: true, unique: true },
     { name: "slug", type: "text", required: true, unique: true },
-    { name: "country", type: "text", required: true },
+    { name: "country", type: "relationship", relationTo: "countries", required: true },
     { name: "region", type: "text" },
     { name: "locale", type: "text", defaultValue: "en", required: true },
     { name: "lede", type: "textarea", required: true, maxLength: 650 },

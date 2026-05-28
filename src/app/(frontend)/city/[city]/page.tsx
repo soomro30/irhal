@@ -25,7 +25,7 @@ import { MapPanel } from "@/components/map-panel";
 import { PageShell } from "@/components/page-shell";
 import { GuideItemRail } from "@/components/guide-item-card";
 import { GuideSectionGrid } from "@/components/guide-section-grid";
-import { getCityBySlug } from "@/lib/city-data";
+import { getCityBySlug } from "@/lib/city-source";
 import { getGuideItemsByKind } from "@/lib/guide-items";
 import { breadcrumbJsonLd, cityJsonLd, pageMetadata } from "@/lib/seo";
 
@@ -35,7 +35,7 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { city: citySlug } = await params;
-  const city = getCityBySlug(citySlug);
+  const city = await getCityBySlug(citySlug);
   if (!city) return {};
 
   return pageMetadata({
@@ -47,7 +47,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function CityPage({ params }: Props) {
   const { city: citySlug } = await params;
-  const city = getCityBySlug(citySlug);
+  const city = await getCityBySlug(citySlug);
   if (!city) notFound();
 
   const jsonLd = [
