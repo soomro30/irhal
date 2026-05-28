@@ -11,6 +11,12 @@ Enterprise starter for a map-first, AI-assisted, SEO-optimized city intelligence
 - Payload-first city data loader with local JSON fallback for development without database env vars
 - JSON-first AI assistant route and agent governance files
 
+## Data Source
+
+Payload CMS is the canonical content backend. Its tables live in the Supabase `payload` schema and are the source used by Payload Admin, Payload API, and the public city frontend.
+
+The earlier custom `public.irhal_*` tables are archived in `legacy_irhal_public` and are not read by the application. They should only be used as historical reference unless a deliberate future read-model/search-cache pipeline is created.
+
 ## Key Routes
 
 - `/`
@@ -75,5 +81,7 @@ To seed the imported country, city, districts, neighborhoods, anchor listings, s
 ```bash
 npm run seed:karachi-guide
 ```
+
+The seed uses direct SQL bulk imports into the Supabase `payload` schema and validates row counts after the transaction.
 
 Guide item pages intentionally carry `provider-enrichment-required` until exact provider `place_id`, coordinates, verified media, and source logs are added.
