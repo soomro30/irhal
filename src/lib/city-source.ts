@@ -8,7 +8,8 @@ type CMSDoc = Record<string, unknown> & {
   id: number | string;
 };
 
-const isCMSConfigured = () => Boolean(process.env.DATABASE_URL && process.env.PAYLOAD_SECRET);
+const isCMSConfigured = () =>
+  Boolean(process.env.DATABASE_URL && !process.env.DATABASE_URL.includes("<") && process.env.PAYLOAD_SECRET);
 
 const asString = (value: unknown, fallback = "") => (typeof value === "string" ? value : fallback);
 const asNumber = (value: unknown, fallback = 0) => (typeof value === "number" ? value : fallback);

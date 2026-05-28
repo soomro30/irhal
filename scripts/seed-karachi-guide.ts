@@ -14,9 +14,11 @@ if (!city) {
   throw new Error("Karachi guide data was not found.");
 }
 
-if (!process.env.DATABASE_URL || !process.env.PAYLOAD_SECRET) {
+const databaseUrl = process.env.DATABASE_URL?.includes("<") ? "" : process.env.DATABASE_URL;
+
+if (!databaseUrl || !process.env.PAYLOAD_SECRET) {
   throw new Error(
-    "DATABASE_URL and PAYLOAD_SECRET are required to seed Payload CMS documents. Add them to .env.local or export them before running this script.",
+    "A real DATABASE_URL and PAYLOAD_SECRET are required to seed Payload CMS documents. Replace <DATABASE_PASSWORD> in .env.local or paste the full Supabase connection string.",
   );
 }
 
