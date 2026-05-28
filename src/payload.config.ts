@@ -47,7 +47,13 @@ export default buildConfig({
   db: postgresAdapter({
     pool: {
       connectionString: databaseUrl,
+      ssl: databaseUrl
+        ? {
+            rejectUnauthorized: false,
+          }
+        : undefined,
     },
+    schemaName: "payload",
   }),
   editor: lexicalEditor(),
   localization: {
