@@ -1,4 +1,5 @@
 import config from "@/payload.config";
+import { unstable_cache } from "next/cache";
 import { getPayload } from "payload";
 
 import type {
@@ -33,8 +34,8 @@ export type CityNavItem = {
 
 const cityCache = new Map<string, CityCacheEntry>();
 const cityRequests = new Map<string, Promise<CityGuide | undefined>>();
-const cityCacheTtlMs =
-  Number(process.env.IRHAL_CITY_CACHE_SECONDS ?? 300) * 1000;
+const cityCacheTtlSeconds = Number(process.env.IRHAL_CITY_CACHE_SECONDS ?? 1800);
+const cityCacheTtlMs = cityCacheTtlSeconds * 1000;
 
 const isCMSConfigured = () =>
   Boolean(
@@ -204,7 +205,7 @@ const localCityNavItems = (): CityNavItem[] =>
     slug: city.slug,
   }));
 
-export const getCityNavItems = async (): Promise<CityNavItem[]> => {
+const loadCityNavItems = async (): Promise<CityNavItem[]> => {
   if (!isCMSConfigured()) return localCityNavItems();
 
   try {
@@ -237,6 +238,18 @@ export const getCityNavItems = async (): Promise<CityNavItem[]> => {
     return localCityNavItems();
   }
 };
+
+const cachedLoadCityNavItems = unstable_cache(
+  loadCityNavItems,
+  ["irhal-city-nav-v2"],
+  {
+    revalidate: cityCacheTtlSeconds,
+    tags: ["irhal-city-nav", "irhal-city"],
+  },
+);
+
+export const getCityNavItems = async (): Promise<CityNavItem[]> =>
+  cachedLoadCityNavItems();
 
 const loadCityBySlug = async (slug: string): Promise<CityGuide | undefined> => {
   const fallbackCity = getLocalCityBySlug(slug);
@@ -468,6 +481,15 @@ const loadCityBySlug = async (slug: string): Promise<CityGuide | undefined> => {
   }
 };
 
+const cachedLoadCityBySlug = unstable_cache(
+  loadCityBySlug,
+  ["irhal-city-by-slug-v2"],
+  {
+    revalidate: cityCacheTtlSeconds,
+    tags: ["irhal-city"],
+  },
+);
+
 export const getCityBySlug = async (
   slug: string,
 ): Promise<CityGuide | undefined> => {
@@ -484,7 +506,7 @@ export const getCityBySlug = async (
     return inFlight;
   }
 
-  const request = loadCityBySlug(cacheKey)
+  const request = cachedLoadCityBySlug(cacheKey)
     .then((city) => {
       cityCache.set(cacheKey, {
         expiresAt: Date.now() + cityCacheTtlMs,

@@ -6,6 +6,7 @@ import { NavigationProgress } from "@/components/navigation-progress";
 import "./globals.css";
 
 const tripSans = localFont({
+  preload: false,
   src: [
     {
       path: "../../public/fonts/Trip-Sans-Font/trip-sans.otf",
@@ -34,6 +35,7 @@ const tripSans = localFont({
 });
 
 const tripSansMono = localFont({
+  preload: false,
   src: "../../public/fonts/Trip-Sans-Font/trip-sans-mono-regular.otf",
   variable: "--font-geist-mono",
   display: "swap",
@@ -41,6 +43,7 @@ const tripSansMono = localFont({
 });
 
 const cairo = localFont({
+  preload: false,
   src: [
     { path: "../../public/fonts/arabic/cairo-400.ttf", weight: "400", style: "normal" },
     { path: "../../public/fonts/arabic/cairo-500.ttf", weight: "500", style: "normal" },
@@ -55,6 +58,7 @@ const cairo = localFont({
 });
 
 const notoSansArabic = localFont({
+  preload: false,
   src: [
     {
       path: "../../public/fonts/arabic/noto-sans-arabic-400.ttf",

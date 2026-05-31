@@ -69,6 +69,10 @@ type CityCategory = {
   external?: boolean;
 };
 
+const primaryRailLimit = 8;
+const secondaryRailLimit = 6;
+const neighbourhoodPreviewLimit = 24;
+
 const seededNumber = (value: string) =>
   [...value].reduce(
     (hash, character) => (hash * 31 + character.charCodeAt(0)) >>> 0,
@@ -306,7 +310,7 @@ export async function CityPageContent({
     city,
     localePrefix,
     locale,
-  );
+  ).slice(0, neighbourhoodPreviewLimit);
   const famousSpots = dailyFamousSpots(displayPlaces, city.slug);
 
   return (
@@ -486,7 +490,7 @@ export async function CityPageContent({
           cityName={displayCityName}
           dir={dir}
           href={`${cityBasePath}/section/places-to-visit`}
-          items={displayPlaces.slice(0, 12)}
+          items={displayPlaces.slice(0, primaryRailLimit)}
           labels={guideItemLabels}
           pathPrefix={localePrefix}
           subtitle={
@@ -507,7 +511,7 @@ export async function CityPageContent({
           cityName={displayCityName}
           dir={dir}
           href={`${cityBasePath}/section/food-and-restaurants`}
-          items={displayRestaurants.slice(0, 12)}
+          items={displayRestaurants.slice(0, primaryRailLimit)}
           labels={guideItemLabels}
           pathPrefix={localePrefix}
           subtitle={
@@ -528,7 +532,7 @@ export async function CityPageContent({
           cityName={displayCityName}
           dir={dir}
           href={`${cityBasePath}/section/children-in-tow`}
-          items={displayFamilySpots.slice(0, 12)}
+          items={displayFamilySpots.slice(0, primaryRailLimit)}
           labels={guideItemLabels}
           pathPrefix={localePrefix}
           subtitle={
@@ -549,7 +553,7 @@ export async function CityPageContent({
           cityName={displayCityName}
           dir={dir}
           href={`${cityBasePath}/section/hotels`}
-          items={displayHotels.slice(0, 10)}
+          items={displayHotels.slice(0, secondaryRailLimit)}
           labels={guideItemLabels}
           pathPrefix={localePrefix}
           subtitle={
@@ -570,7 +574,7 @@ export async function CityPageContent({
           cityName={displayCityName}
           dir={dir}
           href={`${cityBasePath}/section/shopping`}
-          items={displayShopping.slice(0, 12)}
+          items={displayShopping.slice(0, primaryRailLimit)}
           labels={guideItemLabels}
           pathPrefix={localePrefix}
           subtitle={
@@ -697,7 +701,7 @@ export async function CityPageContent({
           cityName={displayCityName}
           dir={dir}
           href={`${cityBasePath}/section/festivals-and-annual-events`}
-          items={displayFestivals.slice(0, 12)}
+          items={displayFestivals.slice(0, primaryRailLimit)}
           labels={guideItemLabels}
           pathPrefix={localePrefix}
           subtitle={
@@ -718,7 +722,7 @@ export async function CityPageContent({
           cityName={displayCityName}
           dir={dir}
           href={`${cityBasePath}/section/organized-tours`}
-          items={displayTours.slice(0, 8)}
+          items={displayTours.slice(0, secondaryRailLimit)}
           labels={guideItemLabels}
           pathPrefix={localePrefix}
           subtitle={
@@ -739,7 +743,7 @@ export async function CityPageContent({
           cityName={displayCityName}
           dir={dir}
           href={`${cityBasePath}/section/muslim-visitor-information`}
-          items={displayMasjids.slice(0, 10)}
+          items={displayMasjids.slice(0, secondaryRailLimit)}
           labels={guideItemLabels}
           pathPrefix={localePrefix}
           subtitle={
