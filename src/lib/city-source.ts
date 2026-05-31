@@ -498,5 +498,7 @@ export const getCityBySlug = async (
 };
 
 export const preloadCityBySlug = (slug: string) => {
-  void getCityBySlug(slug);
+  void getCityBySlug(slug).catch((error) => {
+    console.warn(`City preload failed for ${slug}.`, error);
+  });
 };

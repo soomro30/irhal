@@ -186,6 +186,9 @@ export type CityGuide = {
 const googleMaps = (query: string) =>
   `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
 const karachiGuide = karachiGuideJson as CityGuideImport;
+const publicR2Url = process.env.CLOUDFLARE_R2_PUBLIC_URL?.replace(/\/$/, "");
+const mediaFallback = (filename: string, fallback: string) =>
+  publicR2Url ? `${publicR2Url}/media/${filename}` : fallback;
 const karachiNeighborhoodCoordinates = karachiNeighborhoodCoordinatesJson as Record<
   string,
   {
@@ -331,6 +334,19 @@ export const cities: CityGuide[] = [
     region: "Sindh",
     locale: "en",
     lede: "Karachi is Pakistan's largest coastal city, a business capital, food powerhouse, and layered urban gateway where historic quarters, beach districts, shopping corridors, masjids, and family-friendly attractions need neighborhood-led navigation.",
+    heroImageUrl: mediaFallback(
+      "karachi-hero-mohatta-palace.webp",
+      "/images/karachi-guide/place-mohatta-palace.jpg",
+    ),
+    heroImageUrls: [
+      mediaFallback(
+        "karachi-hero-mohatta-palace.webp",
+        "/images/karachi-guide/place-mohatta-palace.jpg",
+      ),
+      "/images/karachi-guide/karachi-coast-hero.png",
+      "/images/karachi-guide/place-mazar-e-quaid.jpg",
+      "/images/karachi-guide/place-frere-hall.jpg",
+    ],
     timezone: "Asia/Karachi",
     currency: "PKR",
     languages: ["Urdu", "English", "Sindhi"],

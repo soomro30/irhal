@@ -25,6 +25,27 @@ type SiteHeaderProps = {
 const navLinkClass =
   "relative inline-flex h-9 items-center whitespace-nowrap text-sm font-extrabold text-ink transition-colors hover:text-irhal-red after:absolute after:-bottom-0.5 after:left-0 after:h-0.5 after:w-0 after:rounded-full after:bg-irhal-red after:transition-all after:duration-200 hover:after:w-full rtl:after:left-auto rtl:after:right-0";
 
+const arabicCityNavLabels: Record<string, { country?: string; name: string }> = {
+  karachi: {
+    country: "باكستان",
+    name: "كراتشي",
+  },
+};
+
+function getLocalizedCityNavItem(city: CityNavItem, isArabic: boolean): CityNavItem {
+  if (!isArabic) {
+    return city;
+  }
+
+  const labels = arabicCityNavLabels[city.slug];
+
+  return {
+    ...city,
+    country: labels?.country ?? city.country,
+    name: labels?.name ?? city.name,
+  };
+}
+
 export function SiteHeader({ cityItems, isArabic }: SiteHeaderProps) {
   const pathname = usePathname() || "/";
 
@@ -158,7 +179,7 @@ function CityGuidesMenu({
   const localePrefix = isArabic ? "/ar" : "/en";
 
   return (
-    <DropdownMenu>
+    <DropdownMenu dir={isArabic ? "rtl" : "ltr"}>
       <DropdownMenuTrigger asChild>
         <button
           className={cn(navLinkClass, "gap-1.5 outline-none group")}
@@ -171,31 +192,47 @@ function CityGuidesMenu({
           />
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align={isArabic ? "end" : "start"} className="w-72">
-        <DropdownMenuLabel className="uppercase tracking-[0.14em]">
+      <DropdownMenuContent
+        align={isArabic ? "end" : "start"}
+        className={cn("w-72", isArabic && "font-arabic text-right")}
+      >
+        <DropdownMenuLabel
+          className={cn(
+            isArabic ? "text-right font-arabic" : "uppercase tracking-[0.14em]",
+          )}
+        >
           {label}
         </DropdownMenuLabel>
-        {cityItems.map((city) => (
-          <DropdownMenuItem asChild key={city.slug}>
-            <Link href={`${localePrefix}/city/${city.slug}`}>
-              <span className="flex items-center gap-3">
-                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-irhal-red/10 text-irhal-red">
-                  <MapPin aria-hidden="true" className="h-4 w-4" />
-                </span>
-                <span>
-                  <span className="block text-sm font-extrabold text-ink">
-                    {city.name}
+        {cityItems.map((city) => {
+          const displayCity = getLocalizedCityNavItem(city, isArabic);
+
+          return (
+            <DropdownMenuItem asChild key={city.slug}>
+              <Link href={`${localePrefix}/city/${city.slug}`}>
+                <span
+                  className={cn(
+                    "flex items-center gap-3",
+                    isArabic && "flex-row-reverse text-right",
+                  )}
+                >
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-irhal-red/10 text-irhal-red">
+                    <MapPin aria-hidden="true" className="h-4 w-4" />
                   </span>
-                  {city.country ? (
-                    <span className="mt-0.5 block text-xs font-semibold text-ink/55">
-                      {city.country}
+                  <span>
+                    <span className="block text-sm font-extrabold text-ink">
+                      {displayCity.name}
                     </span>
-                  ) : null}
+                    {displayCity.country ? (
+                      <span className="mt-0.5 block text-xs font-semibold text-ink/55">
+                        {displayCity.country}
+                      </span>
+                    ) : null}
+                  </span>
                 </span>
-              </span>
-            </Link>
-          </DropdownMenuItem>
-        ))}
+              </Link>
+            </DropdownMenuItem>
+          );
+        })}
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -235,7 +272,7 @@ function MobileNav({
   travelArticlesHref: string;
 }) {
   return (
-    <DropdownMenu>
+    <DropdownMenu dir={isArabic ? "rtl" : "ltr"}>
       <DropdownMenuTrigger asChild>
         <Button
           aria-label={labels.menu}
@@ -248,7 +285,7 @@ function MobileNav({
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align={isArabic ? "start" : "end"}
-        className="w-64"
+        className={cn("w-64", isArabic && "font-arabic text-right")}
       >
         <DropdownMenuItem asChild>
           <Link href={homeHref}>{labels.home}</Link>
@@ -266,19 +303,32 @@ function MobileNav({
           <Link href={specialOffersHref}>{labels.specialOffers}</Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuLabel className="uppercase tracking-[0.14em]">
+        <DropdownMenuLabel
+          className={cn(
+            isArabic ? "text-right font-arabic" : "uppercase tracking-[0.14em]",
+          )}
+        >
           {labels.cityGuides}
         </DropdownMenuLabel>
-        {cityItems.map((city) => (
-          <DropdownMenuItem asChild key={city.slug}>
-            <Link href={`${localePrefix}/city/${city.slug}`}>
-              <span className="flex items-center gap-2">
-                <MapPin aria-hidden="true" className="h-4 w-4 text-irhal-red" />
-                {city.name}
-              </span>
-            </Link>
-          </DropdownMenuItem>
-        ))}
+        {cityItems.map((city) => {
+          const displayCity = getLocalizedCityNavItem(city, isArabic);
+
+          return (
+            <DropdownMenuItem asChild key={city.slug}>
+              <Link href={`${localePrefix}/city/${city.slug}`}>
+                <span
+                  className={cn(
+                    "flex items-center gap-2",
+                    isArabic && "flex-row-reverse text-right",
+                  )}
+                >
+                  <MapPin aria-hidden="true" className="h-4 w-4 text-irhal-red" />
+                  {displayCity.name}
+                </span>
+              </Link>
+            </DropdownMenuItem>
+          );
+        })}
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link href="/admin">{labels.login}</Link>
