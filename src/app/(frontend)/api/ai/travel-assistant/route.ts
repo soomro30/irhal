@@ -39,11 +39,10 @@ export async function POST(request: Request) {
 
   return Response.json({
     status: "ok",
-    agent: "muslim-travel-assistant",
     input: parsed.data,
     output: {
       answer:
-        "This starter route returns approved structured city context. Connect `AI_API_KEY` to generate final natural language responses from the same JSON payload.",
+        "Here are relevant Muslim-friendly travel references for your city. Use the map links and confirm current details before you visit.",
       city: {
         name: city.name,
         slug: city.slug,
@@ -58,12 +57,6 @@ export async function POST(request: Request) {
         mapUrl: listing.mapUrl,
         muslimTravel: listing.muslimTravel,
       })),
-      rulesApplied: [
-        "approved_city_data_only",
-        "json_output_only",
-        "geo_required_for_location_entities",
-        "halal_and_women_prayer_area_are_explicit_fields",
-      ],
     },
   });
 }

@@ -11,7 +11,7 @@ const { Client } = require("pg") as {
 
 const [{ cities }, guideItemsModule] = await Promise.all([import("../src/lib/city-data"), import("../src/lib/guide-items")]);
 
-const { getGuideArticlesForSection, getGuideItems, sectionCards, slugifyGuideItem } = guideItemsModule;
+const { getGuideArticlesForSection, getGuideItems, getIrhalLegacyArticleUpdate, sectionCards, slugifyGuideItem } = guideItemsModule;
 
 type DbClient = {
   connect: () => Promise<void>;
@@ -319,6 +319,7 @@ const replaceCityChildrenBulk = async (client: DbClient, cityId: number) => {
     longitude: neighborhood.longitude,
     map_url: neighborhood.mapUrl,
     live_map_queries: neighborhood.liveMapQueries,
+    translations: neighborhood.translations ?? {},
     seo_title: `${neighborhood.name} ${city.name} Travel Guide`,
     seo_description: neighborhood.operatingGuide,
   }));
@@ -349,6 +350,13 @@ const replaceCityChildrenBulk = async (client: DbClient, cityId: number) => {
   }));
   const sectionRows = sectionCards.map((section) => {
     const articles = getGuideArticlesForSection(city, section.slug);
+    const articlesWithSourceUpdates = articles.map((article) => ({
+      title: article.title,
+      slug: article.slug,
+      summary: article.summary,
+      blocks: article.blocks,
+      legacyIrhalUpdates: getIrhalLegacyArticleUpdate(section.slug, article.slug),
+    }));
 
     return {
       title: section.title,
@@ -360,13 +368,11 @@ const replaceCityChildrenBulk = async (client: DbClient, cityId: number) => {
         ? "directory"
         : "editorial",
       summary: section.summary,
+      has_legacy_irhal_updates: articlesWithSourceUpdates.some(
+        (article) => article.legacyIrhalUpdates.length > 0,
+      ),
       source_import: {
-        articles: articles.map((article) => ({
-          title: article.title,
-          slug: article.slug,
-          summary: article.summary,
-          blocks: article.blocks,
-        })),
+        articles: articlesWithSourceUpdates,
         sourceFile: city.fullGuide.source.fileName,
       },
       seo_title: `${section.title} | ${city.name}`,
@@ -382,6 +388,7 @@ const replaceCityChildrenBulk = async (client: DbClient, cityId: number) => {
     summary: item.description,
     image_alt: item.imageAlt,
     area: item.area ?? null,
+    neighborhood_slug: item.neighborhoodSlug ?? null,
     category: item.category ?? null,
     budget: item.budget ?? null,
     map_url: item.mapUrl ?? null,
@@ -436,7 +443,27 @@ const replaceCityChildrenBulk = async (client: DbClient, cityId: number) => {
   await client.query("create temporary table seed_neighborhoods (slug text primary key, id integer) on commit drop");
   await client.query("create temporary table seed_listings (slug text primary key, id integer) on commit drop");
   await client.query("create temporary table seed_sections (section_slug text primary key, id integer) on commit drop");
+  await client.query("create temporary table seed_guide_item_media (slug text, kind text, image_id integer, primary key (slug, kind)) on commit drop");
   await client.query("create temporary table seed_itineraries (slug text primary key, id integer, days jsonb) on commit drop");
+
+  await client.query(
+    `insert into seed_guide_item_media (slug, kind, image_id)
+     select distinct on (rows.slug, rows.kind)
+       rows.slug,
+       rows.kind,
+       media.id
+     from jsonb_to_recordset($1::jsonb) as rows (slug text, kind text)
+     join payload.media media
+       on regexp_replace(
+         lower(media.filename),
+         '(-[0-9]+x[0-9]+)?\\.(webp|jpg|jpeg|png)$',
+         ''
+       ) = rows.slug
+     order by rows.slug, rows.kind, (lower(media.filename) = rows.slug || '.webp') desc, media.id
+     on conflict (slug, kind) do update
+       set image_id = excluded.image_id`,
+    [JSON.stringify(guideItemRows.map((row) => ({ slug: row.slug, kind: row.kind })))],
+  );
 
   await client.query(
     `with rows as (
@@ -506,6 +533,7 @@ const replaceCityChildrenBulk = async (client: DbClient, cityId: number) => {
          longitude double precision,
          map_url text,
          live_map_queries jsonb,
+         translations jsonb,
          seo_title text,
          seo_description text
        )
@@ -523,6 +551,7 @@ const replaceCityChildrenBulk = async (client: DbClient, cityId: number) => {
          geo,
          map_url,
          live_map_queries,
+         translations,
          workflow_status,
          seo_title,
          seo_description,
@@ -543,6 +572,7 @@ const replaceCityChildrenBulk = async (client: DbClient, cityId: number) => {
          extensions.ST_SetSRID(extensions.ST_MakePoint(rows.longitude, rows.latitude), 4326),
          rows.map_url,
          rows.live_map_queries,
+         rows.translations,
          'published',
          rows.seo_title,
          rows.seo_description,
@@ -683,6 +713,7 @@ const replaceCityChildrenBulk = async (client: DbClient, cityId: number) => {
          city_id integer,
          section_type text,
          summary text,
+         has_legacy_irhal_updates boolean,
          source_import jsonb,
          seo_title text,
          seo_description text
@@ -711,7 +742,10 @@ const replaceCityChildrenBulk = async (client: DbClient, cityId: number) => {
          section_type::payload.enum_guide_sections_section_type,
          summary,
          source_import,
-         'published',
+         case
+           when has_legacy_irhal_updates then 'review'::payload.enum_guide_sections_workflow_status
+           else 'published'::payload.enum_guide_sections_workflow_status
+         end,
          seo_title,
          seo_description,
          'index,follow',
@@ -719,12 +753,24 @@ const replaceCityChildrenBulk = async (client: DbClient, cityId: number) => {
          now(),
          now()
        from rows
-       returning id, section_slug
+       returning id, section_slug, source_import
      ),
      source_rows as (
        insert into payload.guide_sections_sources (_order, _parent_id, id, label, url, type, verified_at, confidence)
        select 0, id, gen_random_uuid()::text, $2, $3, $4::payload.enum_guide_sections_sources_type, $5::timestamptz, $6::payload.enum_guide_sections_sources_confidence
        from inserted
+       union all
+       select
+         update_item.ordinality::integer,
+         inserted.id,
+         gen_random_uuid()::text,
+         update_item.update->>'sourceTitle',
+         update_item.update->>'sourceUrl',
+         'editorial'::payload.enum_guide_sections_sources_type,
+         $5::timestamptz,
+         'medium'::payload.enum_guide_sections_sources_confidence
+       from inserted
+       cross join lateral jsonb_path_query(inserted.source_import, '$.articles[*].legacyIrhalUpdates[*]') with ordinality as update_item(update, ordinality)
      )
      insert into seed_sections (section_slug, id)
      select section_slug, id from inserted`,
@@ -743,6 +789,7 @@ const replaceCityChildrenBulk = async (client: DbClient, cityId: number) => {
          summary text,
          image_alt text,
          area text,
+         neighborhood_slug text,
          category text,
          budget text,
          map_url text,
@@ -763,6 +810,8 @@ const replaceCityChildrenBulk = async (client: DbClient, cityId: number) => {
          city_id,
          section_id,
          section_slug,
+         image_id,
+         neighborhood_id,
          summary,
          image_alt,
          area,
@@ -789,6 +838,8 @@ const replaceCityChildrenBulk = async (client: DbClient, cityId: number) => {
          rows.city_id,
          seed_sections.id,
          rows.section_slug,
+         seed_guide_item_media.image_id,
+         seed_neighborhoods.id,
          rows.summary,
          rows.image_alt,
          rows.area,
@@ -799,7 +850,10 @@ const replaceCityChildrenBulk = async (client: DbClient, cityId: number) => {
          rows.imported_details,
          rows.source_table,
          rows.source_row_id,
-         'published',
+         case
+           when rows.imported_details ? 'legacy_irhal_source_url' then 'review'::payload.enum_guide_items_workflow_status
+           else 'published'::payload.enum_guide_items_workflow_status
+         end,
          rows.seo_title,
          rows.seo_description,
          'index,follow',
@@ -809,12 +863,124 @@ const replaceCityChildrenBulk = async (client: DbClient, cityId: number) => {
          now()
        from rows
        left join seed_sections on seed_sections.section_slug = rows.section_slug
-       returning id
+       left join seed_guide_item_media
+         on seed_guide_item_media.slug = rows.slug
+       and seed_guide_item_media.kind = rows.kind
+       left join seed_neighborhoods
+         on seed_neighborhoods.slug = rows.neighborhood_slug
+       returning id, imported_details
      )
      insert into payload.guide_items_sources (_order, _parent_id, id, label, url, type, verified_at, confidence)
      select 0, id, gen_random_uuid()::text, $2, $3, $4::payload.enum_guide_items_sources_type, $5::timestamptz, 'medium'::payload.enum_guide_items_sources_confidence
-     from inserted`,
+     from inserted
+     union all
+     select
+       1,
+       id,
+       gen_random_uuid()::text,
+       coalesce(imported_details->>'legacy_irhal_source_title', 'Irhal legacy Karachi guide'),
+       imported_details->>'legacy_irhal_source_url',
+       'editorial'::payload.enum_guide_items_sources_type,
+       coalesce(imported_details->>'legacy_irhal_verified_at', $5::text)::timestamptz,
+       coalesce(imported_details->>'legacy_irhal_confidence', 'medium')::payload.enum_guide_items_sources_confidence
+     from inserted
+     where imported_details ? 'legacy_irhal_source_url'`,
     [JSON.stringify(guideItemRows), source.label, source.url, source.type, source.verifiedAt],
+  );
+
+  // Payload Admin requests draft-enabled collections with draft=true. Seed a
+  // latest version row for every guide item so the Admin list shows all items.
+  await client.query(
+    `insert into payload._guide_items_v (
+       parent_id,
+       version_title,
+       version_slug,
+       version_kind,
+       version_city_id,
+       version_section_id,
+       version_section_slug,
+       version_summary,
+       version_body,
+       version_image_id,
+       version_neighborhood_id,
+       version_image_alt,
+       version_area,
+       version_category,
+       version_budget,
+       version_map_url,
+       version_geo_status,
+       version_latitude,
+       version_longitude,
+       version_provider_place_id,
+       version_imported_details,
+       version_source_table,
+       version_source_row_id,
+       version_workflow_status,
+       version_seo_title,
+       version_seo_description,
+       version_seo_canonical_url,
+       version_seo_open_graph_image_id,
+       version_seo_robots,
+       version_seo_schema_type,
+       version_updated_at,
+       version_created_at,
+       version__status,
+       created_at,
+       updated_at,
+       snapshot,
+       published_locale,
+       latest,
+       version_translations
+     )
+     select
+       guide_items.id,
+       guide_items.title,
+       guide_items.slug,
+       guide_items.kind::text::payload.enum__guide_items_v_version_kind,
+       guide_items.city_id,
+       guide_items.section_id,
+       guide_items.section_slug,
+       guide_items.summary,
+       guide_items.body,
+       guide_items.image_id,
+       guide_items.neighborhood_id,
+       guide_items.image_alt,
+       guide_items.area,
+       guide_items.category,
+       guide_items.budget,
+       guide_items.map_url,
+       guide_items.geo_status::text::payload.enum__guide_items_v_version_geo_status,
+       guide_items.latitude,
+       guide_items.longitude,
+       guide_items.provider_place_id,
+       guide_items.imported_details,
+       guide_items.source_table,
+       guide_items.source_row_id,
+       guide_items.workflow_status::text::payload.enum__guide_items_v_version_workflow_status,
+       guide_items.seo_title,
+       guide_items.seo_description,
+       guide_items.seo_canonical_url,
+       guide_items.seo_open_graph_image_id,
+       guide_items.seo_robots::text::payload.enum__guide_items_v_version_seo_robots,
+       guide_items.seo_schema_type,
+       guide_items.updated_at,
+       guide_items.created_at,
+       guide_items._status::text::payload.enum__guide_items_v_version_status,
+       now(),
+       now(),
+       null,
+       null,
+       true,
+       guide_items.translations
+     from payload.guide_items
+     where guide_items.city_id = $1
+       and not exists (
+         select 1
+         from payload._guide_items_v versions
+         where versions.parent_id = guide_items.id
+           and versions.latest is true
+       )`,
+    [cityId],
   );
 
   await client.query(
@@ -902,9 +1068,9 @@ const validateSeed = async (client: DbClient) => {
   const expected = {
     countries: 1,
     cities: 1,
-    districts: 2,
-    neighborhoods: 3,
-    listings: 5,
+    districts: 6,
+    neighborhoods: city.neighborhoods.length,
+    listings: 4,
     guide_sections: sectionCards.length,
     guide_items: getGuideItems(city).length,
     itineraries: city.itineraries.length,

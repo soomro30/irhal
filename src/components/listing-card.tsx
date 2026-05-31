@@ -1,43 +1,66 @@
 import { ExternalLink, MapPin, MoonStar } from "lucide-react";
 import Link from "next/link";
 
-import type { CityGuide, Listing } from "@/lib/city-data";
+import { DiscoverLink } from "@/components/discover-action";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { pathForListing, type CityGuide, type Listing } from "@/lib/city-data";
 
-const pathForListing = (city: CityGuide, listing: Listing) => {
-  if (listing.listingType === "hotel") return `/city/${city.slug}/hotel/${listing.slug}`;
-  if (listing.listingType === "restaurant") return `/city/${city.slug}/restaurant/${listing.slug}`;
-  return `/city/${city.slug}/place/${listing.slug}`;
-};
+export function ListingCard({
+  city,
+  locale = "en",
+  listing,
+}: {
+  city: CityGuide;
+  locale?: "en" | "ar";
+  listing: Listing;
+}) {
+  const localePrefix = locale === "ar" ? "/ar" : "/en";
+  const listingPath = `${localePrefix}${pathForListing(city, listing)}`;
 
-export function ListingCard({ city, listing }: { city: CityGuide; listing: Listing }) {
   return (
-    <article className="border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{listing.listingType}</p>
-          <h3 className="mt-1 text-lg font-semibold text-slate-950">
-            <Link className="hover:underline" href={pathForListing(city, listing)}>
-              {listing.name}
-            </Link>
-          </h3>
+    <Card className="h-full shadow-sm transition hover:-translate-y-0.5 hover:border-coastal/40 hover:shadow-[0_20px_55px_rgba(0,109,119,0.14)]">
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <Badge variant="secondary">{listing.listingType}</Badge>
+            <CardTitle className="mt-3 text-lg">
+              <Link
+                className="hover:underline"
+                href={listingPath}
+              >
+                {listing.name}
+              </Link>
+            </CardTitle>
+          </div>
+          {listing.muslimTravel?.isHalal || listing.listingType === "masjid" ? (
+            <span className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-saffron text-ink">
+              <MoonStar aria-hidden="true" className="h-5 w-5" />
+            </span>
+          ) : null}
         </div>
-        {listing.muslimTravel?.isHalal || listing.listingType === "masjid" ? (
-          <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-emerald-50 text-emerald-700">
-            <MoonStar aria-hidden="true" className="h-5 w-5" />
+      </CardHeader>
+      <CardContent>
+        <p className="text-sm leading-6 text-ink/65">
+          {listing.shortDescription}
+        </p>
+        <div className="mt-5">
+          <DiscoverLink href={listingPath} />
+        </div>
+        <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-ink/65">
+          <span className="inline-flex items-center gap-1">
+            <MapPin aria-hidden="true" className="h-4 w-4" />
+            {listing.latitude.toFixed(4)}, {listing.longitude.toFixed(4)}
           </span>
-        ) : null}
-      </div>
-      <p className="mt-3 text-sm leading-6 text-slate-600">{listing.shortDescription}</p>
-      <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-slate-600">
-        <span className="inline-flex items-center gap-1">
-          <MapPin aria-hidden="true" className="h-4 w-4" />
-          {listing.latitude.toFixed(4)}, {listing.longitude.toFixed(4)}
-        </span>
-        <a className="inline-flex items-center gap-1 font-medium text-slate-950 hover:underline" href={listing.mapUrl}>
-          Map
-          <ExternalLink aria-hidden="true" className="h-4 w-4" />
-        </a>
-      </div>
-    </article>
+          <a
+            className="inline-flex items-center gap-1 font-bold text-coastal hover:underline"
+            href={listing.mapUrl}
+          >
+            Map
+            <ExternalLink aria-hidden="true" className="h-4 w-4" />
+          </a>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

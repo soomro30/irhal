@@ -1,24 +1,94 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  --background: #ffffff;
+  --foreground: #1E2D4B;
+  --travel-navy: #1a2b49;
+  --paper: #ffffff;
+  --paper-deep: #f2f4f5;
+  --ink: #1E2D4B;
+  --coastal: #006d77;
+  --saffron: #f4b942;
+  --date: #7b3f2a;
+  --palm: #1f7a4d;
+  --coral: #d45b4f;
+  --irhal-red: #df1718;
+  --irhal-charcoal: #292927;
+  --irhal-orange: #ff982f;
+  --irhal-yellow: #ffd30a;
+  --irhal-sky: #13a9e6;
+  --irhal-blue: #164f9f;
+  --irhal-burgundy: #b51649;
+  --irhal-magenta: #df0051;
+  --irhal-rose: #e74680;
+  --irhal-green: #058044;
+  --irhal-lime: #8ac43f;
+  --irhal-panel: #eef7f6;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --color-travel-navy: var(--travel-navy);
+  --color-paper: var(--paper);
+  --color-paper-deep: var(--paper-deep);
+  --color-ink: var(--ink);
+  --color-coastal: var(--coastal);
+  --color-saffron: var(--saffron);
+  --color-date: var(--date);
+  --color-palm: var(--palm);
+  --color-coral: var(--coral);
+  --color-irhal-red: var(--irhal-red);
+  --color-irhal-charcoal: var(--irhal-charcoal);
+  --color-irhal-orange: var(--irhal-orange);
+  --color-irhal-yellow: var(--irhal-yellow);
+  --color-irhal-sky: var(--irhal-sky);
+  --color-irhal-blue: var(--irhal-blue);
+  --color-irhal-burgundy: var(--irhal-burgundy);
+  --color-irhal-magenta: var(--irhal-magenta);
+  --color-irhal-rose: var(--irhal-rose);
+  --color-irhal-green: var(--irhal-green);
+  --color-irhal-lime: var(--irhal-lime);
+  --color-irhal-panel: var(--irhal-panel);
+  --font-sans: var(--font-trip-sans);
+  --font-heading: var(--font-trip-sans);
   --font-mono: var(--font-geist-mono);
+  --font-arabic: var(--font-noto-arabic);
+}
+
+html {
+  background: var(--background);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-trip-sans);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-trip-sans);
+}
+
+.font-arabic {
+  font-family: var(--font-noto-arabic), var(--font-trip-sans);
+}
+
+.font-arabic :is(h1, h2, h3, h4, h5, h6) {
+  font-family: var(--font-cairo), var(--font-trip-sans);
 }
 
 a,
 button {
   text-underline-offset: 3px;
+}
+
+::selection {
+  background: var(--saffron);
+  color: var(--ink);
 }

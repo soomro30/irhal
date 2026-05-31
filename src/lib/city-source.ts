@@ -1,8 +1,19 @@
 import config from "@/payload.config";
 import { getPayload } from "payload";
 
-import type { CityGuide, CityGuideImport, Itinerary, Listing, ListingType, Neighborhood } from "./city-data";
-import { getCityBySlug as getLocalCityBySlug } from "./city-data";
+import type {
+  CityGuide,
+  CityGuideImport,
+  Itinerary,
+  LocaleTranslations,
+  Listing,
+  ListingType,
+  Neighborhood,
+} from "./city-data";
+import {
+  cities as localCities,
+  getCityBySlug as getLocalCityBySlug,
+} from "./city-data";
 
 type CMSDoc = Record<string, unknown> & {
   id: number | string;
@@ -13,17 +24,35 @@ type CityCacheEntry = {
   value: CityGuide | undefined;
 };
 
+export type CityNavItem = {
+  country: string;
+  heroImageUrl?: string;
+  name: string;
+  slug: string;
+};
+
 const cityCache = new Map<string, CityCacheEntry>();
 const cityRequests = new Map<string, Promise<CityGuide | undefined>>();
-const cityCacheTtlMs = Number(process.env.IRHAL_CITY_CACHE_SECONDS ?? 300) * 1000;
+const cityCacheTtlMs =
+  Number(process.env.IRHAL_CITY_CACHE_SECONDS ?? 300) * 1000;
 
 const isCMSConfigured = () =>
-  Boolean(process.env.DATABASE_URL && !process.env.DATABASE_URL.includes("<") && process.env.PAYLOAD_SECRET);
+  Boolean(
+    process.env.DATABASE_URL &&
+    !process.env.DATABASE_URL.includes("<") &&
+    process.env.PAYLOAD_SECRET,
+  );
 
-const asString = (value: unknown, fallback = "") => (typeof value === "string" ? value : fallback);
-const asNumber = (value: unknown, fallback = 0) => (typeof value === "number" ? value : fallback);
-const asRecord = (value: unknown): Record<string, unknown> => (value && typeof value === "object" ? (value as Record<string, unknown>) : {});
-const asArray = (value: unknown): unknown[] => (Array.isArray(value) ? value : []);
+const asString = (value: unknown, fallback = "") =>
+  typeof value === "string" ? value : fallback;
+const asNumber = (value: unknown, fallback = 0) =>
+  typeof value === "number" ? value : fallback;
+const asRecord = (value: unknown): Record<string, unknown> =>
+  value && typeof value === "object" ? (value as Record<string, unknown>) : {};
+const asArray = (value: unknown): unknown[] =>
+  Array.isArray(value) ? value : [];
+const normalizeTranslations = (value: unknown) =>
+  asRecord(value) as LocaleTranslations;
 
 const relationshipId = (value: unknown) => {
   if (typeof value === "number" || typeof value === "string") return value;
@@ -37,7 +66,19 @@ const relationshipName = (value: unknown, fallback = "") => {
   return asString(record.name, fallback);
 };
 
-const normalizeSeo = (value: unknown, fallbackTitle: string, fallbackDescription: string) => {
+const mediaUrl = (value: unknown) => {
+  const media = asRecord(value);
+  const sizes = asRecord(media.sizes);
+  const hero = asRecord(sizes.hero);
+  const card = asRecord(sizes.card);
+  return asString(media.url) || asString(hero.url) || asString(card.url);
+};
+
+const normalizeSeo = (
+  value: unknown,
+  fallbackTitle: string,
+  fallbackDescription: string,
+) => {
   const seo = asRecord(value);
   return {
     title: asString(seo.title, fallbackTitle),
@@ -68,6 +109,7 @@ const normalizeNeighborhood = (doc: CMSDoc): Neighborhood => {
     longitude: asNumber(doc.longitude),
     mapUrl: asString(doc.mapUrl),
     operatingGuide: asString(doc.operatingGuide),
+    translations: normalizeTranslations(doc.translations),
     bestFor: asArray(doc.bestFor)
       .map((item) => asString(asRecord(item).value))
       .filter(Boolean),
@@ -84,7 +126,11 @@ const normalizeNeighborhood = (doc: CMSDoc): Neighborhood => {
 
 const normalizeListing = (doc: CMSDoc): Listing => {
   const neighborhoodSlug = asString(asRecord(doc.neighborhood).slug);
-  const seo = normalizeSeo(doc.seo, asString(doc.name), asString(doc.shortDescription));
+  const seo = normalizeSeo(
+    doc.seo,
+    asString(doc.name),
+    asString(doc.shortDescription),
+  );
   const muslimTravel = asRecord(doc.muslimTravel);
 
   return {
@@ -103,7 +149,8 @@ const normalizeListing = (doc: CMSDoc): Listing => {
     affiliateUrl: asString(doc.affiliateUrl) || undefined,
     muslimTravel: {
       isHalal: Boolean(muslimTravel.isHalal),
-      halalCertification: asString(muslimTravel.halalCertification) || undefined,
+      halalCertification:
+        asString(muslimTravel.halalCertification) || undefined,
       womenPrayerArea: Boolean(muslimTravel.womenPrayerArea),
       familyFriendly: Boolean(muslimTravel.familyFriendly),
       notes: asString(muslimTravel.notes) || undefined,
@@ -135,6 +182,62 @@ const normalizeItinerary = (doc: CMSDoc): Itinerary => ({
   }),
 });
 
+const normalizeGuideItemTranslations = (docs: CMSDoc[]) =>
+  docs.reduce<Record<string, LocaleTranslations>>((translations, doc) => {
+    const slug = asString(doc.slug);
+    const kind = asString(doc.kind);
+    const value = normalizeTranslations(doc.translations);
+
+    if (slug && Object.keys(value).length > 0) {
+      translations[slug] = value;
+      if (kind) translations[`${kind}:${slug}`] = value;
+    }
+
+    return translations;
+  }, {});
+
+const localCityNavItems = (): CityNavItem[] =>
+  localCities.map((city) => ({
+    country: city.country,
+    heroImageUrl: city.heroImageUrl,
+    name: city.name,
+    slug: city.slug,
+  }));
+
+export const getCityNavItems = async (): Promise<CityNavItem[]> => {
+  if (!isCMSConfigured()) return localCityNavItems();
+
+  try {
+    const payload = await getPayload({ config });
+    const cityResult = await payload.find({
+      collection: "cities" as never,
+      depth: 1,
+      limit: 100,
+      overrideAccess: true,
+      sort: "name",
+    });
+
+    const items = (cityResult.docs as CMSDoc[])
+      .map((doc) => {
+        const slug = asString(doc.slug);
+        const fallbackCity = getLocalCityBySlug(slug);
+
+        return {
+          country: relationshipName(doc.country, fallbackCity?.country),
+          heroImageUrl: mediaUrl(doc.heroImage) || fallbackCity?.heroImageUrl,
+          name: asString(doc.name),
+          slug,
+        };
+      })
+      .filter((item) => item.name && item.slug);
+
+    return items.length > 0 ? items : localCityNavItems();
+  } catch (error) {
+    console.warn("Payload city nav source failed; falling back to local cities.", error);
+    return localCityNavItems();
+  }
+};
+
 const loadCityBySlug = async (slug: string): Promise<CityGuide | undefined> => {
   const fallbackCity = getLocalCityBySlug(slug);
 
@@ -159,31 +262,149 @@ const loadCityBySlug = async (slug: string): Promise<CityGuide | undefined> => {
     if (!cityDoc) return fallbackCity;
 
     const cityId = relationshipId(cityDoc);
-    const [neighborhoodResult, listingResult, itineraryResult] = await Promise.all([
-      payload.find({
-        collection: "neighborhoods" as never,
-        depth: 2,
-        limit: 300,
+    const cityHeroGalleryIds = () =>
+      asArray(cityDoc.heroGallery)
+        .map((entry) => relationshipId(asRecord(entry).image))
+        .filter((id): id is number | string => id != null);
+    const cityHeroImageUrl = mediaUrl(cityDoc.heroImage);
+    const cityHeroGalleryImageIds = cityHeroGalleryIds();
+    const cityHeroGalleryUrls = asArray(cityDoc.heroGallery)
+      .map((entry) => mediaUrl(asRecord(entry).image))
+      .filter((url): url is string => Boolean(url));
+    if (cityHeroGalleryImageIds.length > cityHeroGalleryUrls.length) {
+      const mediaResult = await payload.find({
+        collection: "media" as never,
+        depth: 0,
+        limit: cityHeroGalleryImageIds.length,
         overrideAccess: true,
-        where: { city: { equals: cityId } },
-      }),
-      payload.find({
-        collection: "listings" as never,
-        depth: 2,
-        limit: 500,
-        overrideAccess: true,
-        where: { city: { equals: cityId } },
-      }),
-      payload.find({
-        collection: "itineraries" as never,
-        depth: 2,
-        limit: 100,
-        overrideAccess: true,
-        where: { city: { equals: cityId } },
-      }),
-    ]);
+        where: { id: { in: cityHeroGalleryImageIds } },
+      });
+      const mediaUrlById = new Map<number | string, string>();
+      for (const mediaDoc of mediaResult.docs as CMSDoc[]) {
+        const url = mediaUrl(mediaDoc);
+        if (url) mediaUrlById.set(mediaDoc.id, url);
+      }
+      for (const imageId of cityHeroGalleryImageIds) {
+        const url = mediaUrlById.get(imageId);
+        if (url) cityHeroGalleryUrls.push(url);
+      }
+    }
+    const heroImageUrls = Array.from(
+      new Set(
+        [cityHeroImageUrl, ...cityHeroGalleryUrls, ...(fallbackCity?.heroImageUrls ?? [])].filter(
+          (url): url is string => Boolean(url),
+        ),
+      ),
+    );
+    const [
+      neighborhoodResult,
+      listingResult,
+      itineraryResult,
+      guideItemResult,
+    ] =
+      await Promise.all([
+        payload.find({
+          collection: "neighborhoods" as never,
+          depth: 2,
+          limit: 300,
+          overrideAccess: true,
+          where: { city: { equals: cityId } },
+        }),
+        payload.find({
+          collection: "listings" as never,
+          depth: 2,
+          limit: 500,
+          overrideAccess: true,
+          where: { city: { equals: cityId } },
+        }),
+        payload.find({
+          collection: "itineraries" as never,
+          depth: 2,
+          limit: 100,
+          overrideAccess: true,
+          where: { city: { equals: cityId } },
+        }),
+        payload.find({
+          collection: "guide-items" as never,
+          depth: 0,
+          limit: 700,
+          overrideAccess: true,
+          where: { city: { equals: cityId } },
+        }),
+      ]);
 
-    const structuredSections = cityDoc.structuredSections as CityGuideImport | undefined;
+    const guideItemDocs = guideItemResult.docs as CMSDoc[];
+    const galleryImageIds = (doc: CMSDoc): (number | string)[] =>
+      asArray(doc.gallery)
+        .map((entry) => relationshipId(asRecord(entry).image))
+        .filter((id): id is number | string => id != null);
+    const imageIds = Array.from(
+      new Set(
+        guideItemDocs.flatMap((doc) =>
+          [relationshipId(doc.image), ...galleryImageIds(doc)].filter(
+            (id): id is number | string => id != null,
+          ),
+        ),
+      ),
+    );
+    const mediaUrlById = new Map<number | string, string>();
+    if (imageIds.length > 0) {
+      const mediaResult = await payload.find({
+        collection: "media" as never,
+        depth: 0,
+        limit: imageIds.length,
+        overrideAccess: true,
+        where: { id: { in: imageIds } },
+      });
+      for (const mediaDoc of mediaResult.docs as CMSDoc[]) {
+        const url = mediaUrl(mediaDoc);
+        if (url) mediaUrlById.set(mediaDoc.id, url);
+      }
+    }
+    const guideItemImages: Record<string, string> = {};
+    const guideItemGalleries: Record<string, string[]> = {};
+    const neighborhoodSlugById = new Map<number | string, string>();
+    for (const doc of neighborhoodResult.docs as CMSDoc[]) {
+      const neighborhoodSlug = asString(doc.slug);
+      if (neighborhoodSlug) neighborhoodSlugById.set(doc.id, neighborhoodSlug);
+    }
+    const guideItemNeighborhoods: Record<string, string> = {};
+    for (const doc of guideItemDocs) {
+      const slug = asString(doc.slug);
+      if (!slug) continue;
+      const kind = asString(doc.kind);
+      const neighborhoodId = relationshipId(doc.neighborhood);
+      const neighborhoodSlug =
+        neighborhoodId != null
+          ? neighborhoodSlugById.get(neighborhoodId)
+          : undefined;
+      if (neighborhoodSlug) {
+        guideItemNeighborhoods[slug] = neighborhoodSlug;
+        if (kind) guideItemNeighborhoods[`${kind}:${slug}`] = neighborhoodSlug;
+      }
+      const primaryId = relationshipId(doc.image);
+      const primaryUrl =
+        primaryId != null ? mediaUrlById.get(primaryId) : undefined;
+      const galleryUrls = galleryImageIds(doc)
+        .map((id) => mediaUrlById.get(id))
+        .filter((url): url is string => Boolean(url));
+      // Full ordered set: primary first, then gallery (deduped).
+      const allUrls = Array.from(
+        new Set([primaryUrl, ...galleryUrls].filter((url): url is string => Boolean(url))),
+      );
+      if (primaryUrl) {
+        guideItemImages[slug] = primaryUrl;
+        if (kind) guideItemImages[`${kind}:${slug}`] = primaryUrl;
+      }
+      if (allUrls.length > 0) {
+        guideItemGalleries[slug] = allUrls;
+        if (kind) guideItemGalleries[`${kind}:${slug}`] = allUrls;
+      }
+    }
+
+    const structuredSections = cityDoc.structuredSections as
+      | CityGuideImport
+      | undefined;
 
     return {
       slug: asString(cityDoc.slug),
@@ -192,13 +413,25 @@ const loadCityBySlug = async (slug: string): Promise<CityGuide | undefined> => {
       region: asString(cityDoc.region, fallbackCity?.region),
       locale: asString(cityDoc.locale, fallbackCity?.locale ?? "en"),
       lede: asString(cityDoc.lede, fallbackCity?.lede),
+      heroImageUrl: cityHeroImageUrl || fallbackCity?.heroImageUrl,
+      heroImageUrls: heroImageUrls.length > 0 ? heroImageUrls : undefined,
       timezone: asString(cityDoc.timezone, fallbackCity?.timezone),
       currency: asString(cityDoc.currency, fallbackCity?.currency),
       languages: normalizeLanguages(cityDoc.languages),
       latitude: asNumber(cityDoc.latitude, fallbackCity?.latitude),
       longitude: asNumber(cityDoc.longitude, fallbackCity?.longitude),
       mapUrl: asString(cityDoc.mapUrl, fallbackCity?.mapUrl),
-      lastVerifiedAt: asString(cityDoc.lastVerifiedAt, fallbackCity?.lastVerifiedAt),
+      lastVerifiedAt: asString(
+        cityDoc.lastVerifiedAt,
+        fallbackCity?.lastVerifiedAt,
+      ),
+      translations: normalizeTranslations(cityDoc.translations),
+      guideItemTranslations: normalizeGuideItemTranslations(
+        guideItemResult.docs as CMSDoc[],
+      ),
+      guideItemImages,
+      guideItemGalleries,
+      guideItemNeighborhoods,
       fastFacts: asArray(cityDoc.fastFacts).map((fact) => {
         const record = asRecord(fact);
         return { label: asString(record.label), value: asString(record.value) };
@@ -211,19 +444,30 @@ const loadCityBySlug = async (slug: string): Promise<CityGuide | undefined> => {
         healthSafety: "",
         muslimTravel: "",
       },
-      neighborhoods: (neighborhoodResult.docs as CMSDoc[]).map(normalizeNeighborhood),
+      neighborhoods: (neighborhoodResult.docs as CMSDoc[]).map(
+        normalizeNeighborhood,
+      ),
       listings: (listingResult.docs as CMSDoc[]).map(normalizeListing),
       itineraries: (itineraryResult.docs as CMSDoc[]).map(normalizeItinerary),
-      seo: normalizeSeo(cityDoc.seo, fallbackCity?.seo.title ?? asString(cityDoc.name), fallbackCity?.seo.description ?? asString(cityDoc.lede)),
+      seo: normalizeSeo(
+        cityDoc.seo,
+        fallbackCity?.seo.title ?? asString(cityDoc.name),
+        fallbackCity?.seo.description ?? asString(cityDoc.lede),
+      ),
       fullGuide: structuredSections ?? fallbackCity?.fullGuide,
     } as CityGuide;
   } catch (error) {
-    console.warn(`Payload city source failed for ${slug}; falling back to local import.`, error);
+    console.warn(
+      `Payload city source failed for ${slug}; falling back to local import.`,
+      error,
+    );
     return fallbackCity;
   }
 };
 
-export const getCityBySlug = async (slug: string): Promise<CityGuide | undefined> => {
+export const getCityBySlug = async (
+  slug: string,
+): Promise<CityGuide | undefined> => {
   const cacheKey = slug.toLowerCase();
   const cached = cityCache.get(cacheKey);
 

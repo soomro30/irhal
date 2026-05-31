@@ -1,7 +1,13 @@
 import type { CollectionConfig } from "payload";
 
 import { editorsOnly, publishedOrEditor } from "./access";
-import { geoFields, seoFields, sourceFields, workflowStatusField } from "./shared";
+import {
+  geoFields,
+  seoFields,
+  sourceFields,
+  translationFields,
+  workflowStatusField,
+} from "./shared";
 
 export const Cities: CollectionConfig = {
   slug: "cities",
@@ -27,6 +33,24 @@ export const Cities: CollectionConfig = {
     { name: "locale", type: "text", defaultValue: "en", required: true },
     { name: "lede", type: "textarea", required: true, maxLength: 650 },
     { name: "heroImage", type: "upload", relationTo: "media" },
+    {
+      name: "heroGallery",
+      type: "array",
+      admin: {
+        description:
+          "Optional additional approved images for the public city banner carousel. The primary hero image is always shown first.",
+      },
+      labels: { plural: "Hero banner images", singular: "Hero banner image" },
+      maxRows: 12,
+      fields: [
+        {
+          name: "image",
+          type: "upload",
+          relationTo: "media",
+          required: true,
+        },
+      ],
+    },
     { name: "timezone", type: "text", required: true },
     { name: "languages", type: "array", fields: [{ name: "language", type: "text", required: true }] },
     { name: "currency", type: "text", required: true },
@@ -47,6 +71,7 @@ export const Cities: CollectionConfig = {
       },
       required: true,
     },
+    translationFields,
     workflowStatusField,
     seoFields,
     sourceFields,

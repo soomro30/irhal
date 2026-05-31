@@ -1,0 +1,724 @@
+[
+  {
+    "kind": "place",
+    "slug": "safari-park",
+    "sourceTitle": "Safari Park",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/places-to-visit/safari-park/",
+    "sourceModifiedAt": "2022-06-20T17:27:57",
+    "editorialUpdate": "Legacy Irhal positions Safari Park as a major family recreation spot with open walking areas, children's rides, a central hill viewpoint, and a safari-style animal area. Current operations should still be checked before publication.",
+    "verificationNote": "Treat as legacy editorial context; verify active attractions, timings, and animal-area operations."
+  },
+  {
+    "kind": "place",
+    "slug": "pia-planetarium",
+    "sourceTitle": "PIA Planetarium",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/places-to-visit/pia-planetarium/",
+    "sourceModifiedAt": "2022-06-20T17:28:40",
+    "editorialUpdate": "Legacy Irhal describes the planetarium as a dome-show venue with Urdu programming on most days, English shows on Sundays, and a PIA aircraft display on the lawn.",
+    "verificationNote": "Keep the portal's verify-before-publishing warning because show schedules and operating status may have changed."
+  },
+  {
+    "kind": "place",
+    "slug": "national-museum-of-pakistan",
+    "sourceTitle": "National Museum of Pakistan",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/places-to-visit/national-museum-of-pakistan/",
+    "sourceModifiedAt": "2022-06-21T12:03:35",
+    "editorialUpdate": "Legacy Irhal highlights the museum's archaeology, coin, Islamic calligraphy, Pakistan history, and Indus Valley collections, including Harappa, Gandhara, and Mohenjo-daro material.",
+    "verificationNote": "Verify galleries, access, and opening hours against official or recent local sources."
+  },
+  {
+    "kind": "place",
+    "slug": "mohatta-palace-museum",
+    "sourceTitle": "Mohatta Palace and Museum",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/places-to-visit/mohatta-palace-and-museum/",
+    "sourceModifiedAt": "2022-06-21T12:00:47",
+    "editorialUpdate": "Legacy Irhal adds that the 1920s palace was built for Shivratan Chandraratan Mohatta with pink Jodhpur stone and later became a restored cultural museum associated with Fatima Jinnah.",
+    "verificationNote": "Use for historical framing; verify current exhibitions, ticketing, and visitor hours."
+  },
+  {
+    "kind": "place",
+    "slug": "merewether-clock-tower",
+    "sourceTitle": "Merewether Tower",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/places-to-visit/merewether-tower/",
+    "sourceModifiedAt": "2022-06-20T17:30:22",
+    "editorialUpdate": "Legacy Irhal frames the tower as a landmark rich in local stories and confirms its association with Sir William Merewether, the British commissioner in Sindh from 1868 to 1877.",
+    "verificationNote": "Use as heritage color; verify walking access and nearby traffic conditions."
+  },
+  {
+    "kind": "place",
+    "slug": "mazar-e-quaid",
+    "sourceTitle": "Mazar-e- Quaid",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/places-to-visit/mazar-e-quaid/",
+    "sourceModifiedAt": "2022-06-20T17:30:49",
+    "editorialUpdate": "Legacy Irhal emphasizes the white-marble mausoleum, surrounding park, ceremonial atmosphere, and contrast between the quiet grounds and the busy city outside.",
+    "verificationNote": "Verify security rules, entry procedures, and current opening times."
+  },
+  {
+    "kind": "place",
+    "slug": "kpt-jet-fountain-view",
+    "sourceTitle": "KPT Jet Fountain",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/places-to-visit/kpt-jet-fountain/",
+    "sourceModifiedAt": "2022-06-21T12:01:50",
+    "editorialUpdate": "Legacy Irhal describes the fountain as a sunset-to-midnight harbour sight visible from the Clifton coastline, with the best experience from closer viewpoints.",
+    "verificationNote": "Legacy operations are uncertain; keep visibility and timing claims behind editorial verification."
+  },
+  {
+    "kind": "place",
+    "slug": "karachi-zoo",
+    "sourceTitle": "Karachi Zoo/ Zoological Gardens (Gandhi Garden)",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/places-to-visit/karachi-zoo-zoological-gardens-gandhi-garden/",
+    "sourceModifiedAt": "2022-06-20T17:32:51",
+    "editorialUpdate": "Legacy Irhal notes the zoo's Gandhi Garden history, bird collection, lake area, reptile house, and natural-history displays.",
+    "verificationNote": "Verify current facilities and animal welfare-sensitive editorial framing before publication."
+  },
+  {
+    "kind": "place",
+    "slug": "hill-park",
+    "sourceTitle": "Hill Park",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/places-to-visit/hill-park/",
+    "sourceModifiedAt": "2022-06-20T17:33:28",
+    "editorialUpdate": "Legacy Irhal describes Hill Park as a large PECHS green space with a natural hill, city views, a lake, children's rides, snack stops, and family recreation.",
+    "verificationNote": "Verify current maintenance, access, and family facilities."
+  },
+  {
+    "kind": "place",
+    "slug": "frere-hall",
+    "sourceTitle": "Frere Hall",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/places-to-visit/frere-hall/",
+    "sourceModifiedAt": "2022-06-21T12:03:14",
+    "editorialUpdate": "Legacy Irhal adds the 1865 Gothic/Venetian construction history, Liaquat National Library role, and the Sadequain ceiling on the upper floor.",
+    "verificationNote": "Verify current library/exhibition access and public-event schedule."
+  },
+  {
+    "kind": "place",
+    "slug": "empress-market",
+    "sourceTitle": "Empress Market",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/places-to-visit/empress-market/",
+    "sourceModifiedAt": "2022-06-21T12:04:27",
+    "editorialUpdate": "Legacy Irhal underlines the British-era Gothic market building, Queen Victoria silver-jubilee connection, clock tower, everyday food shopping, and Saddar street-life value.",
+    "verificationNote": "Verify current market conditions and visitor-safety guidance."
+  },
+  {
+    "kind": "place",
+    "slug": "bagh-ibn-e-qasim",
+    "sourceTitle": "Bagh-e-ibn-e-Qasim and Beach Park",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/places-to-visit/bagh-e-ibn-e-qasim-and-beach-park/",
+    "sourceModifiedAt": "2022-06-21T12:02:12",
+    "editorialUpdate": "Legacy Irhal describes the Clifton-side park as a large coastal green space with lawns, fountains, benches, children's areas, and beach-adjacent visitor facilities.",
+    "verificationNote": "Verify current facilities, maintenance, and any access restrictions."
+  },
+  {
+    "kind": "place",
+    "slug": "clifton-beach-sea-view",
+    "sourceTitle": "Beach",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/places-to-visit/beach/",
+    "sourceModifiedAt": "2022-06-21T12:02:51",
+    "editorialUpdate": "Legacy Irhal treats Clifton/Sea View as the main city beach and also links it editorially with Sandspit, Hawke's Bay, Paradise Point, French Beach, and other west-coast outings.",
+    "verificationNote": "Use only as contextual beach-cluster guidance; verify tides, safety, and access before recommending."
+  },
+  {
+    "kind": "place",
+    "slug": "aladin-park-legacy-site",
+    "sourceTitle": "Aladdin Park",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/places-to-visit/aladdin-park/",
+    "sourceModifiedAt": "2022-06-20T17:35:04",
+    "editorialUpdate": "Legacy Irhal described Aladdin Park as a family amusement, water-park, and shopping complex on Rashid Minhas Road near Millennium Mall; the current portal should keep it as a legacy-status record until redevelopment/current use is verified.",
+    "verificationNote": "Do not publish as an active amusement park without fresh source verification."
+  },
+  {
+    "kind": "restaurant",
+    "slug": "sattar-buksh",
+    "sourceTitle": "Sattar Buksh",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/restaurants/sattar-buksh/",
+    "sourceModifiedAt": "2022-06-20T18:04:47",
+    "editorialUpdate": "Legacy Irhal presents Sattar Buksh as a Karachi cafe brand mixing international coffeehouse cues with local touches such as karak chai, paratha, breakfast plates, and playful moustache branding.",
+    "verificationNote": "Verify current branches, timings, and menu before publishing branch-level recommendations."
+  },
+  {
+    "kind": "restaurant",
+    "slug": "port-grand-restaurants",
+    "sourceTitle": "Port Grand – Karachi Food Street",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/restaurants/port-grand-karachi-food-street/",
+    "sourceModifiedAt": "2022-06-20T18:05:06",
+    "editorialUpdate": "Legacy Irhal frames Port Grand as a scenic waterfront food-street district with multiple restaurants, kiosks, events, and harbour-side atmosphere.",
+    "verificationNote": "Verify entry rules, opening days, events, and currently operating outlets."
+  },
+  {
+    "kind": "restaurant",
+    "slug": "javed-nihari",
+    "sourceTitle": "Javed Nihari (Local)",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/restaurants/javed-nihari-local/",
+    "sourceModifiedAt": "2022-06-21T11:29:08",
+    "editorialUpdate": "Legacy Irhal treats Javed Nihari as a standout local nihari stop and points visitors toward the central/north-side branch culture around F.B. Area.",
+    "verificationNote": "Verify current branch locations and timings."
+  },
+  {
+    "kind": "restaurant",
+    "slug": "burns-road-food-street",
+    "sourceTitle": "Burns Road",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/restaurants/burns-road/",
+    "sourceModifiedAt": "2022-06-21T11:29:50",
+    "editorialUpdate": "Legacy Irhal reinforces Burns Road as Karachi's classic central food street, dense with inexpensive local restaurants, heavy evening crowds, and a wide range of sweets, snacks, barbecue, biryani, and desi meals.",
+    "verificationNote": "Verify current traffic, parking, hygiene, and best-time guidance."
+  },
+  {
+    "kind": "restaurant",
+    "slug": "student-biryani",
+    "sourceTitle": "Students Biryani (Local)",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/restaurants/students-biryani-local/",
+    "sourceModifiedAt": "2022-06-21T11:31:21",
+    "editorialUpdate": "Legacy Irhal notes Student Biryani's roadside-stand origins in 1969 and its growth into a biryani chain associated with Saddar, Burns Road, and Gulshan branches.",
+    "verificationNote": "Verify active branches and delivery/service details."
+  },
+  {
+    "kind": "restaurant",
+    "slug": "food-centre",
+    "sourceTitle": "Food Center (Local)",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/restaurants/food-center-local/",
+    "sourceModifiedAt": "2022-06-21T11:32:07",
+    "editorialUpdate": "Legacy Irhal highlights Food Centre for biryani, local dining value, barbecue, fish, buffet options, and desserts such as kheer and zarda.",
+    "verificationNote": "Verify current menu, branches, and pricing."
+  },
+  {
+    "kind": "restaurant",
+    "slug": "usmania-restaurant",
+    "sourceTitle": "Usmania Restuarant (Local)",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/restaurants/usmania-restuarant-local/",
+    "sourceModifiedAt": "2022-06-21T11:32:49",
+    "editorialUpdate": "Legacy Irhal positions Usmania as a relaxed family restaurant near University Road and the PIA Planetarium area.",
+    "verificationNote": "Verify current address, phone, and branch status."
+  },
+  {
+    "kind": "restaurant",
+    "slug": "bundu-khan",
+    "sourceTitle": "Al Haaj Bundu Khan (BBQ)",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/restaurants/al-haaj-bundu-khan-bbq/",
+    "sourceModifiedAt": "2022-06-21T11:34:39",
+    "editorialUpdate": "Legacy Irhal connects Bundu Khan with old Karachi barbecue, including chicken tikka, boti, liver items, Bihari boti, mutton kabab, and historic M.A. Jinnah Road/Sindhi Muslim area branches.",
+    "verificationNote": "Verify current branch identity because similarly named Bundu/Bundoo Khan outlets vary."
+  },
+  {
+    "kind": "restaurant",
+    "slug": "bbq-tonight",
+    "sourceTitle": "Bar-B-Q Tonight (BBQ)",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/restaurants/bar-b-q-tonight-bbq/",
+    "sourceModifiedAt": "2022-06-21T11:39:07",
+    "editorialUpdate": "Legacy Irhal reinforces BBQ Tonight as a visitor-friendly Clifton barbecue institution with grilled chicken, lamb, kababs, rooftop seating, and reservation-sensitive dinner hours.",
+    "verificationNote": "Verify current branch hours and booking policy."
+  },
+  {
+    "kind": "restaurant",
+    "slug": "chinatown-karachi",
+    "sourceTitle": "China Town (Chinese)",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/restaurants/china-town-chinese/",
+    "sourceModifiedAt": "2022-06-21T11:37:42",
+    "editorialUpdate": "Legacy Irhal describes China Town as an established Chinese dining option in Clifton with soups, sauces, dry beef, spicy chicken, fried rice, fish, and prawns.",
+    "verificationNote": "Verify current branch, menu, and pricing."
+  },
+  {
+    "kind": "restaurant",
+    "slug": "cafe-flo",
+    "sourceTitle": "Café Flo (French)",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/restaurants/cafe-flo-french/",
+    "sourceModifiedAt": "2022-06-21T11:43:48",
+    "editorialUpdate": "Legacy Irhal presents Cafe Flo as a French-influenced Clifton restaurant popular with expatriates and recommends reservation planning for signature French-style dishes and desserts.",
+    "verificationNote": "Verify current menu, address, and reservation requirements."
+  },
+  {
+    "kind": "festival",
+    "slug": "arts-council-and-theatre-programming",
+    "sourceTitle": "Arts Council Activities",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/festivals/arts-council-activities/",
+    "sourceModifiedAt": "2022-06-20T18:35:32",
+    "editorialUpdate": "Legacy Irhal treats the Arts Council as a year-round cultural venue for performances, exhibitions, mushairas, and language events, often with free or invitation-based access.",
+    "verificationNote": "Use current Arts Council calendars before publishing event-specific dates."
+  },
+  {
+    "kind": "festival",
+    "slug": "rabi-ul-awwal-milad-un-nabi",
+    "sourceTitle": "Eid Milad-un-Nabi (12th R.Awwal)",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/festivals/eid-milad-un-nabi-12th-rawwal/",
+    "sourceModifiedAt": "2022-03-03T15:06:04",
+    "editorialUpdate": "Legacy Irhal notes green city lighting, Naat gatherings, and large processions along M.A. Jinnah Road and other corridors during Rabi-ul-Awwal.",
+    "verificationNote": "Dates follow the Islamic calendar; verify annual route and traffic advisories."
+  },
+  {
+    "kind": "festival",
+    "slug": "eid-ul-azha-season",
+    "sourceTitle": "Eid-ul-Azha (10,11,12 Zil-Hajj)",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/festivals/eid-ul-azha-101112-zil-hajj/",
+    "sourceModifiedAt": "2022-03-03T15:06:33",
+    "editorialUpdate": "Legacy Irhal adds practical context around cattle markets, animal feed shops, family visits, charity meat distribution, and heavy city logistics before and during Eid-ul-Azha.",
+    "verificationNote": "Dates and transport impacts change annually; verify official holidays and local advisories."
+  },
+  {
+    "kind": "festival",
+    "slug": "eid-ul-fitr-season",
+    "sourceTitle": "Eid-ul-Fitr (1,2,3 Shawwal)",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/festivals/eid-ul-fitr-123-shawwal/",
+    "sourceModifiedAt": "2022-03-03T15:06:41",
+    "editorialUpdate": "Legacy Irhal adds that Karachi holds staggered Eid prayers across large grounds, with vendors, family outings, and post-Ramadan social visits shaping the visitor rhythm.",
+    "verificationNote": "Dates depend on moon sighting; verify official holidays and prayer venue guidance."
+  },
+  {
+    "kind": "festival",
+    "slug": "independence-day-14-august",
+    "sourceTitle": "National Day of Pakistan (14th August)",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/festivals/national-day-of-pakistan-14th-august/",
+    "sourceModifiedAt": "2022-03-03T15:06:53",
+    "editorialUpdate": "Legacy Irhal highlights 14 August citywide patriotism, building decorations, school functions, concerts, traffic noise, and ceremonies at Mazar-e-Quaid.",
+    "verificationNote": "Verify current traffic controls, event permissions, and family-safe viewing areas."
+  },
+  {
+    "kind": "place",
+    "slug": "karachi-expo-centre",
+    "sourceTitle": "Karachi Expo Centre",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/exhibition-halls/karachi-expo-centre/",
+    "sourceModifiedAt": "2022-06-20T17:33:08",
+    "editorialUpdate": "Legacy Irhal also lists Karachi Expo Centre as the city's main exhibition venue on University Road, useful for trade fairs, book fairs, and large public events.",
+    "verificationNote": "Verify current exhibition calendar, access gates, parking, and event timings before publication.",
+    "sourceAddress": "Main University Rd, Block 15 Gulshan-e-Iqbal, Karachi, Sindh, Pakistan",
+    "sourceLocation": "24.9003907,67.0757004"
+  },
+  {
+    "kind": "shopping",
+    "slug": "atrium-mall",
+    "sourceTitle": "Atrium Mall",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/shopping/atrium-mall/",
+    "sourceModifiedAt": "2022-06-20T18:09:21",
+    "editorialUpdate": "Legacy Irhal identifies Atrium Mall as a central Saddar shopping and cinema stop on Zaibunnisa Street.",
+    "verificationNote": "Verify current tenant mix, cinema status, and opening hours.",
+    "sourceAddress": "249, Staff Lines, Main Zaibunnisa Street, Saddar, Karachi, Sindh, Pakistan",
+    "sourceLocation": "24.8560738,67.0302714"
+  },
+  {
+    "kind": "shopping",
+    "slug": "ocean-mall",
+    "sourceTitle": "Ocean Tower",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/shopping/ocean-tower/",
+    "sourceModifiedAt": "2022-06-20T18:09:56",
+    "editorialUpdate": "Legacy Irhal lists Ocean Tower/Ocean Towers in Clifton as a mall landmark; the current portal keeps the record under Ocean Mall.",
+    "verificationNote": "Verify current branding, retail access, cinema/dining operations, and map pin.",
+    "sourceAddress": "Ocean Towers, Block 9 Clifton, Karachi, Sindh, Pakistan",
+    "sourceLocation": "24.823889,67.035556"
+  },
+  {
+    "kind": "shopping",
+    "slug": "dolmen-mall-clifton",
+    "sourceTitle": "Dolmen Mall",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/shopping/dolmen-mall/",
+    "sourceModifiedAt": "2022-06-20T18:10:30",
+    "editorialUpdate": "Legacy Irhal lists Dolmen Mall at Clifton's seafront Dolmen City complex, reinforcing it as a premium mall and food-court anchor.",
+    "verificationNote": "Verify current mall hours, parking, and family facilities.",
+    "sourceAddress": "Dolmen City, Marine Promenade, Block 4 Clifton, Karachi, Sindh, Pakistan",
+    "sourceLocation": "24.8021323,67.0300195"
+  },
+  {
+    "kind": "shopping",
+    "slug": "boulton-market",
+    "sourceTitle": "Boulton Market",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/shopping/boulton-market/",
+    "sourceModifiedAt": "2022-06-21T11:49:32",
+    "editorialUpdate": "Legacy Irhal keeps Boulton Market in the old-city shopping layer for wholesale goods and dense commercial street life.",
+    "verificationNote": "Verify current traffic, crowding, and visitor-safety guidance.",
+    "sourceAddress": "Bolton Market, Bunder Quarter, Karachi, Sindh, Pakistan",
+    "sourceLocation": "24.8516438,67.0006627"
+  },
+  {
+    "kind": "shopping",
+    "slug": "zainab-market",
+    "sourceTitle": "Zainab Market",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/shopping/zainab-market/",
+    "sourceModifiedAt": "2022-06-21T11:51:25",
+    "editorialUpdate": "Legacy Irhal also lists Zainab Market on Abdullah Haroon Road as a Saddar shopping stop for value clothing, leather, and visitor browsing.",
+    "verificationNote": "Verify current hours, bargaining guidance, and visitor-safety notes.",
+    "sourceAddress": "Zainab Market, Abdullah Haroon Road, Saddar, Karachi, Sindh, Pakistan",
+    "sourceLocation": "24.8555336,67.0284939"
+  },
+  {
+    "kind": "shopping",
+    "slug": "liaquatabad-super-market",
+    "sourceTitle": "Super Market Liaquatabad",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/shopping/super-market-liaquatabad/",
+    "sourceModifiedAt": "2022-06-21T11:52:48",
+    "editorialUpdate": "Legacy Irhal lists Liaquatabad Super Market as a dense local shopping market on S.M. Taufiq Road.",
+    "verificationNote": "Verify current access, traffic, and best visiting hours.",
+    "sourceAddress": "S.M. Taufiq Road, Liaquatabad Town, Karachi, Sindh, Pakistan",
+    "sourceLocation": "24.9029362,67.0452968"
+  },
+  {
+    "kind": "shopping",
+    "slug": "meena-bazaar",
+    "sourceTitle": "Meena Bazaar",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/shopping/meena-bazaar/",
+    "sourceModifiedAt": "2022-06-21T11:54:25",
+    "editorialUpdate": "Legacy Irhal places Meena Bazaar in Karimabad/Federal B Area as a local market for clothing, accessories, and everyday shopping.",
+    "verificationNote": "Verify current market boundaries, timings, and family shopping guidance.",
+    "sourceAddress": "Karimabad Block 3, Gulberg Town, Karachi, Sindh, Pakistan",
+    "sourceLocation": "24.9195384,67.0591187"
+  },
+  {
+    "kind": "shopping",
+    "slug": "millennium-mall",
+    "sourceTitle": "Millenium Mall",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/shopping/millenium-mall/",
+    "sourceModifiedAt": "2022-06-21T11:56:39",
+    "editorialUpdate": "Legacy Irhal lists Millennium Mall on Rashid Minhas Road as a Gulshan/Jauhar retail and family shopping stop.",
+    "verificationNote": "Verify spelling, current mall status, and family facilities.",
+    "sourceAddress": "Rashid Minhas Road, Gulshan-e-Iqbal, Karachi, Sindh, Pakistan",
+    "sourceLocation": "24.901187,67.1155004"
+  },
+  {
+    "kind": "shopping",
+    "slug": "hyderi-market",
+    "sourceTitle": "Haidery Market",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/shopping/haidery-market/",
+    "sourceModifiedAt": "2022-06-21T11:57:10",
+    "editorialUpdate": "Legacy Irhal lists Haidery/Hyderi Market as a North Nazimabad shopping cluster around the KDA roundabout.",
+    "verificationNote": "Verify current spelling, market boundaries, and parking conditions.",
+    "sourceAddress": "KDA Roundabout, North Nazimabad, Karachi, Sindh, Pakistan",
+    "sourceLocation": "24.9313371,67.0374299"
+  },
+  {
+    "kind": "shopping",
+    "slug": "tariq-road",
+    "sourceTitle": "Tariq Road",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/shopping/tariq-road/",
+    "sourceModifiedAt": "2022-06-21T11:57:43",
+    "editorialUpdate": "Legacy Irhal reinforces Tariq Road as one of Karachi's major clothing, footwear, and street-shopping corridors.",
+    "verificationNote": "Verify current traffic, parking, and best shopping hours.",
+    "sourceAddress": "Tariq Road, Karachi, Sindh, Pakistan",
+    "sourceLocation": "24.8726789,67.0605643"
+  },
+  {
+    "kind": "shopping",
+    "slug": "the-forum",
+    "sourceTitle": "The Forum",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/shopping/the-forum/",
+    "sourceModifiedAt": "2022-06-21T11:58:15",
+    "editorialUpdate": "Legacy Irhal lists The Forum as a Clifton/Khayaban-e-Jami mall stop.",
+    "verificationNote": "Verify current retail, grocery, and dining operations.",
+    "sourceAddress": "Khayaban-e-Jami, Karachi, Sindh, Pakistan",
+    "sourceLocation": "24.8291293,67.0642197"
+  },
+  {
+    "kind": "shopping",
+    "slug": "zamzama-boulevard",
+    "sourceTitle": "Zamzama Boulevard",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/shopping/zamzama-boulevard/",
+    "sourceModifiedAt": "2022-06-21T11:58:48",
+    "editorialUpdate": "Legacy Irhal also lists Zamzama Boulevard as a DHA shopping and dining street.",
+    "verificationNote": "Verify current boutique, cafe, and restaurant mix.",
+    "sourceAddress": "Zamzama Boulevard, Karachi, Sindh, Pakistan",
+    "sourceLocation": "24.817227,67.040591"
+  },
+  {
+    "kind": "shopping",
+    "slug": "park-towers",
+    "sourceTitle": "Park Towers",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/shopping/park-towers/",
+    "sourceModifiedAt": "2022-06-21T11:59:18",
+    "editorialUpdate": "Legacy Irhal lists Park Towers as an older Clifton mall near Block 5.",
+    "verificationNote": "Verify current tenant activity and visitor value before recommendation.",
+    "sourceAddress": "Block 5 Clifton, Karachi, Sindh, Pakistan",
+    "sourceLocation": "24.8140964,67.0271471"
+  },
+  {
+    "kind": "hotel",
+    "slug": "sarawan-hotel",
+    "sourceTitle": "Hotel Sarawan",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/hotels/hotel-sarawan/",
+    "sourceModifiedAt": "2022-06-20T18:18:29",
+    "editorialUpdate": "Legacy Irhal lists Hotel Sarawan as a Saddar hotel on Raja Ghazanfar Ali Road.",
+    "verificationNote": "Verify current operations, room standard, and booking channels before publication.",
+    "sourceAddress": "Raja Ghazanfar Ali Road, Saddar, Karachi, Sindh, Pakistan",
+    "sourceLocation": "24.856445,67.0306522"
+  },
+  {
+    "kind": "hotel",
+    "slug": "embassy-inn",
+    "sourceTitle": "Embassy Inn Hotel Karachi",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/hotels/embassy-inn-hotel-karachi/",
+    "sourceModifiedAt": "2022-06-20T18:22:21",
+    "editorialUpdate": "Legacy Irhal lists Embassy Inn on Shahrah-e-Faisal in the Sindhi Muslim CHS area.",
+    "verificationNote": "Verify current branding, booking status, and guest reviews.",
+    "sourceAddress": "Main Shahrah-e-Faisal, Sindhi Muslim CHS, Karachi, Sindh, Pakistan",
+    "sourceLocation": "24.859313,67.0578603"
+  },
+  {
+    "kind": "hotel",
+    "slug": "hotel-mehran",
+    "sourceTitle": "Mehran Hotel Karachi",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/hotels/mehran-hotel-karachi/",
+    "sourceModifiedAt": "2022-06-20T18:22:53",
+    "editorialUpdate": "Legacy Irhal lists Hotel Mehran on the Shahrah-e-Faisal/Saddar side of central Karachi.",
+    "verificationNote": "Verify current hotel rating, facilities, and booking channels.",
+    "sourceAddress": "Shahrah-e-Faisal, Karachi Cantonment, Karachi, Sindh, Pakistan",
+    "sourceLocation": "24.8517333,67.0338778"
+  },
+  {
+    "kind": "hotel",
+    "slug": "beach-luxury-hotel",
+    "sourceTitle": "Beach Luxury Hotel Karachi",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/hotels/beach-luxury-hotel-karachi/",
+    "sourceModifiedAt": "2022-06-20T18:23:53",
+    "editorialUpdate": "Legacy Irhal lists Beach Luxury Hotel on Moulvi Tamizuddin Khan Road near Lalazar and the harbour side.",
+    "verificationNote": "Verify current ownership, room inventory, restaurant operations, and booking channels.",
+    "sourceAddress": "Moulvi Tamizuddin Khan Road, Lalazar, Karachi, Sindh, Pakistan",
+    "sourceLocation": "24.8433918,66.9955496"
+  },
+  {
+    "kind": "hotel",
+    "slug": "regent-plaza-hotel",
+    "sourceTitle": "Regent Plaza",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/hotels/regent-plaza/",
+    "sourceModifiedAt": "2022-06-20T18:24:18",
+    "editorialUpdate": "Legacy Irhal lists Regent Plaza as a Shahrah-e-Faisal hotel in central Karachi.",
+    "verificationNote": "Verify current operating name, facilities, and booking status.",
+    "sourceAddress": "Main Shahrah-e-Faisal, Karachi Cantonment, Karachi, Sindh, Pakistan",
+    "sourceLocation": "24.8551128,67.039932"
+  },
+  {
+    "kind": "hotel",
+    "slug": "avari-towers-karachi",
+    "sourceTitle": "Avari Towers Karachi",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/hotels/avari-towers-karachi/",
+    "sourceModifiedAt": "2022-06-20T18:26:29",
+    "editorialUpdate": "Legacy Irhal lists Avari Towers on Fatima Jinnah Road as a central premium hotel.",
+    "verificationNote": "Verify current room, dining, and airport-transfer details.",
+    "sourceAddress": "Fatima Jinnah Road, Karachi Cantonment, Karachi, Sindh, Pakistan",
+    "sourceLocation": "24.8527202,67.0322979"
+  },
+  {
+    "kind": "hotel",
+    "slug": "karachi-marriott-hotel",
+    "sourceTitle": "Marriott",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/hotels/marriott/",
+    "sourceModifiedAt": "2022-06-20T18:28:40",
+    "editorialUpdate": "Legacy Irhal lists the Marriott on Abdullah Haroon Road in Civil Lines.",
+    "verificationNote": "Verify current Marriott branding, security procedures, and booking details.",
+    "sourceAddress": "9 Abdullah Haroon Road, Civil Lines, Karachi, Sindh, Pakistan",
+    "sourceLocation": "24.8454635,67.0315843"
+  },
+  {
+    "kind": "hotel",
+    "slug": "pearl-continental-hotel-karachi",
+    "sourceTitle": "Pearl Continental Hotel Karachi",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/hotels/pearl-continental-hotel-karachi/",
+    "sourceModifiedAt": "2022-06-20T18:28:02",
+    "editorialUpdate": "Legacy Irhal lists Pearl Continental on Club Road opposite PIDC in Civil Lines.",
+    "verificationNote": "Verify current hotel facilities, security, and booking channels.",
+    "sourceAddress": "Club Road, Civil Lines, Karachi, Sindh, Pakistan",
+    "sourceLocation": "24.8474816,67.0253661"
+  },
+  {
+    "kind": "hotel",
+    "slug": "movenpick-hotel-karachi",
+    "sourceTitle": "Movenpick Hotel Karachi",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/hotels/movenpick-hotel-karachi/",
+    "sourceModifiedAt": "2022-06-20T18:29:05",
+    "editorialUpdate": "Legacy Irhal lists Movenpick Hotel Karachi on Club Road in Civil Lines.",
+    "verificationNote": "Verify current facilities, dining outlets, and booking status.",
+    "sourceAddress": "Club Road, Civil Lines, Karachi, Sindh, Pakistan",
+    "sourceLocation": "24.8467434,67.0260917"
+  },
+  {
+    "kind": "masjid",
+    "slug": "memon-masjid",
+    "sourceTitle": "New Memon Masjid",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/masjids/new-memon-masjid/",
+    "sourceModifiedAt": "2022-06-20T18:01:41",
+    "editorialUpdate": "Legacy Irhal maps New Memon Masjid to the M.A. Jinnah Road/Bolton Market area.",
+    "verificationNote": "Verify current prayer access, women's facilities, and exact entrance before publication.",
+    "sourceAddress": "M.A. Jinnah Road, Bolton Market, Karachi, Sindh, Pakistan",
+    "sourceLocation": "24.8508998,67.0001771"
+  },
+  {
+    "kind": "masjid",
+    "slug": "jamia-masjid-siddiq-e-akbar",
+    "sourceTitle": "Jamia Masjid Siddique-e-Akbar",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/masjids/jamia-masjid-siddique-e-akbar/",
+    "sourceModifiedAt": "2022-06-20T18:02:32",
+    "editorialUpdate": "Legacy Irhal lists Jamia Masjid Siddique-e-Akbar in the Ghazi Dawood Brohi Goth/Gulshan-e-Siddiq-e-Akbar area.",
+    "verificationNote": "Verify current map pin, prayer access, and facilities.",
+    "sourceAddress": "Gulshan-e-Siddiq-e-Akbar, Karachi, Sindh, Pakistan",
+    "sourceLocation": "24.870383,67.2019708"
+  },
+  {
+    "kind": "masjid",
+    "slug": "masjid-e-aqsa",
+    "sourceTitle": "Masjid Aqsa",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/masjids/masjid-aqsa/",
+    "sourceModifiedAt": "2022-06-20T18:02:51",
+    "editorialUpdate": "Legacy Irhal lists Masjid Aqsa in Gulberg Town near Block 14/15.",
+    "verificationNote": "Verify current map pin and prayer facilities.",
+    "sourceAddress": "Block 14/15, Gulberg Town, Karachi, Sindh, Pakistan",
+    "sourceLocation": "24.9278455,67.0777173"
+  },
+  {
+    "kind": "masjid",
+    "slug": "masjid-e-tooba-gol-masjid",
+    "sourceTitle": "Tooba Masjid",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/masjids/tooba-masjid/",
+    "sourceModifiedAt": "2022-06-20T17:43:11",
+    "editorialUpdate": "Legacy Irhal lists Tooba Masjid/Gol Masjid on Old Korangi Road, matching the portal's DHA Phase 2 landmark record.",
+    "verificationNote": "Verify current visitor access and prayer facilities.",
+    "sourceAddress": "Old Korangi Road, Karachi, Sindh, Pakistan",
+    "sourceLocation": "24.8433203,67.0541652"
+  },
+  {
+    "kind": "masjid",
+    "slug": "quba-masjid",
+    "sourceTitle": "Masjid-e-Quba",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/masjids/masjid-e-quba/",
+    "sourceModifiedAt": "2022-06-20T17:46:55",
+    "editorialUpdate": "Legacy Irhal lists Masjid-e-Quba in Federal B Area Block 13.",
+    "verificationNote": "Verify whether this should remain mapped to the current Quba Masjid record or split into a separate branch record.",
+    "sourceAddress": "Federal B Area Block 13, Karachi, Sindh, Pakistan",
+    "sourceLocation": "24.9399923,67.07174"
+  },
+  {
+    "kind": "masjid",
+    "slug": "jamia-binoria-new-town-mosque",
+    "sourceTitle": "Binnori Town Mosque",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/masjids/binnori-town-mosque/",
+    "sourceModifiedAt": "2022-06-20T17:47:39",
+    "editorialUpdate": "Legacy Irhal lists Binnori Town Mosque on Jamshed Road in Allama Binori Town/New Town.",
+    "verificationNote": "Verify current visitor etiquette, access, and prayer facilities.",
+    "sourceAddress": "Jamshed Road, Allama Binori Town, Karachi, Sindh, Pakistan",
+    "sourceLocation": "24.8814954,67.0416741"
+  },
+  {
+    "kind": "masjid",
+    "slug": "masjid-e-farooq-e-azam",
+    "sourceTitle": "Farooq-e-Azam Masjid",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/masjids/farooq-e-azam-masjid/",
+    "sourceModifiedAt": "2022-06-20T17:49:25",
+    "editorialUpdate": "Legacy Irhal lists Farooq-e-Azam Masjid in North Nazimabad Block K.",
+    "verificationNote": "Verify current map pin and facilities.",
+    "sourceAddress": "Block K, North Nazimabad, Karachi, Sindh, Pakistan",
+    "sourceLocation": "24.9484601,67.0514705"
+  },
+  {
+    "kind": "masjid",
+    "slug": "jamia-masjid-ali",
+    "sourceTitle": "Masjid-e-Ali",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/masjids/masjid-e-ali/",
+    "sourceModifiedAt": "2022-06-20T17:51:51",
+    "editorialUpdate": "Legacy Irhal lists Masjid-e-Ali on Khayaban-e-Muhafiz in DHA.",
+    "verificationNote": "Verify whether this is the same as the current Jamia Masjid Ali record or requires a separate DHA branch.",
+    "sourceAddress": "Khayaban-e-Muhafiz, DHA, Karachi, Sindh, Pakistan",
+    "sourceLocation": "24.7983792,67.0634787"
+  },
+  {
+    "kind": "masjid",
+    "slug": "bait-ul-mukarram-masjid",
+    "sourceTitle": "Bait-ul-Mukaram Masjid",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/masjids/bait-ul-mukaram-masjid/",
+    "sourceModifiedAt": "2022-06-20T17:52:50",
+    "editorialUpdate": "Legacy Irhal lists Bait-ul-Mukaram Masjid in Gulshan-e-Iqbal Block 8.",
+    "verificationNote": "Verify spelling, current map pin, and facilities.",
+    "sourceAddress": "Block 8, Gulshan-e-Iqbal, Karachi, Sindh, Pakistan",
+    "sourceLocation": "24.9067671,67.083364"
+  },
+  {
+    "kind": "masjid",
+    "slug": "jamia-masjid-darul-uloom-karachi",
+    "sourceTitle": "Darul Uloom Masjid",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/masjids/darul-uloom-masjid/",
+    "sourceModifiedAt": "2022-06-20T17:55:17",
+    "editorialUpdate": "Legacy Irhal lists a Darul Uloom Masjid map pin in Clifton; the current portal also has a canonical Korangi Darul Uloom record, so this match needs editorial review.",
+    "verificationNote": "Verify whether the old source is a separate Clifton mosque or should not be attached to the Korangi Darul Uloom record.",
+    "sourceAddress": "Block 5 Clifton, Karachi, Sindh, Pakistan",
+    "sourceLocation": "24.8178316,67.0235847"
+  },
+  {
+    "kind": "masjid",
+    "slug": "jamia-masjid-bait-us-salam",
+    "sourceTitle": "Masjid Bait us Salam",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/masjids/masjid-bait-us-salam/",
+    "sourceModifiedAt": "2022-06-20T17:58:44",
+    "editorialUpdate": "Legacy Irhal lists Masjid Bait-us-Salam in DHA Phase 4 on 5th Commercial Street.",
+    "verificationNote": "Verify current prayer access, women's facilities, and map pin.",
+    "sourceAddress": "5th Commercial Street, DHA Phase 4, Karachi, Sindh, Pakistan",
+    "sourceLocation": "24.8274182,67.0543667"
+  },
+  {
+    "kind": "masjid",
+    "slug": "jamia-masjid-abu-bakr",
+    "sourceTitle": "Masjid Abu Bakar",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/masjids/masjid-abu-bakar/",
+    "sourceModifiedAt": "2022-06-20T18:00:12",
+    "editorialUpdate": "Legacy Irhal lists Masjid Abu Bakar in DHA Phase IV.",
+    "verificationNote": "Verify whether this maps to the current Jamia Masjid Abu Bakr record or should become a separate DHA branch record.",
+    "sourceAddress": "DHA Phase IV, Karachi, Sindh, Pakistan",
+    "sourceLocation": "24.822363,67.0598634"
+  },
+  {
+    "kind": "masjid",
+    "slug": "jamia-masjid-bilal",
+    "sourceTitle": "Jamia Masjid Bilal, Ghaziabad",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/masjids/jamia-masjid-bilal-ghaziabad/",
+    "sourceModifiedAt": "2022-06-20T17:41:08",
+    "editorialUpdate": "Legacy Irhal lists Jamia Masjid Bilal in Ghaziabad.",
+    "verificationNote": "Verify whether this maps to the current generic Jamia Masjid Bilal record or should be stored as a specific Ghaziabad branch.",
+    "sourceAddress": "Ghaziabad, Karachi, Sindh, Pakistan",
+    "sourceLocation": "24.9658322,66.9883297"
+  },
+  {
+    "kind": "masjid",
+    "slug": "masjid-e-tayaba",
+    "sourceTitle": "Tayyaba Masjid",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/masjids/tayyaba-masjid/",
+    "sourceModifiedAt": "2022-06-20T17:42:37",
+    "editorialUpdate": "Legacy Irhal lists Tayyaba Masjid in North Nazimabad Block D.",
+    "verificationNote": "Verify current spelling, map pin, and facilities.",
+    "sourceAddress": "Block D, North Nazimabad, Karachi, Sindh, Pakistan",
+    "sourceLocation": "24.9412363,67.0429219"
+  },
+  {
+    "kind": "family",
+    "slug": "what-to-do-with-children-in-tow",
+    "sourceTitle": "What to do with Children in Tow",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/places-to-visit/what-to-do-with-children-in-tow/",
+    "sourceModifiedAt": "2022-06-20T17:26:19",
+    "editorialUpdate": "Legacy Irhal's children-in-tow guide recommends neighborhood walks, small parks, street-cricket observation, amusement parks, beaches, Safari Park, Hill Park, Go Aish, and Karachi Zoo as family-friendly Karachi ideas.",
+    "verificationNote": "Verify current attraction operations, age suitability, safety, ticketing, heat suitability, and family facilities before publication."
+  },
+  {
+    "kind": "family",
+    "slug": "safari-park",
+    "sourceTitle": "What to do with Children in Tow",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/places-to-visit/what-to-do-with-children-in-tow/",
+    "sourceModifiedAt": "2022-06-20T17:26:19",
+    "editorialUpdate": "Legacy Irhal's children-in-tow guide specifically highlights Safari Park as a family attraction with open space and rides.",
+    "verificationNote": "Verify current rides, safety, and family facilities."
+  },
+  {
+    "kind": "family",
+    "slug": "karachi-zoo",
+    "sourceTitle": "What to do with Children in Tow",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/places-to-visit/what-to-do-with-children-in-tow/",
+    "sourceModifiedAt": "2022-06-20T17:26:19",
+    "editorialUpdate": "Legacy Irhal's children-in-tow guide includes Karachi Zoo/Gandhi Garden as a child-friendly outing.",
+    "verificationNote": "Verify current facilities and animal welfare-sensitive editorial framing."
+  },
+  {
+    "kind": "family",
+    "slug": "bagh-ibn-e-qasim",
+    "sourceTitle": "What to do with Children in Tow",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/places-to-visit/what-to-do-with-children-in-tow/",
+    "sourceModifiedAt": "2022-06-20T17:26:19",
+    "editorialUpdate": "Legacy Irhal's family guidance points visitors toward parks and beach-adjacent green spaces, which supports Bagh Ibn-e-Qasim as a family pacing stop.",
+    "verificationNote": "Verify current playgrounds, restrooms, and maintenance before recommendation."
+  },
+  {
+    "kind": "family",
+    "slug": "clifton-beach-horse-camel-rides",
+    "sourceTitle": "Beach",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/places-to-visit/beach/",
+    "sourceModifiedAt": "2022-06-21T12:02:51",
+    "editorialUpdate": "Legacy Irhal frames Clifton/Sea View as Karachi's main recreational beach, supporting the portal's family listing for supervised beach rides and coastal outings.",
+    "verificationNote": "Verify current beach safety, animal-ride conditions, and family suitability."
+  }
+]

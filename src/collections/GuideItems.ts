@@ -1,7 +1,12 @@
 import type { CollectionConfig } from "payload";
 
 import { editorsOnly, publishedOrEditor } from "./access";
-import { seoFields, sourceFields, workflowStatusField } from "./shared";
+import {
+  seoFields,
+  sourceFields,
+  translationFields,
+  workflowStatusField,
+} from "./shared";
 
 export const GuideItems: CollectionConfig = {
   slug: "guide-items",
@@ -12,7 +17,15 @@ export const GuideItems: CollectionConfig = {
     update: editorsOnly,
   },
   admin: {
-    defaultColumns: ["title", "kind", "city", "sectionSlug", "geoStatus", "workflowStatus"],
+    defaultColumns: [
+      "title",
+      "kind",
+      "city",
+      "neighborhood",
+      "sectionSlug",
+      "geoStatus",
+      "workflowStatus",
+    ],
     useAsTitle: "title",
   },
   versions: {
@@ -33,8 +46,15 @@ export const GuideItems: CollectionConfig = {
     { name: "summary", type: "textarea", required: true },
     { name: "body", type: "richText" },
     { name: "image", type: "upload", relationTo: "media" },
+    {
+      name: "gallery",
+      type: "array",
+      labels: { plural: "Gallery images", singular: "Gallery image" },
+      fields: [{ name: "image", type: "upload", relationTo: "media", required: true }],
+    },
     { name: "imageAlt", type: "text", required: true },
     { name: "area", type: "text" },
+    { name: "neighborhood", type: "relationship", relationTo: "neighborhoods" },
     { name: "category", type: "text" },
     { name: "budget", type: "text" },
     { name: "mapUrl", type: "text" },
@@ -49,6 +69,7 @@ export const GuideItems: CollectionConfig = {
     { name: "longitude", type: "number" },
     { name: "providerPlaceId", type: "text" },
     { name: "importedDetails", type: "json" },
+    translationFields,
     { name: "sourceTable", type: "text" },
     { name: "sourceRowId", type: "text" },
     workflowStatusField,

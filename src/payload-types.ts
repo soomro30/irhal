@@ -175,7 +175,18 @@ export interface Media {
   alt: string;
   caption?: string | null;
   attribution?: string | null;
+  photographer?: string | null;
   sourceUrl?: string | null;
+  license:
+    | 'owned'
+    | 'licensed'
+    | 'creative-commons'
+    | 'public-domain'
+    | 'partner-provided'
+    | 'editorial-review-required';
+  usageStatus: 'draft' | 'approved' | 'needs-replacement' | 'archived';
+  usageNotes?: string | null;
+  prefix?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -187,6 +198,32 @@ export interface Media {
   height?: number | null;
   focalX?: number | null;
   focalY?: number | null;
+  sizes?: {
+    thumbnail?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    card?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    hero?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -254,6 +291,15 @@ export interface City {
   locale: string;
   lede: string;
   heroImage?: (number | null) | Media;
+  /**
+   * Optional additional approved images for the public city banner carousel. The primary hero image is always shown first.
+   */
+  heroGallery?:
+    | {
+        image: number | Media;
+        id?: string | null;
+      }[]
+    | null;
   timezone: string;
   languages?:
     | {
@@ -281,6 +327,18 @@ export interface City {
    * Mandatory 15-section Karachi-model city guide payload.
    */
   structuredSections:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Locale-keyed editorial translations. Use {"ar": {...}} for Arabic title, summary, body, labels, and SEO copy.
+   */
+  translations?:
     | {
         [k: string]: unknown;
       }
@@ -348,6 +406,18 @@ export interface GuideSection {
     | number
     | boolean
     | null;
+  /**
+   * Locale-keyed editorial translations. Use {"ar": {...}} for Arabic title, summary, body, labels, and SEO copy.
+   */
+  translations?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   workflowStatus: 'draft' | 'review' | 'approved' | 'published' | 'updated' | 'archived';
   seo: {
     title: string;
@@ -399,8 +469,15 @@ export interface GuideItem {
     [k: string]: unknown;
   } | null;
   image?: (number | null) | Media;
+  gallery?:
+    | {
+        image: number | Media;
+        id?: string | null;
+      }[]
+    | null;
   imageAlt: string;
   area?: string | null;
+  neighborhood?: (number | null) | Neighborhood;
   category?: string | null;
   budget?: string | null;
   mapUrl?: string | null;
@@ -409,6 +486,18 @@ export interface GuideItem {
   longitude?: number | null;
   providerPlaceId?: string | null;
   importedDetails?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Locale-keyed editorial translations. Use {"ar": {...}} for Arabic title, summary, body, labels, and SEO copy.
+   */
+  translations?:
     | {
         [k: string]: unknown;
       }
@@ -444,39 +533,6 @@ export interface GuideItem {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "districts".
- */
-export interface District {
-  id: number;
-  name: string;
-  slug: string;
-  city: number | City;
-  zone: 'central' | 'north' | 'south' | 'east' | 'west' | 'airport' | 'coastal' | 'suburban';
-  summary: string;
-  latitude: number;
-  longitude: number;
-  /**
-   * @minItems 2
-   * @maxItems 2
-   */
-  geo: [number, number];
-  mapUrl: string;
-  workflowStatus: 'draft' | 'review' | 'approved' | 'published' | 'updated' | 'archived';
-  sources?:
-    | {
-        label: string;
-        url: string;
-        type: 'official' | 'map-provider' | 'editorial' | 'partner' | 'user-submitted';
-        verifiedAt: string;
-        confidence: 'low' | 'medium' | 'high';
-        id?: string | null;
-      }[]
-    | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "neighborhoods".
  */
 export interface Neighborhood {
@@ -496,6 +552,20 @@ export interface Neighborhood {
     | 'religious'
     | 'mixed';
   operatingGuide: string;
+  image?: (number | null) | Media;
+  imageAlt?: string | null;
+  /**
+   * Locale-keyed editorial translations. Use {"ar": {...}} for Arabic title, summary, body, labels, and SEO copy.
+   */
+  translations?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   bestFor?:
     | {
         value: string;
@@ -543,6 +613,39 @@ export interface Neighborhood {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "districts".
+ */
+export interface District {
+  id: number;
+  name: string;
+  slug: string;
+  city: number | City;
+  zone: 'central' | 'north' | 'south' | 'east' | 'west' | 'airport' | 'coastal' | 'suburban';
+  summary: string;
+  latitude: number;
+  longitude: number;
+  /**
+   * @minItems 2
+   * @maxItems 2
+   */
+  geo: [number, number];
+  mapUrl: string;
+  workflowStatus: 'draft' | 'review' | 'approved' | 'published' | 'updated' | 'archived';
+  sources?:
+    | {
+        label: string;
+        url: string;
+        type: 'official' | 'map-provider' | 'editorial' | 'partner' | 'user-submitted';
+        verifiedAt: string;
+        confidence: 'low' | 'medium' | 'high';
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "listings".
  */
 export interface Listing {
@@ -568,7 +671,28 @@ export interface Listing {
     };
     [k: string]: unknown;
   } | null;
+  image?: (number | null) | Media;
+  imageAlt?: string | null;
+  gallery?:
+    | {
+        image: number | Media;
+        caption?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   address: string;
+  /**
+   * Locale-keyed editorial translations. Use {"ar": {...}} for Arabic title, summary, body, labels, and SEO copy.
+   */
+  translations?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   latitude: number;
   longitude: number;
   /**
@@ -633,6 +757,18 @@ export interface Itinerary {
   durationDays: number;
   audience: 'first-time' | 'family' | 'muslim-traveler' | 'business' | 'budget' | 'luxury';
   summary: string;
+  /**
+   * Locale-keyed editorial translations. Use {"ar": {...}} for Arabic title, summary, body, labels, and SEO copy.
+   */
+  translations?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   days: {
     dayNumber: number;
     theme: string;
@@ -924,7 +1060,12 @@ export interface MediaSelect<T extends boolean = true> {
   alt?: T;
   caption?: T;
   attribution?: T;
+  photographer?: T;
   sourceUrl?: T;
+  license?: T;
+  usageStatus?: T;
+  usageNotes?: T;
+  prefix?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -936,6 +1077,40 @@ export interface MediaSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
+  sizes?:
+    | T
+    | {
+        thumbnail?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        card?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        hero?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1003,6 +1178,12 @@ export interface CitiesSelect<T extends boolean = true> {
   locale?: T;
   lede?: T;
   heroImage?: T;
+  heroGallery?:
+    | T
+    | {
+        image?: T;
+        id?: T;
+      };
   timezone?: T;
   languages?:
     | T
@@ -1023,6 +1204,7 @@ export interface CitiesSelect<T extends boolean = true> {
         id?: T;
       };
   structuredSections?: T;
+  translations?: T;
   workflowStatus?: T;
   seo?:
     | T
@@ -1061,6 +1243,7 @@ export interface GuideSectionsSelect<T extends boolean = true> {
   summary?: T;
   body?: T;
   sourceImport?: T;
+  translations?: T;
   workflowStatus?: T;
   seo?:
     | T
@@ -1099,8 +1282,15 @@ export interface GuideItemsSelect<T extends boolean = true> {
   summary?: T;
   body?: T;
   image?: T;
+  gallery?:
+    | T
+    | {
+        image?: T;
+        id?: T;
+      };
   imageAlt?: T;
   area?: T;
+  neighborhood?: T;
   category?: T;
   budget?: T;
   mapUrl?: T;
@@ -1109,6 +1299,7 @@ export interface GuideItemsSelect<T extends boolean = true> {
   longitude?: T;
   providerPlaceId?: T;
   importedDetails?: T;
+  translations?: T;
   sourceTable?: T;
   sourceRowId?: T;
   workflowStatus?: T;
@@ -1175,6 +1366,9 @@ export interface NeighborhoodsSelect<T extends boolean = true> {
   district?: T;
   clusterType?: T;
   operatingGuide?: T;
+  image?: T;
+  imageAlt?: T;
+  translations?: T;
   bestFor?:
     | T
     | {
@@ -1222,7 +1416,17 @@ export interface ListingsSelect<T extends boolean = true> {
   neighborhood?: T;
   shortDescription?: T;
   editorialBody?: T;
+  image?: T;
+  imageAlt?: T;
+  gallery?:
+    | T
+    | {
+        image?: T;
+        caption?: T;
+        id?: T;
+      };
   address?: T;
+  translations?: T;
   latitude?: T;
   longitude?: T;
   geo?: T;
@@ -1278,6 +1482,7 @@ export interface ItinerariesSelect<T extends boolean = true> {
   durationDays?: T;
   audience?: T;
   summary?: T;
+  translations?: T;
   days?:
     | T
     | {

@@ -1,7 +1,12 @@
 import type { CollectionConfig } from "payload";
 
 import { editorsOnly, publishedOrEditor } from "./access";
-import { seoFields, sourceFields, workflowStatusField } from "./shared";
+import {
+  seoFields,
+  sourceFields,
+  translationFields,
+  workflowStatusField,
+} from "./shared";
 
 export const Itineraries: CollectionConfig = {
   slug: "itineraries",
@@ -27,6 +32,7 @@ export const Itineraries: CollectionConfig = {
       required: true,
     },
     { name: "summary", type: "textarea", required: true },
+    translationFields,
     {
       name: "days",
       type: "array",

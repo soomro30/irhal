@@ -1,7 +1,13 @@
 import type { CollectionConfig } from "payload";
 
 import { editorsOnly, publishedOrEditor } from "./access";
-import { geoFields, seoFields, sourceFields, workflowStatusField } from "./shared";
+import {
+  geoFields,
+  seoFields,
+  sourceFields,
+  translationFields,
+  workflowStatusField,
+} from "./shared";
 
 export const Listings: CollectionConfig = {
   slug: "listings",
@@ -12,7 +18,13 @@ export const Listings: CollectionConfig = {
     update: editorsOnly,
   },
   admin: {
-    defaultColumns: ["name", "listingType", "city", "neighborhood", "workflowStatus"],
+    defaultColumns: [
+      "name",
+      "listingType",
+      "city",
+      "neighborhood",
+      "workflowStatus",
+    ],
     useAsTitle: "name",
   },
   versions: {
@@ -24,14 +36,44 @@ export const Listings: CollectionConfig = {
     {
       name: "listingType",
       type: "select",
-      options: ["place", "hotel", "restaurant", "masjid", "shopping", "tour", "islamic-landmark", "prayer-area"],
+      options: [
+        "place",
+        "hotel",
+        "restaurant",
+        "masjid",
+        "shopping",
+        "tour",
+        "islamic-landmark",
+        "prayer-area",
+      ],
       required: true,
     },
-    { name: "city", type: "relationship", relationTo: "cities", required: true },
-    { name: "neighborhood", type: "relationship", relationTo: "neighborhoods", required: true },
+    {
+      name: "city",
+      type: "relationship",
+      relationTo: "cities",
+      required: true,
+    },
+    {
+      name: "neighborhood",
+      type: "relationship",
+      relationTo: "neighborhoods",
+      required: true,
+    },
     { name: "shortDescription", type: "textarea", required: true },
     { name: "editorialBody", type: "richText" },
+    { name: "image", type: "upload", relationTo: "media" },
+    { name: "imageAlt", type: "text" },
+    {
+      name: "gallery",
+      type: "array",
+      fields: [
+        { name: "image", type: "upload", relationTo: "media", required: true },
+        { name: "caption", type: "text" },
+      ],
+    },
     { name: "address", type: "text", required: true },
+    translationFields,
     ...geoFields,
     { name: "phone", type: "text" },
     { name: "website", type: "text" },

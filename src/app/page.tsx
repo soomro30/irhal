@@ -1,67 +1,172 @@
-import { Bot, Database, MapPin, ShieldCheck } from "lucide-react";
+import { Globe2 } from "lucide-react";
+import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 
-import { MapPanel } from "@/components/map-panel";
+import { CityImageCard } from "@/components/city-image-card";
 import { PageShell } from "@/components/page-shell";
-import { cities } from "@/lib/city-data";
-import { preloadCityBySlug } from "@/lib/city-source";
+import { SiteSearchBox } from "@/components/site-search-box";
+import { getCityNavItems, preloadCityBySlug, type CityNavItem } from "@/lib/city-source";
+import { pageMetadata } from "@/lib/seo";
 
-export default function Home() {
+type HomeLocale = "en" | "ar";
+
+const fallbackCityImage = "/images/karachi-guide/karachi-coast-hero.png";
+
+export function homeMetadata(locale: HomeLocale): Metadata {
+  const isArabic = locale === "ar";
+  return pageMetadata({
+    title: isArabic
+      ? "إرحل | أدلة المدن والسفر"
+      : "Irhal | City guides and travel planning",
+    description: isArabic
+      ? "ابدأ رحلتك من أدلة مدن إرحل: وجهات، أماكن، فنادق، مطاعم، وتسوق، ومعلومات عملية للمسافر."
+      : "Explore Irhal city guides with practical travel essentials, places to visit, hotels, restaurants, shopping, and Muslim-friendly planning.",
+    path: isArabic ? "/" : "/en",
+  });
+}
+
+export const metadata = homeMetadata("ar");
+
+const localizedCity = (city: CityNavItem, locale: HomeLocale): CityNavItem => {
+  if (locale !== "ar") return city;
+
+  if (city.slug === "karachi") {
+    return { ...city, country: "باكستان", name: "كراتشي" };
+  }
+
+  return city;
+};
+
+export async function HomeContent({ locale = "en" }: { locale?: HomeLocale }) {
   preloadCityBySlug("karachi");
-  const city = cities[0];
+  const isArabic = locale === "ar";
+  const prefix = isArabic ? "/ar" : "/en";
+  const cityItems = (await getCityNavItems()).map((city) =>
+    localizedCity(city, locale),
+  );
+  const featuredCities = cityItems.slice(0, 5);
+  const heroCity = featuredCities[0] ?? {
+    country: isArabic ? "باكستان" : "Pakistan",
+    heroImageUrl: fallbackCityImage,
+    name: isArabic ? "كراتشي" : "Karachi",
+    slug: "karachi",
+  };
+  const cityCountLabel = isArabic
+    ? `${cityItems.length} ${cityItems.length === 1 ? "مدينة" : "مدن"}`
+    : `${cityItems.length} ${cityItems.length === 1 ? "city" : "cities"}`;
+
+  const t = isArabic
+    ? {
+        heading: "اكتشف مدينتك التالية مع إرحل.",
+        intro:
+          "شريكك في السفر الإسلامي لاكتشاف المدن والأماكن والطعام الحلال والتخطيط العملي بثقة.",
+        searchPlaceholder: "ابحث عن مدينة أو مكان",
+        search: "بحث",
+        popular: "المدن المتاحة",
+        pickHeading: "اختر دليل مدينة",
+        pickIntro:
+          "تصفّح أدلة المدن حسب الوجهة، ثم انتقل مباشرة إلى الأماكن والفنادق والمطاعم والتسوق ونصائح التخطيط.",
+        viewCity: "عرض الدليل",
+      }
+    : {
+        heading: "Discover your next city with Irhal.",
+        intro:
+          "Your Islamic travel partner for city guides, halal food, hotels, tours, and practical planning.",
+        searchPlaceholder: "Find places and things to do",
+        search: "Search",
+        popular: "Available city guides",
+        pickHeading: "Choose a city guide",
+        pickIntro:
+          "Browse by destination, then jump straight into sights, hotels, restaurants, shopping, maps, and planning tips.",
+        viewCity: "View guide",
+      };
 
   return (
-    <PageShell>
-      <main>
-        <section className="border-b border-slate-200 bg-white">
-          <div className="mx-auto grid max-w-7xl gap-8 px-5 py-8 lg:grid-cols-[1fr_1.1fr]">
-            <div className="flex flex-col justify-center py-8">
-              <p className="text-sm font-semibold uppercase tracking-wide text-emerald-700">Enterprise City Intelligence</p>
-              <h1 className="mt-4 max-w-3xl text-4xl font-bold leading-tight text-slate-950 md:text-6xl">
-                Map-first travel guides built for AI, SEO, and Muslim-friendly discovery.
+    <PageShell locale={locale}>
+      <main dir={isArabic ? "rtl" : "ltr"}>
+        <section className="relative h-[58svh] min-h-[430px] max-h-[620px] overflow-hidden bg-ink text-white">
+          <Image
+            alt=""
+            className="object-cover"
+            fill
+            priority
+            sizes="100vw"
+            src={heroCity.heroImageUrl || fallbackCityImage}
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-black/5 to-transparent rtl:bg-gradient-to-l" />
+          <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/25 to-transparent" />
+
+          <div className="relative mx-auto flex h-full max-w-7xl flex-col justify-center px-5 pb-12 pt-6 md:pb-16 md:pt-8">
+            <div className="max-w-3xl">
+              <h1 className="max-w-3xl text-4xl font-black leading-[0.95] tracking-tight text-white drop-shadow md:text-5xl">
+                {t.heading}
               </h1>
-              <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-600">
-                This starter implements the Irhal V4 Karachi model as a structured city dataset, editorial guide, live map layer,
-                CMS collection system, and JSON-first AI assistant foundation.
-              </p>
-              <div className="mt-7 flex flex-wrap gap-3">
-                <Link className="bg-slate-950 px-5 py-3 text-sm font-semibold text-white" href="/city/karachi">
-                  Open Karachi Guide
-                </Link>
-                <Link className="border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-950" href="/admin">
-                  Open CMS
-                </Link>
+              <div className="mt-4 max-w-3xl bg-irhal-yellow p-4 text-ink shadow-xl md:p-5">
+                <p className="max-w-2xl text-sm font-bold leading-6 md:text-base md:leading-7">
+                  {t.intro}
+                </p>
+                <SiteSearchBox
+                  className="mt-4"
+                  locale={locale}
+                  placeholder={t.searchPlaceholder}
+                  searchLabel={t.search}
+                />
+              </div>
+
+              <div className="mt-4 flex flex-wrap items-center gap-3 text-sm font-bold text-white">
+                <span className="inline-flex items-center gap-2">
+                  <Globe2 aria-hidden="true" className="h-4 w-4" />
+                  {t.popular}
+                </span>
+                {featuredCities.map((city) => (
+                  <Link
+                    className="rounded-full bg-white/92 px-3 py-1.5 text-ink transition hover:bg-irhal-yellow"
+                    href={`${prefix}/city/${city.slug}`}
+                    key={city.slug}
+                  >
+                    {city.name}
+                  </Link>
+                ))}
               </div>
             </div>
-            <MapPanel
-              markers={[
-                { label: "Karachi", latitude: city.latitude, longitude: city.longitude },
-                ...city.neighborhoods.map((neighborhood) => ({
-                  label: neighborhood.name,
-                  latitude: neighborhood.latitude,
-                  longitude: neighborhood.longitude,
-                  tone: "green" as const,
-                })),
-              ]}
-            />
           </div>
         </section>
 
-        <section className="mx-auto grid max-w-7xl gap-4 px-5 py-8 md:grid-cols-4">
-          {[
-            { icon: MapPin, title: "Geo Mandatory", copy: "Every listing carries lat/lng, map URL, and neighborhood mapping." },
-            { icon: Database, title: "Portable Data", copy: "Postgres, PostGIS, and pgvector are separated from vendor-specific assumptions." },
-            { icon: Bot, title: "Agent Ready", copy: "AI tasks use JSON inputs and outputs with validation and editorial review." },
-            { icon: ShieldCheck, title: "SEO Validated", copy: "SSR routes, canonical metadata, JSON-LD, and internal links are first-class." },
-          ].map((item) => (
-            <article className="border border-slate-200 bg-white p-5" key={item.title}>
-              <item.icon aria-hidden="true" className="h-6 w-6 text-emerald-700" />
-              <h2 className="mt-4 text-base font-semibold text-slate-950">{item.title}</h2>
-              <p className="mt-2 text-sm leading-6 text-slate-600">{item.copy}</p>
-            </article>
-          ))}
+        <section className="bg-white py-14 md:py-16">
+          <div className="mx-auto max-w-7xl px-5">
+            <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-irhal-red">
+                  {cityCountLabel}
+                </p>
+                <h2 className="mt-2 text-3xl font-black tracking-tight text-ink md:text-4xl">
+                  {t.pickHeading}
+                </h2>
+              </div>
+              <p className="max-w-xl text-sm leading-6 text-ink/65">
+                {t.pickIntro}
+              </p>
+            </div>
+
+            <div className="mt-7 flex gap-5 overflow-x-auto pb-3">
+              {featuredCities.map((city) => (
+                <div className="w-[190px] shrink-0 md:w-[220px]" key={city.slug}>
+                  <CityImageCard
+                    city={city}
+                    href={`${prefix}/city/${city.slug}`}
+                    variant="portrait"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
         </section>
       </main>
     </PageShell>
   );
+}
+
+export default function Home() {
+  return <HomeContent locale="ar" />;
 }

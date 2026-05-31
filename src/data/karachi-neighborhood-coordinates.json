@@ -1,0 +1,578 @@
+{
+  "saddar": {
+    "latitude": 24.8605712,
+    "longitude": 67.0317406,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Saddar, Karachi, Pakistan",
+    "displayName": "صدر ٹاؤن, ضلع کراچی, کراچی ڈویژن, سندھ, پاکستان"
+  },
+  "burns-road": {
+    "latitude": 24.8580783,
+    "longitude": 67.015028,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Burns Road, Karachi, Pakistan",
+    "displayName": "Burns Road, Frame Market, صدر ٹاؤن, ضلع کراچی, کراچی ڈویژن, سندھ, 75660, پاکستان"
+  },
+  "kharadar": {
+    "latitude": 24.8500499,
+    "longitude": 66.9943642,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Kharadar, Karachi, Pakistan",
+    "displayName": "کھارادر, ضلع کراچی, کراچی ڈویژن, سندھ, پاکستان"
+  },
+  "mithadar": {
+    "latitude": 24.8536222,
+    "longitude": 66.9985647,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Mithadar, Karachi, Pakistan",
+    "displayName": "میٹھادر, ضلع کراچی, کراچی ڈویژن, سندھ, پاکستان"
+  },
+  "m-a-jinnah-road": {
+    "latitude": 24.8468631,
+    "longitude": 66.9936565,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "M.A. Jinnah Road, Karachi, Pakistan",
+    "displayName": "M.A. Jinnah Road, Karachi Dry Port, کھارادر, لیاری ٹاؤن, ضلع کراچی, کراچی ڈویژن, سندھ, 72500, پاکستان"
+  },
+  "tower": {
+    "latitude": 24.8487556,
+    "longitude": 66.9966678,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Tower, Karachi, Pakistan",
+    "displayName": "Tower, M.A. Jinnah Road, کھارادر, لیاری ٹاؤن, ضلع کراچی, کراچی ڈویژن, سندھ, 72500, پاکستان"
+  },
+  "civil-lines": {
+    "latitude": 24.844097,
+    "longitude": 67.0334903,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Civil Lines, Karachi, Pakistan",
+    "displayName": "سول لائنز, ضلع کراچی, کراچی ڈویژن, سندھ, پاکستان"
+  },
+  "garden-east-soldier-bazaar": {
+    "latitude": 24.8773363,
+    "longitude": 67.0309263,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Garden East / Soldier Bazaar, Karachi, Pakistan",
+    "displayName": "Al Khalid Homes Garden East, V2HJ+47R, Manekji Street, Pakistan Quarters, جمشید ٹاؤن, ضلع گلشن, کراچی ڈویژن, سندھ, 74550, پاکستان"
+  },
+  "clifton": {
+    "latitude": 24.8190552,
+    "longitude": 67.0262397,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Clifton, Karachi, Pakistan",
+    "displayName": "کلفٹن, ضلع کراچی, کراچی ڈویژن, سندھ, 75600, پاکستان"
+  },
+  "bath-island": {
+    "latitude": 24.8352549,
+    "longitude": 67.0281829,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Bath Island, Karachi, Pakistan",
+    "displayName": "جزیرہ باتھ, ضلع کراچی, کراچی ڈویژن, سندھ, پاکستان"
+  },
+  "boat-basin": {
+    "latitude": 24.821449,
+    "longitude": 67.0183042,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Boat Basin, Karachi, Pakistan",
+    "displayName": "بوٹ بیسن, صدر ٹاؤن, ضلع کراچی, کراچی ڈویژن, سندھ, پاکستان"
+  },
+  "dha-phase-1": {
+    "latitude": 24.84122,
+    "longitude": 67.0674901,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "DHA Phase 1, Karachi, Pakistan",
+    "displayName": "DHA Phase 1, صدر ٹاؤن, ضلع کراچی, کراچی ڈویژن, سندھ, 75220, پاکستان"
+  },
+  "dha-phase-2": {
+    "latitude": 24.8355053,
+    "longitude": 67.0588719,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "DHA Phase 2, Karachi, Pakistan",
+    "displayName": "2 ڈی ایچ اے فیز, صدر ٹاؤن, ضلع کراچی, کراچی ڈویژن, سندھ, 75220, پاکستان"
+  },
+  "dha-phase-4": {
+    "latitude": 24.822827,
+    "longitude": 67.058787,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "DHA Phase 4, Karachi, Pakistan",
+    "displayName": "DHA Phase 4, Commercial Avenue, 4 ڈی ایچ اے فیز, زمزمہ, صدر ٹاؤن, ضلع کراچی, کراچی ڈویژن, سندھ, 74500, پاکستان"
+  },
+  "dha-phase-5": {
+    "latitude": 24.8071358,
+    "longitude": 67.0444644,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "DHA Phase 5, Karachi, Pakistan",
+    "displayName": "5 ڈی ایچ اے فیز, Khayaban-e-Shujaat, 5 ڈی ایچ اے فیز, زمزمہ, صدر ٹاؤن, ضلع کراچی, کراچی ڈویژن, سندھ, 75600, پاکستان"
+  },
+  "dha-phase-6": {
+    "latitude": 24.8022428,
+    "longitude": 67.0754118,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "DHA Phase 6, Karachi, Pakistan",
+    "displayName": "DHA Phase 6, 6 ڈی ایچ اے فیز, صدر ٹاؤن, ضلع کراچی, کراچی ڈویژن, سندھ, 77500, پاکستان"
+  },
+  "dha-phase-7": {
+    "latitude": 24.8154624,
+    "longitude": 67.0718989,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "DHA Phase 7, Karachi, Pakistan",
+    "displayName": "DHA Phase 7, صدر ٹاؤن, ضلع کراچی, کراچی ڈویژن, سندھ, 77500, پاکستان"
+  },
+  "dha-phase-8": {
+    "latitude": 24.773254,
+    "longitude": 67.0808474,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "DHA Phase 8, Karachi, Pakistan",
+    "displayName": "8 ڈی ایچ اے فیز, صدر ٹاؤن, ضلع کراچی, کراچی ڈویژن, سندھ, پاکستان"
+  },
+  "gizri": {
+    "latitude": 24.8245033,
+    "longitude": 67.0469435,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Gizri, Karachi, Pakistan",
+    "displayName": "گزری, ضلع کراچی, کراچی ڈویژن, سندھ, پاکستان"
+  },
+  "zamzama": {
+    "latitude": 24.81717,
+    "longitude": 67.0403065,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Zamzama, Karachi, Pakistan",
+    "displayName": "زمزمہ, صدر ٹاؤن, ضلع کراچی, کراچی ڈویژن, سندھ, 75600, پاکستان"
+  },
+  "khadda-market": {
+    "latitude": 24.8134814,
+    "longitude": 67.049954,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Khadda Market, Karachi, Pakistan",
+    "displayName": "Khadda Market, زمزمہ, صدر ٹاؤن, ضلع کراچی, کراچی ڈویژن, سندھ, پاکستان"
+  },
+  "seaview-clifton-beach": {
+    "latitude": 24.7921,
+    "longitude": 67.0367,
+    "source": "manual-fallback",
+    "confidence": "medium",
+    "query": "Seaview / Clifton Beach, Karachi, Pakistan",
+    "note": "Sea View / Clifton Beach coastal midpoint"
+  },
+  "keamari": {
+    "latitude": 24.821889,
+    "longitude": 66.9840531,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Keamari, Karachi, Pakistan",
+    "displayName": "کیماڑی ٹاؤن, ضلع کیماڑی, کراچی ڈویژن, سندھ, پاکستان"
+  },
+  "manora": {
+    "latitude": 24.7965723,
+    "longitude": 66.9751739,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Manora, Karachi, Pakistan",
+    "displayName": "منوڑا, کیماڑی ٹاؤن, ضلع کیماڑی, کراچی ڈویژن, سندھ, 75640, پاکستان"
+  },
+  "port-grand": {
+    "latitude": 24.8444411,
+    "longitude": 66.9921908,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Port Grand, Karachi, Pakistan",
+    "displayName": "Port Grand, Lalzar, اسٹریٹ 1, لالہ زار, کیماڑی ٹاؤن, ضلع کیماڑی, کراچی ڈویژن, سندھ, 72500, پاکستان"
+  },
+  "pechs": {
+    "latitude": 24.8684802,
+    "longitude": 67.0587242,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "PECHS, Karachi, Pakistan",
+    "displayName": "Pakistan Employee Co-operative Housing Society, ضلع گلشن, کراچی ڈویژن, سندھ, 75100, پاکستان"
+  },
+  "bahadurabad": {
+    "latitude": 24.8823404,
+    "longitude": 67.0674014,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Bahadurabad, Karachi, Pakistan",
+    "displayName": "بہادر آباد, گلشن اقبال ٹاؤن, ضلع گلشن, کراچی ڈویژن, سندھ, 07482, پاکستان"
+  },
+  "tariq-road": {
+    "latitude": 24.8672433,
+    "longitude": 67.0570365,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Tariq Road, Karachi, Pakistan",
+    "displayName": "Tariq Road, پی ای سی ایچ ایس بلاک 2, جمشید ٹاؤن, ضلع گلشن, کراچی ڈویژن, سندھ, 75100, پاکستان"
+  },
+  "shaheed-e-millat-road": {
+    "latitude": 24.8786417,
+    "longitude": 67.0663727,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Shaheed-e-Millat Road, Karachi, Pakistan",
+    "displayName": "Shaheed e Millat Road, Dehli Saudagar, میمن سوسائٹی, جمشید ٹاؤن, ضلع گلشن, کراچی ڈویژن, سندھ, 75460, پاکستان"
+  },
+  "nursery": {
+    "latitude": 24.8719317,
+    "longitude": 67.078799,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Nursery, Karachi, Pakistan",
+    "displayName": "Nursery, میمن سوسائٹی, جمشید ٹاؤن, ضلع گلشن, کراچی ڈویژن, سندھ, 75100, پاکستان"
+  },
+  "karsaz": {
+    "latitude": 24.8778199,
+    "longitude": 67.0989711,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Karsaz, Karachi, Pakistan",
+    "displayName": "کارساز, گلشن اقبال ٹاؤن, ضلع گلشن, کراچی ڈویژن, سندھ, 75100, پاکستان"
+  },
+  "gulshan-e-iqbal": {
+    "latitude": 24.9067294,
+    "longitude": 67.0986573,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Gulshan-e-Iqbal, Karachi, Pakistan",
+    "displayName": "گلشن اقبال ٹاؤن, ضلع گلشن, کراچی ڈویژن, سندھ, پاکستان"
+  },
+  "university-road": {
+    "latitude": 24.9494243,
+    "longitude": 67.1847354,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "University Road, Karachi, Pakistan",
+    "displayName": "یونیورسٹی روڈ, Falcon Complex 2, گڈاپ ٹاؤن, ضلع ملیر, کراچی ڈویژن, Karāchi District, سندھ, 75070, پاکستان"
+  },
+  "nipa": {
+    "latitude": 24.9676856,
+    "longitude": 67.182327,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "NIPA, Karachi, Pakistan",
+    "displayName": "NIPA Cooperative Housing Society, Scheme 33, گلشن اقبال ٹاؤن, ضلع گلشن, کراچی ڈویژن, Karāchi District, سندھ, 75070, پاکستان"
+  },
+  "civic-centre": {
+    "latitude": 24.9045,
+    "longitude": 67.0805,
+    "source": "manual-fallback",
+    "confidence": "medium",
+    "query": "Civic Centre, Karachi, Pakistan",
+    "note": "Civic Centre, Gulshan-e-Iqbal administrative cluster"
+  },
+  "gulistan-e-jauhar": {
+    "latitude": 24.9240162,
+    "longitude": 67.1382134,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Gulistan-e-Jauhar, Karachi, Pakistan",
+    "displayName": "گلستانِ جوہر, کراچی ڈویژن, سندھ, 74290, پاکستان"
+  },
+  "johar-mor-perfume-chowk": {
+    "latitude": 24.9185,
+    "longitude": 67.1285,
+    "source": "manual-fallback",
+    "confidence": "medium",
+    "query": "Johar Mor / Perfume Chowk, Karachi, Pakistan",
+    "note": "Johar Mor / Perfume Chowk commercial cluster"
+  },
+  "scheme-33": {
+    "latitude": 24.9992129,
+    "longitude": 67.1720261,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Scheme 33, Karachi, Pakistan",
+    "displayName": "Scheme 33, Ibrahim Haji Essa Road, سعدی گارڈن, گڈاپ ٹاؤن, ضلع ملیر, کراچی ڈویژن, Karāchi District, سندھ, 75330, پاکستان"
+  },
+  "safoora-goth": {
+    "latitude": 24.9392946,
+    "longitude": 67.1561264,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Safoora Goth, Karachi, Pakistan",
+    "displayName": "Safoora Goth, یونیورسٹی روڈ, Billys Homes, Usmani Town, گلشن اقبال ٹاؤن, ضلع گلشن, کراچی ڈویژن, Karāchi District, سندھ, 75270, پاکستان"
+  },
+  "saadi-town": {
+    "latitude": 24.9676249,
+    "longitude": 67.1721202,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Saadi Town, Karachi, Pakistan",
+    "displayName": "سعدی ٹاؤن, گلشن اقبال ٹاؤن, ضلع گلشن, کراچی ڈویژن, Karāchi District, سندھ, 75070, پاکستان"
+  },
+  "north-nazimabad": {
+    "latitude": 24.9424616,
+    "longitude": 67.0477185,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "North Nazimabad, Karachi, Pakistan",
+    "displayName": "نارتھ ناظم آباد ٹاؤن, ضلع ناظم آباد, کراچی ڈویژن, سندھ, 74700, پاکستان"
+  },
+  "nazimabad": {
+    "latitude": 24.905865,
+    "longitude": 67.0307183,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Nazimabad, Karachi, Pakistan",
+    "displayName": "ناظم آباد, ضلع ناظم آباد, کراچی ڈویژن, سندھ, 74700, پاکستان"
+  },
+  "f-b-area": {
+    "latitude": 24.9331898,
+    "longitude": 67.0583417,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "F.B. Area, Karachi, Pakistan",
+    "displayName": "The Educators F B Area Campus-I, Shahrah-e-Aziz Bhatti, FB Area Block 5, گلشن شمیم, گلبرگ ٹاؤن, ضلع ناظم آباد, کراچی ڈویژن, سندھ, 74600, پاکستان"
+  },
+  "aisha-manzil": {
+    "latitude": 24.9287835,
+    "longitude": 67.0676711,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Aisha Manzil, Karachi, Pakistan",
+    "displayName": "Aisha Manzil mosque, Shahrah-e-Mirza Mughal, FB Area Block 14, گلشن شمیم, گلبرگ ٹاؤن, ضلع ناظم آباد, کراچی ڈویژن, سندھ, 75950, پاکستان"
+  },
+  "water-pump": {
+    "latitude": 24.874899,
+    "longitude": 67.1673,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Water Pump, Karachi, Pakistan",
+    "displayName": "Water Pump, عظیم پورہ روڈ, Millat Town, Gulzar e Ibrahim, Shah Faisal, شاہ فیصل ٹاؤن, ضلع کورنگی, کراچی ڈویژن, سندھ, 75050, پاکستان"
+  },
+  "ancholi": {
+    "latitude": 24.945702,
+    "longitude": 67.0767095,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Ancholi, Karachi, Pakistan",
+    "displayName": "انچولی, ایف بی ایریا, ضلع ناظم آباد, کراچی ڈویژن, Karāchi District, سندھ, 75950, پاکستان"
+  },
+  "karimabad": {
+    "latitude": 24.9195535,
+    "longitude": 67.0556807,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Karimabad, Karachi, Pakistan",
+    "displayName": "Karimabad, شريف آباد, گلبرگ ٹاؤن, ضلع ناظم آباد, کراچی ڈویژن, سندھ, 75900, پاکستان"
+  },
+  "liaquatabad": {
+    "latitude": 24.9029771,
+    "longitude": 67.0386279,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Liaquatabad, Karachi, Pakistan",
+    "displayName": "لياقت آباد ٽائون, ضلع ناظم آباد, کراچی ڈویژن, سندھ, 75900, پاکستان"
+  },
+  "federal-b-area-block-6-17": {
+    "latitude": 24.9331898,
+    "longitude": 67.0583417,
+    "source": "manual-fallback",
+    "confidence": "medium",
+    "query": "Federal B Area Block 6-17, Karachi, Pakistan",
+    "note": "F.B. Area block cluster fallback"
+  },
+  "buffer-zone": {
+    "latitude": 24.9552547,
+    "longitude": 67.0670153,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Buffer Zone, Karachi, Pakistan",
+    "displayName": "Buffer Zone, ضلع ناظم آباد, کراچی ڈویژن, Karāchi District, سندھ, 74700, پاکستان"
+  },
+  "north-karachi": {
+    "latitude": 24.9439091,
+    "longitude": 67.0846314,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "North Karachi, Karachi, Pakistan",
+    "displayName": "Shahrah-e-Pakistan, North Karachi Industrial Area, انچولی, گلبرگ ٹاؤن, ضلع ناظم آباد, کراچی ڈویژن, Karāchi District, سندھ, 75950, پاکستان"
+  },
+  "orangi-town": {
+    "latitude": 24.9461056,
+    "longitude": 67.0128813,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Orangi Town, Karachi, Pakistan",
+    "displayName": "اورنگی ٹاؤن, ضلع اورنگی, کراچی ڈویژن, سندھ, پاکستان"
+  },
+  "site-area": {
+    "latitude": 24.9073523,
+    "longitude": 67.0082631,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "SITE Area, Karachi, Pakistan",
+    "displayName": "Askari Bank - SITE Area Branch, Estate Avenue, سندھ انڈسٹریل ٹریڈنگ اسٹیٹ, سائٹ ٹاؤن, ضلع کیماڑی, کراچی ڈویژن, سندھ, 75700, پاکستان"
+  },
+  "baldia-town": {
+    "latitude": 24.9187786,
+    "longitude": 66.9613949,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Baldia Town, Karachi, Pakistan",
+    "displayName": "بلدیہ ٹاؤن, ضلع کیماڑی, کراچی ڈویژن, سندھ, 75790, پاکستان"
+  },
+  "manghopir": {
+    "latitude": 24.9052186,
+    "longitude": 67.0018707,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Manghopir, Karachi, Pakistan",
+    "displayName": "Manghopir, Estate Avenue, سندھ انڈسٹریل ٹریڈنگ اسٹیٹ, سائٹ ٹاؤن, ضلع کیماڑی, کراچی ڈویژن, سندھ, 75700, پاکستان"
+  },
+  "hawksbay": {
+    "latitude": 24.9003807,
+    "longitude": 66.8399224,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Hawksbay, Karachi, Pakistan",
+    "displayName": "ہاکس بے اسکیم 42, ضلع کیماڑی, کراچی ڈویژن, سندھ, پاکستان"
+  },
+  "sandspit": {
+    "latitude": 24.8294049,
+    "longitude": 66.9280365,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Sandspit, Karachi, Pakistan",
+    "displayName": "Sandspit, کیماڑی ٹاؤن, ضلع کیماڑی, کراچی ڈویژن, سندھ, پاکستان"
+  },
+  "mubarak-village": {
+    "latitude": 24.8512695,
+    "longitude": 66.6611653,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Mubarak Village, Karachi, Pakistan",
+    "displayName": "مبارک گوٹھ, کراچی ڈویژن, سندھ, پاکستان"
+  },
+  "cape-monze-ras-muari": {
+    "latitude": 24.8264435,
+    "longitude": 66.6645024,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Cape Monze / Ras Muari, Karachi, Pakistan",
+    "displayName": "کیپ ماؤنز, Ras Muari Road, ماڑی پور ٹاؤن, ضلع کیماڑی, کراچی ڈویژن, سندھ, پاکستان"
+  },
+  "gadap": {
+    "latitude": 25.1316623,
+    "longitude": 67.2330726,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Gadap, Karachi, Pakistan",
+    "displayName": "گڈاپ ٹاؤن, ضلع ملیر, کراچی ڈویژن, سندھ, پاکستان"
+  },
+  "gulshan-e-maymar": {
+    "latitude": 25.020894,
+    "longitude": 67.1322813,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Gulshan-e-Maymar, Karachi, Pakistan",
+    "displayName": "Gulshan e Maymar, ضلع ملیر, کراچی ڈویژن, سندھ, 75340, پاکستان"
+  },
+  "surjani-town": {
+    "latitude": 25.0770299,
+    "longitude": 67.073576,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Surjani Town, Karachi, Pakistan",
+    "displayName": "Surjani Town, گڈاپ ٹاؤن, ضلع ملیر, کراچی ڈویژن, Karāchi District, سندھ, پاکستان"
+  },
+  "malir-cantonment": {
+    "latitude": 24.9436232,
+    "longitude": 67.2119855,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Malir Cantonment, Karachi, Pakistan",
+    "displayName": "ملیر چھاؤنی, گڈاپ ٹاؤن, ضلع ملیر, کراچی ڈویژن, Karāchi District, سندھ, 75070, پاکستان"
+  },
+  "model-colony": {
+    "latitude": 24.9068326,
+    "longitude": 67.1894182,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Model Colony, Karachi, Pakistan",
+    "displayName": "Model Colony, ملیر ٹاؤن, ضلع ملیر, کراچی ڈویژن, سندھ, پاکستان"
+  },
+  "saudabad": {
+    "latitude": 24.9010045,
+    "longitude": 67.2033252,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Saudabad, Karachi, Pakistan",
+    "displayName": "Saudabad, Sabir Colony, ملیر ٹاؤن, ضلع ملیر, کراچی ڈویژن, سندھ, 75080, پاکستان"
+  },
+  "khokhrapar": {
+    "latitude": 24.9040971,
+    "longitude": 67.211932,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Khokhrapar, Karachi, Pakistan",
+    "displayName": "Khokhrapar, Sabir Colony, ملیر ٹاؤن, ضلع ملیر, کراچی ڈویژن, سندھ, 75080, پاکستان"
+  },
+  "shah-faisal-colony": {
+    "latitude": 24.8810955,
+    "longitude": 67.145214,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Shah Faisal Colony, Karachi, Pakistan",
+    "displayName": "شاہ فیصل کالونی, شاہ فیصل ٹاؤن, ضلع کورنگی, کراچی ڈویژن, سندھ, 75230, پاکستان"
+  },
+  "korangi": {
+    "latitude": 24.8206928,
+    "longitude": 67.1403735,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Korangi, Karachi, Pakistan",
+    "displayName": "کورنگی ٹاؤن, ضلع کورنگی, کراچی ڈویژن, سندھ, پاکستان"
+  },
+  "landhi": {
+    "latitude": 24.8508469,
+    "longitude": 67.211895,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Landhi, Karachi, Pakistan",
+    "displayName": "لانڈھی ریلوے اسٹیشن, مین کورنگی روڈ, Muhammad Nagar, لانڈھی ٹاؤن, بن قاسم ٹاؤن, ضلع ملیر, کراچی ڈویژن, سندھ, 75120, پاکستان"
+  },
+  "qayyumabad": {
+    "latitude": 24.829419,
+    "longitude": 67.080768,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Qayyumabad, Karachi, Pakistan",
+    "displayName": "Qayyumabad, Korangi Road, کورنگی ٹاؤن, ضلع کورنگی, کراچی ڈویژن, سندھ, 75500, پاکستان"
+  },
+  "bin-qasim-port-qasim": {
+    "latitude": 24.8309578,
+    "longitude": 67.2940007,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Bin Qasim / Port Qasim, Karachi, Pakistan",
+    "displayName": "Nestle PQF Pakistan, NWIZ, IMC Driveway, نارتھ ویسٹرن انڈسٹریل زون پورٹ قاسم, North Western Industrial Zone Port Qasim, بن قاسم ٹاؤن, ضلع ملیر, کراچی ڈویژن, سندھ, 75010, پاکستان"
+  },
+  "bahria-town-karachi": {
+    "latitude": 25.0692314,
+    "longitude": 67.3288526,
+    "source": "nominatim",
+    "confidence": "high",
+    "query": "Bahria Town Karachi, Karachi, Pakistan",
+    "displayName": "Bahria Town Karachi, ضلع ملیر, کراچی ڈویژن, Karāchi District, سندھ, پاکستان"
+  }
+}

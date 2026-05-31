@@ -1,0 +1,146 @@
+[
+  {
+    "sectionSlug": "city-information",
+    "articleSlug": "city-today",
+    "sourceTitle": "Karachi Today",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/city-overview-history/karachi-today/",
+    "sourceModifiedAt": "2022-06-21T12:07:52",
+    "editorialUpdate": "Legacy Irhal also carried a Karachi Today article for the modern city overview. Use it as historical editorial context alongside the current enterprise guide's updated population, economy, and visitor-planning notes.",
+    "verificationNote": "Verify current demographic and business facts before using any legacy phrasing."
+  },
+  {
+    "sectionSlug": "city-information",
+    "articleSlug": "city-today",
+    "sourceTitle": "Karachi - The City of Lights",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/city-overview-history/karachi-the-city-of-lights/",
+    "sourceModifiedAt": "2022-06-20T18:11:00",
+    "editorialUpdate": "Legacy Irhal's City of Lights framing supports the current article's positioning of Karachi as an energetic, late-moving city with strong food, commerce, and cultural life.",
+    "verificationNote": "Use as tone and heritage context, not as a source for current safety or operating guidance."
+  },
+  {
+    "sectionSlug": "city-information",
+    "articleSlug": "city-back-then",
+    "sourceTitle": "Karachi History",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/city-overview-history/karachi-history/",
+    "sourceModifiedAt": "2022-06-21T12:07:39",
+    "editorialUpdate": "Legacy Irhal's Karachi History article aligns with the current back-then article by treating Karachi's port growth, colonial layer, and post-Partition expansion as the backbone of the city's story.",
+    "verificationNote": "Verify dates and historical claims against authoritative sources before publication."
+  },
+  {
+    "sectionSlug": "city-information",
+    "articleSlug": "residents",
+    "sourceTitle": "Karachi Residents",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/city-overview-history/karachi-residents/",
+    "sourceModifiedAt": "2022-06-21T12:07:28",
+    "editorialUpdate": "Legacy Irhal also kept a Karachi Residents article, useful for preserving local voice around the city's multilingual, migrant, commercially active population.",
+    "verificationNote": "Avoid broad stereotypes; use current demographic sources for factual claims."
+  },
+  {
+    "sectionSlug": "visitor-information",
+    "articleSlug": "visa-information",
+    "sourceTitle": "Visa Information",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/city-overview-history/visa-information/",
+    "sourceModifiedAt": "2022-03-03T15:33:13",
+    "editorialUpdate": "Legacy Irhal had a visa-information article, but the current portal should continue to send readers to the official Pakistan Online Visa System for live rules.",
+    "verificationNote": "Never publish visa requirements from legacy copy; verify on the official portal on the day of update."
+  },
+  {
+    "sectionSlug": "visitor-information",
+    "articleSlug": "when-to-go",
+    "sourceTitle": "When to Go",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/city-overview-history/when-to-go/",
+    "sourceModifiedAt": "2022-03-03T15:32:53",
+    "editorialUpdate": "Legacy Irhal's when-to-go article supports the current seasonal guidance that winter months are more comfortable for walking, food streets, beach plans, and outdoor cultural activity.",
+    "verificationNote": "Verify current heat, monsoon, and event timing notes for the publication year."
+  },
+  {
+    "sectionSlug": "visitor-information",
+    "articleSlug": "exchange-rates",
+    "sourceTitle": "Exchange Rates",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/city-overview-history/exchange-rates/",
+    "sourceModifiedAt": "2022-06-21T12:10:51",
+    "editorialUpdate": "Legacy Irhal carried exchange-rate information, but the current portal should keep this as a live-update field rather than static editorial copy.",
+    "verificationNote": "Check XE, banks, or authorised exchange sources before publishing rates."
+  },
+  {
+    "sectionSlug": "visitor-information",
+    "articleSlug": "public-holidays",
+    "sourceTitle": "Public Holidays",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/city-overview-history/public-holidays/",
+    "sourceModifiedAt": "2022-03-03T15:32:09",
+    "editorialUpdate": "Legacy Irhal had a public-holidays article; the current portal keeps the topic but must treat Islamic holidays and government notifications as year-specific.",
+    "verificationNote": "Verify federal and Sindh holiday notifications for the target year."
+  },
+  {
+    "sectionSlug": "children-in-tow",
+    "articleSlug": "13-what-to-do-with-children-in-tow",
+    "sourceTitle": "What to do with Children in Tow",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/places-to-visit/what-to-do-with-children-in-tow/",
+    "sourceModifiedAt": "2022-06-20T17:26:19",
+    "editorialUpdate": "Legacy Irhal's children-in-tow guide recommends simple neighbourhood walks, parks, street cricket observation, amusement/recreation parks, Safari Park, Karachi Zoo, beaches, and other family-friendly stops.",
+    "verificationNote": "Verify each attraction's current safety, operating status, heat suitability, and family facilities."
+  },
+  {
+    "sectionSlug": "transportation-and-getting-around",
+    "articleSlug": "driving-tips",
+    "sourceTitle": "Driving Tip",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/transportation-getting-around/driving-tip/",
+    "sourceModifiedAt": "2022-06-21T12:09:16",
+    "editorialUpdate": "Legacy Irhal had a driving-tip article; the current guide should keep its conservative advice around defensive driving, route planning, and avoiding unnecessary self-drive complexity.",
+    "verificationNote": "Verify current road conditions, security advisories, and traffic restrictions."
+  },
+  {
+    "sectionSlug": "transportation-and-getting-around",
+    "articleSlug": "from-the-airport",
+    "sourceTitle": "From the airport",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/transportation-getting-around/from-the-airport/",
+    "sourceModifiedAt": "2022-06-21T12:09:34",
+    "editorialUpdate": "Legacy Irhal also covered airport arrivals. The current guide should preserve the airport-transfer topic while prioritising hotel pickup, ride-hailing, and current Jinnah International Airport procedures.",
+    "verificationNote": "Verify current airport taxi, ride-hailing, parking, and late-night pickup rules."
+  },
+  {
+    "sectionSlug": "transportation-and-getting-around",
+    "articleSlug": "car-for-hire-driver",
+    "sourceTitle": "Car for hire",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/transportation-getting-around/car-for-hire/",
+    "sourceModifiedAt": "2022-06-21T12:09:52",
+    "editorialUpdate": "Legacy Irhal maintained a car-for-hire article, which aligns with the current recommendation to use a driver for serious cross-city itineraries, beach routes, Chaukhandi, Thatta, and airport runs.",
+    "verificationNote": "Verify vetted operators, pricing, insurance, and itinerary-specific safety."
+  },
+  {
+    "sectionSlug": "transportation-and-getting-around",
+    "articleSlug": "taxi-and-ride-hailing",
+    "sourceTitle": "Taxis/Autorickshaws",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/transportation-getting-around/taxisautorickshaws/",
+    "sourceModifiedAt": "2022-06-21T12:10:11",
+    "editorialUpdate": "Legacy Irhal covered taxis and autorickshaws; the current article should retain that context while leading with app-based ride-hailing and verified pickup/drop-off practices.",
+    "verificationNote": "Verify current app availability, cash/card options, and traveller-safety advice."
+  },
+  {
+    "sectionSlug": "transportation-and-getting-around",
+    "articleSlug": "buses-and-brt",
+    "sourceTitle": "Buses",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/transportation-getting-around/buses/",
+    "sourceModifiedAt": "2022-06-21T12:10:27",
+    "editorialUpdate": "Legacy Irhal kept a buses article; the current guide should preserve bus context but distinguish older informal bus use from newer BRT and app-supported planning.",
+    "verificationNote": "Verify current routes, BRT operations, fare systems, and tourist usability."
+  },
+  {
+    "sectionSlug": "health-and-safety",
+    "articleSlug": "health-and-safety",
+    "sourceTitle": "Health and Safety",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/health-safety/health-and-safety/",
+    "sourceModifiedAt": "2022-06-21T11:25:37",
+    "editorialUpdate": "Legacy Irhal's Health and Safety article has been copied into the Karachi health-and-safety article for editorial migration from the source page.",
+    "verificationNote": "Verify official travel advisories, hospital contacts, embassy guidance, and emergency numbers before publication."
+  },
+  {
+    "sectionSlug": "muslim-visitor-information",
+    "articleSlug": "masjids-and-prayer",
+    "sourceTitle": "Masjids",
+    "sourceUrl": "https://irhal.com/travel-guide/karachi/masjids/masjids/",
+    "sourceModifiedAt": "2022-06-21T11:20:54",
+    "editorialUpdate": "Legacy Irhal included a broad masjids article as well as individual mosque records. The current guide should use it as directory context while keeping women-prayer facilities and map pins verified per mosque.",
+    "verificationNote": "Do not infer women prayer areas or accessibility without place-level verification."
+  }
+]

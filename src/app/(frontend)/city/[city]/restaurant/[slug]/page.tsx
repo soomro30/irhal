@@ -5,14 +5,19 @@ import { GuideItemDetail } from "@/components/guide-item-detail";
 import { ListingDetail } from "@/components/listing-detail";
 import { getListing } from "@/lib/city-data";
 import { getCityBySlug } from "@/lib/city-source";
-import { getGuideItem } from "@/lib/guide-items";
-import { pageMetadata } from "@/lib/seo";
+import { getGuideItem, localizeGuideItem } from "@/lib/guide-items";
+import { localizedCityName, pageMetadata } from "@/lib/seo";
 
 type Props = {
   params: Promise<{ city: string; slug: string }>;
 };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+type PageLocale = "en" | "ar";
+
+export async function generateRestaurantMetadata(
+  { params }: Props,
+  locale: PageLocale = "en",
+): Promise<Metadata> {
   const { city: citySlug, slug } = await params;
   const city = await getCityBySlug(citySlug);
   const guideItem = city ? getGuideItem(city, "restaurant", slug) : undefined;
@@ -20,10 +25,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!city) return {};
 
   if (guideItem) {
+    const displayItem = localizeGuideItem(guideItem, locale);
+    const cityName = localizedCityName(city, locale);
+
     return pageMetadata({
-      title: `${guideItem.title} | ${city.name}`,
-      description: guideItem.description,
-      path: `/city/${city.slug}/restaurant/${guideItem.slug}`,
+      title: `${displayItem.title} | ${cityName}`,
+      description: displayItem.description,
+      path: `${locale === "ar" ? "/ar" : "/en"}/city/${city.slug}/restaurant/${guideItem.slug}`,
     });
   }
 
@@ -31,17 +39,36 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return pageMetadata({
     title: listing.seo.title,
     description: listing.seo.description,
-    path: `/city/${city.slug}/restaurant/${listing.slug}`,
+    path: `${locale === "ar" ? "/ar" : "/en"}/city/${city.slug}/restaurant/${listing.slug}`,
   });
 }
 
-export default async function RestaurantPage({ params }: Props) {
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  return generateRestaurantMetadata(props);
+}
+
+export async function RestaurantPageContent({
+  locale = "en",
+  params,
+}: Props & { locale?: PageLocale }) {
   const { city: citySlug, slug } = await params;
   const city = await getCityBySlug(citySlug);
   const guideItem = city ? getGuideItem(city, "restaurant", slug) : undefined;
   const listing = city ? getListing(city, "restaurant", slug) : undefined;
   if (!city) notFound();
-  if (guideItem) return <GuideItemDetail city={city} item={guideItem} />;
-  if (listing) return <ListingDetail city={city} listing={listing} />;
+  if (guideItem) {
+    return (
+      <GuideItemDetail
+        city={city}
+        item={localizeGuideItem(guideItem, locale)}
+        locale={locale}
+      />
+    );
+  }
+  if (listing) return <ListingDetail city={city} listing={listing} locale={locale} />;
   notFound();
+}
+
+export default async function RestaurantPage(props: Props) {
+  return <RestaurantPageContent {...props} />;
 }

@@ -50,6 +50,15 @@ export const sourceFields: Field = {
   ],
 };
 
+export const translationFields: Field = {
+  name: "translations",
+  type: "json",
+  admin: {
+    description:
+      'Locale-keyed editorial translations. Use {"ar": {...}} for Arabic title, summary, body, labels, and SEO copy.',
+  },
+};
+
 export const geoFields: Field[] = [
   {
     name: "latitude",

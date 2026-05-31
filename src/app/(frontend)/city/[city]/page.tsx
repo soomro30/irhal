@@ -1,18 +1,25 @@
 import {
-  BadgeCheck,
-  BedDouble,
+  BusFront,
   CalendarDays,
-  Camera,
-  Compass,
+  CarFront,
+  DollarSign,
   ExternalLink,
-  Landmark,
+  FerrisWheel,
+  Globe2,
+  Heart,
+  History,
+  Hotel,
+  Baby,
+  Languages,
   MapPin,
-  MapPinned,
+  MoonStar,
   Route,
-  Search,
+  ShieldCheck,
   ShoppingBag,
-  Sparkles,
+  Thermometer,
+  TreePalm,
   Utensils,
+  type LucideIcon,
 } from "lucide-react";
 import type { Metadata } from "next";
 import Image from "next/image";
@@ -20,17 +27,65 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { JsonLd } from "@/components/json-ld";
-import { ListingCard } from "@/components/listing-card";
-import { MapPanel } from "@/components/map-panel";
+import { CityHeroCarousel } from "@/components/city-hero-carousel";
+import { DiscoverLink } from "@/components/discover-action";
 import { PageShell } from "@/components/page-shell";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { GuideItemRail } from "@/components/guide-item-card";
 import { GuideSectionGrid } from "@/components/guide-section-grid";
+import { NeighborhoodCarousel } from "@/components/neighborhood-carousel";
+import { PracticalCityInfo } from "@/components/practical-city-info";
+import {
+  getCityHeroImages,
+  getGuideItemImage,
+  getNeighbourhoodHighlights,
+} from "@/lib/city-presentation";
 import { getCityBySlug } from "@/lib/city-source";
-import { getGuideItemsByKind } from "@/lib/guide-items";
+import {
+  getGuideArticlesForSection,
+  getGuideItemsByKind,
+  localizeGuideItem,
+  pathForGuideItem,
+  type GuideItem,
+} from "@/lib/guide-items";
 import { breadcrumbJsonLd, cityJsonLd, pageMetadata } from "@/lib/seo";
 
 type Props = {
   params: Promise<{ city: string }>;
+};
+
+type PageLocale = "en" | "ar";
+
+type CityCategory = {
+  title: string;
+  href: string;
+  icon?: LucideIcon;
+  iconGroup?: "city-info" | "transport" | "halal" | "masjid";
+  tone: string;
+  count?: number;
+  countLabel?: string;
+  external?: boolean;
+};
+
+const seededNumber = (value: string) =>
+  [...value].reduce(
+    (hash, character) => (hash * 31 + character.charCodeAt(0)) >>> 0,
+    2166136261,
+  );
+
+const dailyFamousSpots = (items: GuideItem[], citySlug: string) => {
+  const daySeed = new Date().toISOString().slice(0, 10);
+
+  return [...items]
+    .map((item) => ({
+      item,
+      sort: seededNumber(`${citySlug}-${daySeed}-${item.slug}`),
+    }))
+    .sort((left, right) => left.sort - right.sort)
+    .slice(0, 6)
+    .map(({ item }) => item);
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -45,17 +100,85 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   });
 }
 
-export default async function CityPage({ params }: Props) {
+export async function CityPageContent({
+  locale = "en",
+  params,
+}: Props & { locale?: PageLocale }) {
   const { city: citySlug } = await params;
   const city = await getCityBySlug(citySlug);
   if (!city) notFound();
 
+  const isArabic = locale === "ar";
+  const localePrefix = isArabic ? "/ar" : "/en";
+  const cityTranslation = city.translations?.[locale] ?? {};
+  const dir = isArabic ? "rtl" : "ltr";
+  const cityBasePath = `${localePrefix}/city/${city.slug}`;
+  const displayCityName =
+    (typeof cityTranslation.name === "string" && cityTranslation.name) ||
+    (isArabic && city.slug === "karachi" ? "كراتشي" : city.name);
+  const displayCountry =
+    (typeof cityTranslation.countryName === "string" &&
+      cityTranslation.countryName) ||
+    (isArabic && city.country === "Pakistan" ? "باكستان" : city.country);
+  const displayLede =
+    (typeof cityTranslation.lede === "string" && cityTranslation.lede) ||
+    (isArabic && city.slug === "karachi"
+      ? "كراتشي أكبر مدينة ساحلية في باكستان، ومركز أعمال نابض، ووجهة غنية بالمطاعم، وبوابة حضرية تجمع الأحياء التاريخية، والمناطق الساحلية، والأسواق، والمساجد، والمعالم المناسبة للعائلة."
+      : city.lede);
+  const currencyLabel =
+    isArabic && city.currency === "PKR"
+      ? "روبية باكستانية"
+      : city.currency === "PKR"
+        ? "Rupee"
+        : city.currency;
+  const languageLabel = isArabic
+    ? city.slug === "karachi"
+      ? "الأردية، الإنجليزية"
+      : city.languages.slice(0, 2).join("، ")
+    : city.languages.slice(0, 2).join(", ");
+  const bestTimeLabel = isArabic
+    ? city.slug === "karachi"
+      ? "نوفمبر إلى فبراير"
+      : "راجع دليل الطقس"
+    : city.slug === "karachi"
+      ? "November to February"
+      : "Check weather guide";
+  const heroFacts = [
+    {
+      label: isArabic ? "العملة" : "Currency",
+      value: currencyLabel,
+      icon: DollarSign,
+    },
+    {
+      label: isArabic ? "اللغة" : "Language",
+      value: languageLabel,
+      icon: Languages,
+    },
+    {
+      label: isArabic ? "أفضل وقت للزيارة" : "Best time to visit",
+      value: bestTimeLabel,
+      icon: CalendarDays,
+    },
+  ];
+  const guideItemLabels = isArabic
+    ? { discover: "اكتشف", map: "الخريطة", savePrefix: "حفظ", verified: "تم التحقق" }
+    : { discover: "Discover", map: "Map", savePrefix: "Save", verified: "Verified" };
+  const actionLabels = {
+    all: isArabic ? "عرض الكل" : "Explore all",
+    details: isArabic ? "اكتشف" : "Discover",
+    famousBadge: isArabic ? "معلم مشهور" : "Famous spot",
+    readMore: isArabic ? "اقرأ المزيد" : "Read more",
+    shuffled: isArabic ? "يتغيّر يوميًا" : "Daily shuffled",
+  };
   const jsonLd = [
-    cityJsonLd(city),
-    breadcrumbJsonLd([
-      { name: "Home", path: "/" },
-      { name: city.name, path: `/city/${city.slug}` },
-    ]),
+    cityJsonLd(city, locale),
+    breadcrumbJsonLd(
+      [
+        { name: "Home", path: "/" },
+        { name: displayCityName, path: cityBasePath },
+      ],
+      locale,
+    ),
   ];
   const places = getGuideItemsByKind(city, "place");
   const restaurants = getGuideItemsByKind(city, "restaurant");
@@ -64,215 +187,504 @@ export default async function CityPage({ params }: Props) {
   const festivals = getGuideItemsByKind(city, "festival");
   const shopping = getGuideItemsByKind(city, "shopping");
   const tours = getGuideItemsByKind(city, "tour");
-  const heroImage = city.slug === "karachi" ? "/images/karachi-guide/karachi-coast-hero.png" : "/images/karachi-guide/place.svg";
-  const heroStats = [
-    { label: "Attractions", value: places.length },
-    { label: "Restaurants", value: restaurants.length },
-    { label: "Hotels", value: hotels.length },
-    { label: "Masjids", value: masjids.length },
-  ];
-  const planningCards = [
+  const familySpots = getGuideItemsByKind(city, "family");
+  const displayPlaces = places.map((item) => localizeGuideItem(item, locale));
+  const displayRestaurants = restaurants.map((item) =>
+    localizeGuideItem(item, locale),
+  );
+  const displayHotels = hotels.map((item) => localizeGuideItem(item, locale));
+  const displayMasjids = masjids.map((item) => localizeGuideItem(item, locale));
+  const displayFestivals = festivals.map((item) =>
+    localizeGuideItem(item, locale),
+  );
+  const displayFamilySpots = familySpots.map((item) =>
+    localizeGuideItem(item, locale),
+  );
+  const displayShopping = shopping.map((item) => localizeGuideItem(item, locale));
+  const displayTours = tours.map((item) => localizeGuideItem(item, locale));
+  const articleCountForSection = (sectionSlug: string) =>
+    getGuideArticlesForSection(city, sectionSlug).length;
+  const heroImages = getCityHeroImages(city);
+  const cityCategories: CityCategory[] = [
     {
-      title: "Things to do",
-      description: `${places.length} museums, beaches, shrines, parks, heritage stops, and family attractions.`,
-      href: `/city/${city.slug}/section/places-to-visit`,
-      icon: Camera,
-      image: places[0]?.imageUrl,
+      title: isArabic ? "أماكن تستحق الزيارة" : "places to visit",
+      href: `${cityBasePath}/section/places-to-visit`,
+      icon: TreePalm,
+      tone: "bg-[#ff6b00]",
+      count: places.length,
     },
     {
-      title: "Hotels",
-      description: "Choose the right base by neighborhood, airport access, coast, business district, or family needs.",
-      href: `/city/${city.slug}/section/hotels`,
-      icon: BedDouble,
-      image: hotels[0]?.imageUrl,
+      title: isArabic ? "التاريخ" : "history",
+      href: `${cityBasePath}/section/city-information`,
+      icon: History,
+      tone: "bg-[#f5a800]",
+      count: articleCountForSection("city-information"),
     },
     {
-      title: "Restaurants",
-      description: `${restaurants.length} halal-aware food records from Burns Road to Clifton, DHA, Saddar, and highway clusters.`,
-      href: `/city/${city.slug}/section/food-and-restaurants`,
+      title: isArabic ? "بالقرب منك" : "nearby",
+      href: city.mapUrl,
+      icon: MapPin,
+      tone: "bg-[#ffdd00]",
+      external: true,
+      countLabel: isArabic ? "مباشر" : "live",
+    },
+    {
+      title: isArabic ? "الفنادق" : "hotels",
+      href: `${cityBasePath}/section/hotels`,
+      icon: Hotel,
+      tone: "bg-[#b8174f]",
+      count: hotels.length,
+    },
+    {
+      title: isArabic ? "المطاعم" : "restaurants",
+      href: `${cityBasePath}/section/food-and-restaurants`,
       icon: Utensils,
-      image: restaurants[0]?.imageUrl,
+      tone: "bg-irhal-magenta",
+      count: restaurants.length,
     },
     {
-      title: "Shopping",
-      description: `${shopping.length} malls, bazaars, book markets, fashion streets, and souvenir districts.`,
-      href: `/city/${city.slug}/section/shopping`,
+      title: isArabic ? "التسوق" : "shopping",
+      href: `${cityBasePath}/section/shopping`,
       icon: ShoppingBag,
-      image: shopping[0]?.imageUrl,
+      tone: "bg-[#ed5b96]",
+      count: shopping.length,
     },
     {
-      title: "Tours",
-      description: "Heritage walks, food crawls, museum circuits, coastal drives, and family-friendly day plans.",
-      href: `/city/${city.slug}/section/organized-tours`,
-      icon: Route,
-      image: tours[0]?.imageUrl,
+      title: isArabic ? "معلومات المدينة" : "city info.",
+      href: `${cityBasePath}/section/visitor-information`,
+      iconGroup: "city-info",
+      tone: "bg-[#204a91]",
+      count: articleCountForSection("visitor-information"),
     },
     {
-      title: "Islamic travel",
-      description: "Masjid discovery, halal dining context, Islamic landmarks, and prayer-aware planning.",
-      href: `/city/${city.slug}/islamic-travel`,
-      icon: Landmark,
-      image: masjids[0]?.imageUrl,
+      title: isArabic ? "المواصلات" : "transport",
+      href: `${cityBasePath}/section/transportation-and-getting-around`,
+      iconGroup: "transport",
+      tone: "bg-[#0874c9]",
+      count: articleCountForSection("transportation-and-getting-around"),
+    },
+    {
+      title: isArabic ? "الفعاليات" : "festivals",
+      href: `${cityBasePath}/section/festivals-and-annual-events`,
+      icon: FerrisWheel,
+      tone: "bg-[#25a9dd]",
+      count: festivals.length,
+    },
+    {
+      title: isArabic ? "مع الأطفال" : "with kids",
+      href: `${cityBasePath}/section/children-in-tow`,
+      icon: Baby,
+      tone: "bg-[#00a3a3]",
+      count: familySpots.length,
+    },
+    {
+      title: isArabic ? "المساجد" : "masjids",
+      href: `${cityBasePath}/section/muslim-visitor-information`,
+      iconGroup: "masjid",
+      tone: "bg-[#00783c]",
+      count: masjids.length,
+    },
+    {
+      title: isArabic ? "مطاعم حلال" : "halal restaurants",
+      href: `${cityBasePath}/islamic-travel`,
+      iconGroup: "halal",
+      tone: "bg-[#35aa32]",
+      count:
+        restaurants.filter((item) =>
+          /halal/i.test(`${item.title} ${item.description} ${item.category}`),
+        ).length || restaurants.length,
+    },
+    {
+      title: isArabic ? "مواقيت الصلاة" : "prayer times",
+      href: `${cityBasePath}/prayer-times`,
+      icon: MoonStar,
+      tone: "bg-[#95c915]",
+      countLabel: isArabic ? "اليوم" : "today",
     },
   ];
-  const travelTips = [
-    {
-      title: "Best neighborhoods",
-      description: "Use Clifton, DHA, Saddar, PECHS, and airport clusters as planning anchors.",
-      href: `/city/${city.slug}/section/neighborhood-operating-guide`,
-      icon: MapPinned,
-    },
-    {
-      title: "Best time to visit",
-      description: city.sections.climateWhenToGo,
-      href: `/city/${city.slug}/section/climate-and-when-to-go`,
-      icon: CalendarDays,
-    },
-    {
-      title: "Getting around",
-      description: city.sections.transportSystem,
-      href: `/city/${city.slug}/section/transportation-and-getting-around`,
-      icon: Compass,
-    },
-  ];
+  const neighbourhoodCards = getNeighbourhoodHighlights(
+    city,
+    localePrefix,
+    locale,
+  );
+  const famousSpots = dailyFamousSpots(displayPlaces, city.slug);
 
   return (
-    <PageShell>
+    <PageShell
+      breadcrumbs={[
+        { label: isArabic ? "الرئيسية" : "Home", href: isArabic ? "/ar" : "/" },
+        { label: displayCityName },
+      ]}
+      locale={locale}
+    >
       <JsonLd data={jsonLd} />
-      <main>
-        <section className="relative min-h-[610px] overflow-hidden bg-slate-950 text-white">
-          <Image
-            alt={`${city.name} coastal skyline travel banner`}
-            className="object-cover"
-            fill
-            priority
-            sizes="100vw"
-            src={heroImage}
+      <main className={isArabic ? "font-arabic" : undefined} dir={dir}>
+        <section className="relative min-h-[520px] overflow-hidden bg-ink text-white md:min-h-[390px]">
+          <CityHeroCarousel
+            alt={`${displayCityName} travel banner`}
+            dir={dir}
+            images={heroImages}
+            labels={{
+              next: isArabic ? "عرض الصورة التالية" : "Show next banner image",
+              previous: isArabic
+                ? "عرض الصورة السابقة"
+                : "Show previous banner image",
+              slide: isArabic ? "صورة البانر" : "Banner image",
+            }}
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/45 to-slate-950/10" />
-          <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-slate-950/85 to-transparent" />
-          <div className="relative mx-auto flex min-h-[610px] max-w-7xl items-end px-5 py-10">
-            <div className="max-w-4xl">
-              <p className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.22em] text-emerald-200">
-                <Sparkles aria-hidden="true" className="h-4 w-4" />
-                {city.country} destination guide
+          <div className="absolute inset-0 bg-ink/10 md:hidden" />
+          <div className="absolute inset-y-0 left-0 hidden w-[43%] rounded-r-[999px] bg-[#3a3a3a] md:block rtl:left-auto rtl:right-0 rtl:rounded-l-[999px] rtl:rounded-r-none" />
+          <div className="relative mx-auto flex min-h-[520px] max-w-7xl items-end px-5 py-8 md:min-h-[390px] md:items-center">
+            <div className="w-full rounded-lg bg-ink/78 p-5 backdrop-blur-sm md:w-[32%] md:max-w-[390px] md:rounded-none md:bg-transparent md:p-0 md:backdrop-blur-0">
+              <p className="text-sm font-black text-white">{displayCountry}</p>
+              <h1 className="mt-3 text-6xl font-black leading-none tracking-tight md:text-7xl">
+                {displayCityName}
+              </h1>
+              <p className="mt-5 max-w-sm text-base leading-7 text-white/90">
+                {displayLede}
               </p>
-              <h1 className="mt-4 text-6xl font-black leading-none tracking-tight md:text-8xl">{city.name}</h1>
-              <p className="mt-5 max-w-3xl text-xl leading-9 text-white/90">{city.lede}</p>
-              <div className="mt-8 flex flex-wrap gap-3">
-                <Link
-                  className="inline-flex items-center gap-2 bg-white px-5 py-3 text-sm font-bold text-slate-950 transition hover:bg-emerald-100"
-                  href={`/city/${city.slug}/section/places-to-visit`}
-                >
-                  <Search aria-hidden="true" className="h-4 w-4" />
-                  Explore Karachi
-                </Link>
-                <Link
-                  className="inline-flex items-center gap-2 border border-white/70 bg-white/10 px-5 py-3 text-sm font-bold text-white backdrop-blur transition hover:bg-white/20"
-                  href={`/city/${city.slug}/itineraries`}
-                >
-                  <Route aria-hidden="true" className="h-4 w-4" />
-                  Plan a trip
-                </Link>
-                <a
-                  className="inline-flex items-center gap-2 border border-white/70 bg-white/10 px-5 py-3 text-sm font-bold text-white backdrop-blur transition hover:bg-white/20"
-                  href={city.mapUrl}
-                >
-                  <MapPin aria-hidden="true" className="h-4 w-4" />
-                  City map
-                  <ExternalLink aria-hidden="true" className="h-4 w-4" />
-                </a>
+              <div className="mt-7 grid grid-cols-1 gap-4 border-t border-white/20 pt-5 sm:grid-cols-3 md:max-w-[520px]">
+                {heroFacts.map((fact) => {
+                  const Icon = fact.icon;
+
+                  return (
+                    <div key={fact.label}>
+                      <p className="text-[11px] font-black uppercase tracking-wide text-white/85">
+                        {fact.label}
+                      </p>
+                      <p className="mt-2 flex items-start gap-2 text-sm font-bold italic leading-5 text-white">
+                        <Icon
+                          aria-hidden="true"
+                          className="mt-0.5 h-4 w-4 shrink-0 text-white/85"
+                        />
+                        <span>{fact.value}</span>
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="mt-6 flex flex-wrap gap-3">
+                <Button asChild size="sm" variant="quiet">
+                  <Link href={`${cityBasePath}/itineraries`}>
+                    <Route aria-hidden="true" />
+                    {isArabic ? "خطط رحلتك" : "Plan"}
+                  </Link>
+                </Button>
+                <Button asChild size="sm" variant="quiet">
+                  <a href={city.mapUrl}>
+                    <MapPin aria-hidden="true" />
+                    {isArabic ? "الخريطة" : "Map"}
+                    <ExternalLink aria-hidden="true" />
+                  </a>
+                </Button>
               </div>
             </div>
           </div>
         </section>
 
-        <section className="border-b border-slate-200 bg-white">
-          <div className="mx-auto max-w-7xl px-5 py-7">
-            <div className="grid gap-3 md:grid-cols-4">
-              {heroStats.map((stat) => (
-                <div className="border-l-2 border-emerald-700 bg-slate-50 px-5 py-4" key={stat.label}>
-                  <p className="text-3xl font-black text-slate-950">{stat.value}</p>
-                  <p className="mt-1 text-sm font-semibold uppercase tracking-wide text-slate-500">{stat.label}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="bg-white py-14">
+        <section className="border-b border-ink/10 bg-white py-8">
           <div className="mx-auto max-w-7xl px-5">
-            <div className="flex flex-wrap items-end justify-between gap-5">
+            <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700">Start planning</p>
-                <h2 className="mt-3 text-4xl font-black tracking-tight text-slate-950 md:text-5xl">Essential {city.name}</h2>
+                <p className="text-sm font-black uppercase tracking-[0.18em] text-irhal-red">
+                  {isArabic ? "دليل المدينة" : "City guide"}
+                </p>
+                <h2 className="mt-2 text-3xl font-black tracking-tight text-ink md:text-4xl">
+                  {isArabic ? `استكشف ${displayCityName}` : `Explore ${city.name}`}
+                </h2>
               </div>
-              <p className="max-w-2xl text-base leading-7 text-slate-600">
-                Browse by the same building blocks editors will use for every city: things to do, hotels, restaurants,
-                shopping, tours, Islamic travel, neighborhoods, and verified map context.
+              <p className="max-w-2xl text-sm leading-6 text-ink/65">
+                {isArabic
+                  ? "ابدأ من هنا للوصول بسرعة إلى المعالم، والمطاعم، والفنادق، والتسوق، والمواصلات، ونصائح السفر الإسلامي في المدينة."
+                  : "Start here for the city’s sights, food, hotels, shopping, transport, maps, and Muslim-friendly travel essentials."}
               </p>
             </div>
-            <div className="mt-9 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-              {planningCards.map((card) => {
+            <div className="mt-6 flex gap-3 overflow-x-auto pb-2">
+              {cityCategories.map((card) => {
                 const Icon = card.icon;
+                const cardClassName = `group flex h-28 w-28 shrink-0 flex-col items-center justify-center border-0 p-3 text-center font-sans text-white shadow-sm transition hover:-translate-y-1 hover:shadow-[0_18px_48px_rgba(0,0,0,0.16)] ${card.tone}`;
+                const content = (
+                  <>
+                    {card.iconGroup === "city-info" ? (
+                      <span
+                        aria-hidden="true"
+                        className="grid h-10 w-14 grid-cols-3 place-items-center"
+                      >
+                        <DollarSign className="h-8 w-6 stroke-[1.8]" />
+                        <Thermometer className="h-9 w-6 stroke-[1.8]" />
+                        <Globe2 className="h-8 w-7 stroke-[1.8]" />
+                      </span>
+                    ) : card.iconGroup === "transport" ? (
+                      <span
+                        aria-hidden="true"
+                        className="flex h-10 items-end justify-center gap-1"
+                      >
+                        <CarFront className="h-7 w-7 fill-white stroke-[1.45]" />
+                        <BusFront className="h-10 w-9 fill-white stroke-[1.45]" />
+                      </span>
+                    ) : card.iconGroup === "halal" ? (
+                      <span
+                        aria-hidden="true"
+                        className="flex h-10 items-center justify-center text-[34px] font-black leading-none"
+                        lang="ar"
+                      >
+                        حلال
+                      </span>
+                    ) : card.iconGroup === "masjid" ? (
+                      <span
+                        aria-hidden="true"
+                        className="relative flex h-10 w-14 items-end justify-center"
+                      >
+                        <span className="absolute bottom-0 left-1.5 h-8 w-2 rounded-t-full bg-white" />
+                        <span className="absolute bottom-8 left-[11px] h-1.5 w-1.5 rounded-full bg-white" />
+                        <span className="absolute bottom-[37px] left-[13px] h-2 w-px bg-white" />
+                        <span className="absolute bottom-0 left-[22px] h-7 w-8 rounded-t-full bg-white" />
+                        <span className="absolute bottom-0 left-[19px] h-3 w-[38px] rounded-t-sm bg-white" />
+                        <span className="absolute bottom-8 left-10 h-1.5 w-1.5 rounded-full bg-white" />
+                      </span>
+                    ) : Icon ? (
+                      <Icon
+                        aria-hidden="true"
+                        className="h-10 w-10 stroke-[1.65]"
+                        strokeWidth={1.65}
+                      />
+                    ) : null}
+                    <span className="mt-1 text-[16px] font-normal lowercase leading-[1.08] tracking-normal">
+                      {card.title}
+                    </span>
+                    <Badge className="mt-1 rounded-full bg-black/60 px-2 py-0.5 text-[11px] font-bold leading-none text-white shadow-sm">
+                      {card.countLabel ?? card.count}
+                    </Badge>
+                  </>
+                );
+
+                if (card.external) {
+                  return (
+                    <a className="block shrink-0" href={card.href} key={card.title}>
+                      <Card className={cardClassName}>{content}</Card>
+                    </a>
+                  );
+                }
+
                 return (
                   <Link
-                    className="group overflow-hidden border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:border-slate-400 hover:shadow-lg"
+                    className="block shrink-0"
                     href={card.href}
                     key={card.title}
                   >
-                    <div className="relative h-56 overflow-hidden bg-slate-200 sm:h-64 lg:h-56">
-                      {card.image ? (
+                    <Card className={cardClassName}>{content}</Card>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        <GuideItemRail
+          actionLabel={actionLabels.all}
+          city={city}
+          cityName={displayCityName}
+          dir={dir}
+          href={`${cityBasePath}/section/places-to-visit`}
+          items={displayPlaces.slice(0, 12)}
+          labels={guideItemLabels}
+          pathPrefix={localePrefix}
+          subtitle={
+            isArabic
+              ? `اكتشف ${places.length} معلمًا وتجربة، من المتاحف والشواطئ والمزارات إلى الحدائق ومحطات التراث في أنحاء المدينة.`
+              : `Discover ${places.length} sights and experiences, from museums, beaches, and shrines to parks and heritage stops across the city.`
+          }
+          title={
+            isArabic
+              ? `أفضل الأماكن للزيارة في ${displayCityName}`
+              : `Top places to visit in ${city.name}`
+          }
+        />
+
+        <GuideItemRail
+          actionLabel={actionLabels.readMore}
+          city={city}
+          cityName={displayCityName}
+          dir={dir}
+          href={`${cityBasePath}/section/food-and-restaurants`}
+          items={displayRestaurants.slice(0, 12)}
+          labels={guideItemLabels}
+          pathPrefix={localePrefix}
+          subtitle={
+            isArabic
+              ? `مشهد الطعام في كراتشي جزء أساسي من تجربة المدينة. اختر من ${restaurants.length} مطعمًا ومنطقة طعام مع ملاحظات عن الموقع والأطباق المناسبة للتخطيط.`
+              : `Karachi’s food scene is part of the city experience. Choose from ${restaurants.length} restaurants and food districts with location notes and planning tips.`
+          }
+          title={
+            isArabic
+              ? `المطاعم وتجارب الطعام في ${displayCityName}`
+              : `Food and restaurants in ${city.name}`
+          }
+        />
+
+        <GuideItemRail
+          actionLabel={actionLabels.all}
+          city={city}
+          cityName={displayCityName}
+          dir={dir}
+          href={`${cityBasePath}/section/children-in-tow`}
+          items={displayFamilySpots.slice(0, 12)}
+          labels={guideItemLabels}
+          pathPrefix={localePrefix}
+          subtitle={
+            isArabic
+              ? "أماكن وأنشطة تناسب العائلات، مع ملاحظات تساعدك على تخطيط اليوم حول الحرارة والتنقل وراحة الأطفال."
+              : "Family-friendly places and activities, with notes to help plan around heat, traffic, and easier days with children."
+          }
+          title={
+            isArabic
+              ? `السفر مع الأطفال في ${displayCityName}`
+              : `Traveling with kids in ${city.name}`
+          }
+        />
+
+        <GuideItemRail
+          actionLabel={actionLabels.all}
+          city={city}
+          cityName={displayCityName}
+          dir={dir}
+          href={`${cityBasePath}/section/hotels`}
+          items={displayHotels.slice(0, 10)}
+          labels={guideItemLabels}
+          pathPrefix={localePrefix}
+          subtitle={
+            isArabic
+              ? "اختر منطقة الإقامة حسب أسلوب رحلتك، من الأعمال والعائلات إلى الإقامة قرب المطار أو المدينة القديمة أو كليفتون ودي إتش إيه."
+              : "Choose where to stay by trip style, from business and family bases to airport, old-city, Clifton, and DHA stays."
+          }
+          title={
+            isArabic
+              ? `أفضل مناطق الإقامة في ${displayCityName}`
+              : `Where to stay in ${city.name}`
+          }
+        />
+
+        <GuideItemRail
+          actionLabel={actionLabels.all}
+          city={city}
+          cityName={displayCityName}
+          dir={dir}
+          href={`${cityBasePath}/section/shopping`}
+          items={displayShopping.slice(0, 12)}
+          labels={guideItemLabels}
+          pathPrefix={localePrefix}
+          subtitle={
+            isArabic
+              ? `تعرّف إلى ${shopping.length} وجهة تسوق، من المراكز التجارية والأسواق وأسواق الكتب إلى شوارع الأزياء ومحلات الهدايا.`
+              : `Explore ${shopping.length} shopping stops, from malls, markets, and book bazaars to fashion streets and souvenir finds.`
+          }
+          title={
+            isArabic ? `دليل التسوق في ${displayCityName}` : `Shopping in ${city.name}`
+          }
+        />
+
+        <PracticalCityInfo city={city} locale={locale} />
+
+        <NeighborhoodCarousel
+          cityName={displayCityName}
+          dir={dir}
+          items={neighbourhoodCards}
+          labels={{
+            areas: isArabic ? "مناطق" : "areas",
+            eyebrow: isArabic ? "دليل المناطق" : "Area guide",
+            next: isArabic ? "عرض المناطق التالية" : "Next neighbourhoods",
+            previous: isArabic
+              ? "عرض المناطق السابقة"
+              : "Previous neighbourhoods",
+            title: isArabic ? "الأحياء والمناطق" : "Neighbourhoods",
+          }}
+        />
+
+        <section className="border-t border-ink/10 bg-white py-14">
+          <div className="mx-auto max-w-7xl px-5">
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.22em] text-irhal-red">
+                  {isArabic ? "مختارات من المدينة" : "City highlights"}
+                </p>
+                <h2 className="mt-2 text-3xl font-black tracking-tight text-ink">
+                  {isArabic ? "معالم بارزة في كراتشي" : `Signature sights in ${city.name}`}
+                </h2>
+              </div>
+              <Badge
+                className="rounded-full bg-coastal px-3 py-1 text-white"
+                variant="coastal"
+              >
+                {actionLabels.shuffled}
+              </Badge>
+            </div>
+            <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {famousSpots.map((place) => {
+                const placePath = `${localePrefix}${pathForGuideItem(city, place)}`;
+
+                return (
+                  <Card
+                    className="overflow-hidden rounded-lg border-ink/10 bg-white shadow-none"
+                    key={place.id}
+                  >
+                    <div className="relative h-[174px] overflow-hidden bg-neutral-100">
+                      <Link className="absolute inset-0" href={placePath}>
                         <Image
-                          alt={`${card.title} in ${city.name}`}
-                          className="object-cover transition duration-500 group-hover:scale-105"
+                          alt={place.imageAlt}
+                          className="object-cover"
                           fill
                           sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
-                          src={card.image}
+                          src={getGuideItemImage(place).image}
+                          style={{
+                            objectPosition:
+                              getGuideItemImage(place).objectPosition,
+                          }}
                         />
+                      </Link>
+                      <Badge className="absolute left-3 top-3 rounded-md bg-[#16325c] px-2.5 py-1 text-xs font-bold leading-none text-white shadow-sm rtl:left-auto rtl:right-3">
+                        {actionLabels.famousBadge}
+                      </Badge>
+                      <Button
+                        aria-label={`${guideItemLabels.savePrefix} ${place.title}`}
+                        className="absolute right-3 top-3 h-9 w-9 rounded-full border-white bg-white/95 text-travel-navy shadow-sm hover:bg-white rtl:left-3 rtl:right-auto"
+                        size="icon"
+                        type="button"
+                        variant="outline"
+                      >
+                        <Heart aria-hidden="true" className="h-5 w-5" />
+                      </Button>
+                    </div>
+                    <CardContent className="flex min-h-[190px] flex-col p-4">
+                      <p className="text-sm font-bold leading-5 text-travel-navy/65">
+                        {displayCityName}
+                      </p>
+                      <h3 className="mt-1 line-clamp-2 text-lg font-bold leading-6 text-travel-navy">
+                        <Link className="hover:underline" href={placePath}>
+                          {place.title}
+                        </Link>
+                      </h3>
+                      {place.category && place.category !== place.title ? (
+                        <p className="mt-1.5 text-xs font-bold uppercase tracking-wide text-coastal">
+                          {place.category}
+                        </p>
                       ) : null}
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/75 via-slate-950/10 to-transparent" />
-                      <div className="absolute bottom-4 left-4 inline-flex h-11 w-11 items-center justify-center bg-white text-slate-950">
-                        <Icon aria-hidden="true" className="h-5 w-5" />
+                      <p className="mt-1.5 line-clamp-4 text-sm leading-6 text-travel-navy/80">
+                        {place.originalContent?.[0] ?? place.description}
+                      </p>
+                      <div className="mt-auto flex flex-wrap items-center justify-between gap-3 pt-5">
+                        <DiscoverLink href={placePath} label={actionLabels.details} />
+                        {place.geoStatus === "verified" ? (
+                          <div className="ms-auto inline-flex items-center gap-1.5 text-sm font-bold text-travel-navy">
+                            <ShieldCheck
+                              aria-hidden="true"
+                              className="h-4 w-4 text-coastal"
+                            />
+                            {guideItemLabels.verified}
+                          </div>
+                        ) : null}
                       </div>
-                    </div>
-                    <div className="p-5">
-                      <h3 className="text-2xl font-black leading-tight text-slate-950">{card.title}</h3>
-                      <p className="mt-3 min-h-20 text-sm leading-6 text-slate-600">{card.description}</p>
-                      <p className="mt-5 font-mono text-xs uppercase tracking-widest text-slate-950">Explore section -&gt;</p>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-
-        <section className="border-y border-slate-200 bg-[#f4f2ec] py-14">
-          <div className="mx-auto max-w-7xl px-5">
-            <div className="text-center">
-              <h2 className="text-4xl font-black tracking-tight text-slate-950 md:text-5xl">
-                {city.name} travel tips from Irhal editors
-              </h2>
-              <p className="mx-auto mt-4 max-w-3xl text-lg leading-8 text-slate-600">
-                Practical cards for the decisions travelers make first: where to base, when to go, and how to move
-                around the city without losing the day to traffic.
-              </p>
-            </div>
-            <div className="mt-10 grid gap-4 md:grid-cols-3">
-              {travelTips.map((tip) => {
-                const Icon = tip.icon;
-                return (
-                  <Link className="bg-[#deddd9] p-6 transition hover:bg-[#d3d2cc]" href={tip.href} key={tip.title}>
-                    <div className="flex items-center gap-3">
-                      <Icon aria-hidden="true" className="h-8 w-8 text-slate-950" />
-                      <h3 className="font-serif text-2xl uppercase tracking-wide text-slate-950">{tip.title}</h3>
-                    </div>
-                    <p className="mt-7 min-h-28 text-base leading-7 text-slate-800">{tip.description}</p>
-                    <div className="mt-7 border-t border-slate-900 pt-5 font-mono text-sm uppercase tracking-widest">
-                      Read full article <span aria-hidden="true">-&gt;</span>
-                    </div>
-                  </Link>
+                    </CardContent>
+                  </Card>
                 );
               })}
             </div>
@@ -280,133 +692,74 @@ export default async function CityPage({ params }: Props) {
         </section>
 
         <GuideItemRail
+          actionLabel={actionLabels.all}
           city={city}
-          href={`/city/${city.slug}/section/places-to-visit`}
-          items={places.slice(0, 12)}
-          subtitle={`Discover ${places.length} attractions, museums, beaches, shrines, parks, and heritage stops as separate pages.`}
-          title={`Top places to visit in ${city.name}`}
+          cityName={displayCityName}
+          dir={dir}
+          href={`${cityBasePath}/section/festivals-and-annual-events`}
+          items={displayFestivals.slice(0, 12)}
+          labels={guideItemLabels}
+          pathPrefix={localePrefix}
+          subtitle={
+            isArabic
+              ? `خطط رحلتك وفق ${festivals.length} مواسم وفعاليات، بما في ذلك المناسبات العامة، وفترات رمضان والعيد، ومعارض الكتب، والأنشطة الفنية، ومواسم الطعام الشتوية.`
+              : `Plan around ${festivals.length} festival seasons, public events, Ramadan/Eid periods, book fairs, art cycles, and winter food activity.`
+          }
+          title={
+            isArabic
+              ? `المهرجانات والفعاليات في ${displayCityName}`
+              : `Festivals and events in ${city.name}`
+          }
         />
 
         <GuideItemRail
-          actionLabel="Read more"
+          actionLabel={actionLabels.all}
           city={city}
-          href={`/city/${city.slug}/section/food-and-restaurants`}
-          items={restaurants.slice(0, 12)}
-          subtitle={`Karachi food is a city layer of its own. These ${restaurants.length} food and restaurant records open into individual pages with map and CMS fields.`}
-          title={`Food and restaurants in ${city.name}`}
+          cityName={displayCityName}
+          dir={dir}
+          href={`${cityBasePath}/section/organized-tours`}
+          items={displayTours.slice(0, 8)}
+          labels={guideItemLabels}
+          pathPrefix={localePrefix}
+          subtitle={
+            isArabic
+              ? "مسارات تراثية، وجولات طعام، ورحلات ساحلية، وزيارات متاحف، وبرامج عائلية، وتجارب قابلة للتخطيط."
+              : "Heritage walks, food crawls, coastal trips, museum circuits, family days, and guided ideas for an easier day out."
+          }
+          title={
+            isArabic
+              ? `جولات وتجارب ${displayCityName}`
+              : `${city.name} tours and experiences`
+          }
         />
 
         <GuideItemRail
+          actionLabel={actionLabels.all}
           city={city}
-          href={`/city/${city.slug}/section/hotels`}
-          items={hotels.slice(0, 10)}
-          subtitle={`Location-led hotel pages for business, family, airport, old-city, Clifton, and DHA stays.`}
-          title={`Where to stay in ${city.name}`}
+          cityName={displayCityName}
+          dir={dir}
+          href={`${cityBasePath}/section/muslim-visitor-information`}
+          items={displayMasjids.slice(0, 10)}
+          labels={guideItemLabels}
+          pathPrefix={localePrefix}
+          subtitle={
+            isArabic
+              ? "مساجد بارزة ومحتوى مهيأ لاحتياجات الصلاة ضمن تجربة السفر الإسلامي، مع قابلية إضافة معلومات مرافق صلاة النساء."
+              : "Landmark masjids and prayer-aware notes for visitors planning salah, family movement, and halal-friendly days."
+          }
+          title={
+            isArabic
+              ? `المساجد والسفر الإسلامي في ${displayCityName}`
+              : `${city.name} masjids and Muslim travel`
+          }
         />
 
-        <section className="border-y border-slate-200 bg-white">
-          <div className="mx-auto grid max-w-7xl gap-8 px-5 py-14 lg:grid-cols-[0.85fr_1.15fr]">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700">Map-first intelligence</p>
-              <h2 className="mt-3 text-4xl font-black tracking-tight text-slate-950 md:text-5xl">
-                Plan {city.name} by neighborhood
-              </h2>
-              <p className="mt-5 text-lg leading-8 text-slate-600">
-                Every destination record needs coordinates, map links, area mapping, and CMS workflow status. This map
-                block stays part of the template, but it now supports the travel homepage instead of dominating it.
-              </p>
-              <p className="mt-5 inline-flex items-center gap-2 text-sm text-slate-500">
-                <BadgeCheck aria-hidden="true" className="h-4 w-4" />
-                Last verified {city.lastVerifiedAt}
-              </p>
-            </div>
-            <MapPanel
-              markers={[
-                { label: city.name, latitude: city.latitude, longitude: city.longitude },
-                ...city.listings.map((listing) => ({
-                  label: listing.name,
-                  latitude: listing.latitude,
-                  longitude: listing.longitude,
-                  tone: listing.listingType === "masjid" ? ("gold" as const) : ("green" as const),
-                })),
-              ]}
-            />
-          </div>
-        </section>
-
-        <section className="mx-auto grid max-w-7xl gap-6 px-5 py-14 lg:grid-cols-[0.9fr_1.1fr]">
-          <div>
-            <h2 className="text-3xl font-black">Neighborhood Operating Guide</h2>
-            <div className="mt-4 grid gap-4">
-              {city.neighborhoods.map((neighborhood) => (
-                <Link
-                  className="border border-slate-200 bg-white p-5 transition hover:border-slate-400"
-                  href={`/city/${city.slug}/neighborhood/${neighborhood.slug}`}
-                  key={neighborhood.slug}
-                >
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{neighborhood.zone}</p>
-                  <h3 className="mt-1 text-lg font-semibold">{neighborhood.name}</h3>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">{neighborhood.operatingGuide}</p>
-                </Link>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <h2 className="text-3xl font-black">Verified Anchor Listings</h2>
-            <div className="mt-4 grid gap-4 md:grid-cols-2">
-              {city.listings.map((listing) => (
-                <ListingCard city={city} key={listing.slug} listing={listing} />
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <GuideItemRail
-          city={city}
-          href={`/city/${city.slug}/section/festivals-and-annual-events`}
-          items={festivals.slice(0, 12)}
-          subtitle={`Plan around ${festivals.length} festival seasons, public events, Ramadan/Eid periods, book fairs, art cycles, and winter food activity.`}
-          title={`Festivals and events in ${city.name}`}
-        />
-
-        <GuideItemRail
-          city={city}
-          href={`/city/${city.slug}/section/shopping`}
-          items={shopping.slice(0, 12)}
-          subtitle={`Browse ${shopping.length} shopping areas, malls, markets, book bazaars, fashion streets, and souvenir stops as separate guide pages.`}
-          title={`Shopping in ${city.name}`}
-        />
-
-        <GuideItemRail
-          city={city}
-          href={`/city/${city.slug}/section/organized-tours`}
-          items={tours.slice(0, 8)}
-          subtitle={`Heritage walks, food crawls, coastal trips, museum circuits, family days, and vetted tour ideas as individual planning pages.`}
-          title={`${city.name} tours and experiences`}
-        />
-
-        <GuideItemRail
-          city={city}
-          href={`/city/${city.slug}/section/muslim-visitor-information`}
-          items={masjids.slice(0, 10)}
-          subtitle={`Landmark masjids and prayer-aware records for the Muslim travel layer, ready for women prayer area enrichment.`}
-          title={`${city.name} masjids and Muslim travel`}
-        />
-
-        <GuideSectionGrid city={city} />
-
-        <section className="border-t border-slate-200 bg-white">
-          <div className="mx-auto grid max-w-7xl gap-4 px-5 py-8 md:grid-cols-4">
-            {city.fastFacts.map((fact) => (
-              <article className="border-l-2 border-emerald-700 pl-4" key={fact.label}>
-                <h2 className="text-sm font-semibold text-slate-950">{fact.label}</h2>
-                <p className="mt-2 text-sm leading-6 text-slate-600">{fact.value}</p>
-              </article>
-            ))}
-          </div>
-        </section>
+        <GuideSectionGrid city={city} cityName={displayCityName} locale={locale} />
       </main>
     </PageShell>
   );
+}
+
+export default async function CityPage(props: Props) {
+  return <CityPageContent {...props} />;
 }

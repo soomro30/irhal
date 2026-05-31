@@ -1,7 +1,12 @@
 import type { CollectionConfig } from "payload";
 
 import { editorsOnly, publishedOrEditor } from "./access";
-import { seoFields, sourceFields, workflowStatusField } from "./shared";
+import {
+  seoFields,
+  sourceFields,
+  translationFields,
+  workflowStatusField,
+} from "./shared";
 
 export const GuideSections: CollectionConfig = {
   slug: "guide-sections",
@@ -29,6 +34,7 @@ export const GuideSections: CollectionConfig = {
     { name: "summary", type: "textarea", required: true },
     { name: "body", type: "richText" },
     { name: "sourceImport", type: "json" },
+    translationFields,
     workflowStatusField,
     seoFields,
     sourceFields,
