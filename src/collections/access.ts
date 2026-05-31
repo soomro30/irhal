@@ -1,15 +1,41 @@
 import type { Access, FieldAccess } from "payload";
 
-export const publishedOrEditor: Access = ({ req }) => {
-  const role = req.user?.role;
+const editorRoles = new Set(["admin", "super-admin", "editor", "seo-manager"]);
 
-  if (role === "admin" || role === "super-admin" || role === "editor" || role === "seo-manager") {
+const isEditorRole = (role: unknown) => typeof role === "string" && editorRoles.has(role);
+
+export const publishedOrEditor: Access = ({ req }) => {
+  if (isEditorRole(req.user?.role)) {
     return true;
   }
 
   return {
     _status: {
       equals: "published",
+    },
+  };
+};
+
+export const workflowPublishedOrEditor: Access = ({ req }) => {
+  if (isEditorRole(req.user?.role)) {
+    return true;
+  }
+
+  return {
+    workflowStatus: {
+      equals: "published",
+    },
+  };
+};
+
+export const approvedMediaOrEditor: Access = ({ req }) => {
+  if (isEditorRole(req.user?.role)) {
+    return true;
+  }
+
+  return {
+    usageStatus: {
+      equals: "approved",
     },
   };
 };

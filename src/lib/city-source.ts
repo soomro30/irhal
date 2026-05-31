@@ -289,11 +289,14 @@ const loadCityBySlug = async (slug: string): Promise<CityGuide | undefined> => {
         if (url) cityHeroGalleryUrls.push(url);
       }
     }
+    const cmsHeroImageUrls = [cityHeroImageUrl, ...cityHeroGalleryUrls].filter(
+      (url): url is string => Boolean(url),
+    );
     const heroImageUrls = Array.from(
       new Set(
-        [cityHeroImageUrl, ...cityHeroGalleryUrls, ...(fallbackCity?.heroImageUrls ?? [])].filter(
-          (url): url is string => Boolean(url),
-        ),
+        cmsHeroImageUrls.length > 0
+          ? cmsHeroImageUrls
+          : (fallbackCity?.heroImageUrls ?? []),
       ),
     );
     const [

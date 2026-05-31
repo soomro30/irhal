@@ -1,6 +1,6 @@
 import type { CollectionConfig } from "payload";
 
-import { editorsOnly, publishedOrEditor } from "./access";
+import { editorsOnly, workflowPublishedOrEditor } from "./access";
 import {
   geoFields,
   seoFields,
@@ -14,7 +14,7 @@ export const Neighborhoods: CollectionConfig = {
   access: {
     create: editorsOnly,
     delete: editorsOnly,
-    read: publishedOrEditor,
+    read: workflowPublishedOrEditor,
     update: editorsOnly,
   },
   admin: {

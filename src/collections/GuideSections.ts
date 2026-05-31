@@ -1,6 +1,6 @@
 import type { CollectionConfig } from "payload";
 
-import { editorsOnly, publishedOrEditor } from "./access";
+import { editorsOnly, workflowPublishedOrEditor } from "./access";
 import {
   seoFields,
   sourceFields,
@@ -13,7 +13,7 @@ export const GuideSections: CollectionConfig = {
   access: {
     create: editorsOnly,
     delete: editorsOnly,
-    read: publishedOrEditor,
+    read: workflowPublishedOrEditor,
     update: editorsOnly,
   },
   admin: {

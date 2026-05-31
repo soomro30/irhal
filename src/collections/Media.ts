@@ -1,20 +1,30 @@
 import type { CollectionConfig } from "payload";
 
-import { editorsOnly, publishedOrEditor } from "./access";
+import { approvedMediaOrEditor, editorsOnly } from "./access";
+
+const asRecord = (value: unknown): Record<string, unknown> =>
+  value && typeof value === "object" ? (value as Record<string, unknown>) : {};
+
+const asString = (value: unknown) => (typeof value === "string" ? value : "");
+
+const adminThumbnail = ({ doc }: { doc: Record<string, unknown> }) => {
+  const thumbnail = asRecord(asRecord(doc.sizes).thumbnail);
+  return asString(thumbnail.url) || asString(doc.url) || null;
+};
 
 export const Media: CollectionConfig = {
   slug: "media",
   access: {
     create: editorsOnly,
     delete: editorsOnly,
-    read: publishedOrEditor,
+    read: approvedMediaOrEditor,
     update: editorsOnly,
   },
   admin: {
     useAsTitle: "alt",
   },
   upload: {
-    adminThumbnail: "thumbnail",
+    adminThumbnail,
     formatOptions: {
       format: "webp",
       options: {

@@ -1,13 +1,13 @@
 import type { CollectionConfig } from "payload";
 
-import { editorsOnly, publishedOrEditor } from "./access";
+import { editorsOnly } from "./access";
 
 export const UpdateLogs: CollectionConfig = {
   slug: "update-logs",
   access: {
     create: editorsOnly,
     delete: editorsOnly,
-    read: publishedOrEditor,
+    read: editorsOnly,
     update: editorsOnly,
   },
   admin: {

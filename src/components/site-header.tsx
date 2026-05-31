@@ -4,6 +4,7 @@ import { ChevronDown, Globe, MapPin, Menu } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSyncExternalStore } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -46,11 +47,36 @@ function getLocalizedCityNavItem(city: CityNavItem, isArabic: boolean): CityNavI
   };
 }
 
+function stripLocalePrefix(pathname: string) {
+  return pathname.replace(/^\/(?:ar|en)(?=\/|$)/, "") || "/";
+}
+
+function buildLocaleToggleHref(pathname: string, isArabic: boolean) {
+  const pathWithoutLocale = stripLocalePrefix(pathname);
+
+  if (isArabic) {
+    return pathWithoutLocale === "/" ? "/en" : `/en${pathWithoutLocale}`;
+  }
+
+  return pathWithoutLocale === "/" ? "/ar" : `/ar${pathWithoutLocale}`;
+}
+
+const subscribeToPathname = () => () => undefined;
+
+function getBrowserPathname() {
+  return window.location.pathname || "/";
+}
+
 export function SiteHeader({ cityItems, isArabic }: SiteHeaderProps) {
   const pathname = usePathname() || "/";
+  const browserPathname = useSyncExternalStore(
+    subscribeToPathname,
+    getBrowserPathname,
+    () => pathname,
+  );
 
   const homeHref = isArabic ? "/ar" : "/en";
-  const newsHref = isArabic ? "/ar/news" : "/news";
+  const newsHref = isArabic ? "/ar/news" : "/en/news";
   const localePrefix = isArabic ? "/ar" : "/en";
   const primaryCitySlug = cityItems[0]?.slug ?? "karachi";
   const primaryCityHref = `${localePrefix}/city/${primaryCitySlug}`;
@@ -58,13 +84,7 @@ export function SiteHeader({ cityItems, isArabic }: SiteHeaderProps) {
   const specialOffersHref = `${localePrefix}/special-offers`;
   const travelArticlesHref = `${localePrefix}/travel-articles`;
 
-  const toggleHref = isArabic
-    ? pathname === "/" || pathname === "/ar"
-      ? "/en"
-      : pathname.replace(/^\/ar/, "") || "/en"
-    : pathname === "/en"
-      ? "/ar"
-      : `/ar${pathname}`;
+  const toggleHref = buildLocaleToggleHref(browserPathname, isArabic);
 
   const labels = isArabic
     ? {

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { headers } from "next/headers";
+import { LocaleRouteSync } from "@/components/locale-document-sync";
 import { NavigationProgress } from "@/components/navigation-progress";
 import "./globals.css";
 
@@ -115,6 +116,7 @@ export default async function RootLayout({
       className={`${tripSans.variable} ${tripSansMono.variable} ${cairo.variable} ${notoSansArabic.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
+        <LocaleRouteSync />
         <NavigationProgress />
         {children}
       </body>

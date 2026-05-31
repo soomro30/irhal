@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ChevronRight, Home } from "lucide-react";
 
+import { LocaleDocumentSync } from "@/components/locale-document-sync";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { getCityNavItems } from "@/lib/city-source";
@@ -28,7 +29,8 @@ export async function PageShell({
       dir={isArabic ? "rtl" : "ltr"}
       lang={isArabic ? "ar" : "en"}
     >
-      <SiteHeader cityItems={cityItems} isArabic={isArabic} />
+      <LocaleDocumentSync locale={locale} />
+      <SiteHeader cityItems={cityItems} isArabic={isArabic} key={locale} />
       {breadcrumbs?.length ? (
         <nav
           aria-label={isArabic ? "مسار التنقل" : "Breadcrumb"}
@@ -82,7 +84,7 @@ export async function PageShell({
         </nav>
       ) : null}
       {children}
-      <SiteFooter cityItems={cityItems} isArabic={isArabic} />
+      <SiteFooter cityItems={cityItems} isArabic={isArabic} key={`footer-${locale}`} />
     </div>
   );
 }
