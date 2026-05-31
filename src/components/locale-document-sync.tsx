@@ -6,6 +6,8 @@ import { usePathname } from "next/navigation";
 type Locale = "en" | "ar";
 
 function localeFromPathname(pathname: string): Locale {
+  if (pathname === "/admin" || pathname.startsWith("/admin/")) return "en";
+
   return pathname === "/en" || pathname.startsWith("/en/") ? "en" : "ar";
 }
 

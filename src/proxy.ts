@@ -24,6 +24,12 @@ export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const nestedLocaleMatch = pathname.match(/^\/(ar|en)\/(ar|en)(?=\/|$)/);
 
+  if (pathname === "/admin" || pathname.startsWith("/admin/")) {
+    return NextResponse.next({
+      request: { headers: withLocaleHeader(request, "en") },
+    });
+  }
+
   if (nestedLocaleMatch) {
     const [, , innerLocale] = nestedLocaleMatch;
     const redirectUrl = request.nextUrl.clone();
@@ -67,6 +73,6 @@ export function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!api|admin|payload-api|_next/static|_next/image|favicon.ico|.*\\..*).*)",
+    "/((?!api|payload-api|_next/static|_next/image|favicon.ico|.*\\..*).*)",
   ],
 };
