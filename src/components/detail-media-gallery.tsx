@@ -26,6 +26,7 @@ export function DetailMediaGallery({
 }: DetailMediaGalleryProps) {
   const safeImages = images.length > 0 ? images : [fallbackImage];
   const secondaryImages = safeImages.slice(1, 5);
+  const shouldBalanceSecondaryGrid = secondaryImages.length >= 3;
   const [activeIndex, setActiveIndex] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const hasMultiple = safeImages.length > 1;
@@ -104,14 +105,24 @@ export function DetailMediaGallery({
               src={safeImages[0]}
             />
           </button>
-          <div className="grid grid-cols-2 gap-2">
+          <div
+            className={
+              shouldBalanceSecondaryGrid
+                ? "grid grid-cols-2 gap-2 md:grid-rows-2"
+                : "grid grid-cols-2 gap-2"
+            }
+          >
             {secondaryImages.map((image, index) => {
               const imageIndex = index + 1;
 
               return (
                 <button
                   aria-label={`${labels.viewAll} ${imageIndex + 1}`}
-                  className="group relative aspect-[1.25] overflow-hidden bg-paper-deep text-start"
+                  className={
+                    shouldBalanceSecondaryGrid
+                      ? "group relative aspect-[1.25] overflow-hidden bg-paper-deep text-start md:aspect-auto md:h-full md:min-h-0"
+                      : "group relative aspect-[1.25] overflow-hidden bg-paper-deep text-start"
+                  }
                   key={`${image}-${index}`}
                   onClick={() => openAt(imageIndex)}
                   type="button"
