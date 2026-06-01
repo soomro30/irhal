@@ -7,6 +7,7 @@ import {
   translationFields,
   workflowStatusField,
 } from "./shared";
+import { revalidateAfterChange, revalidateAfterDelete } from "./revalidate";
 
 export const Itineraries: CollectionConfig = {
   slug: "itineraries",
@@ -19,6 +20,10 @@ export const Itineraries: CollectionConfig = {
   admin: {
     defaultColumns: ["title", "city", "durationDays", "audience", "workflowStatus"],
     useAsTitle: "title",
+  },
+  hooks: {
+    afterChange: [revalidateAfterChange],
+    afterDelete: [revalidateAfterDelete],
   },
   fields: [
     { name: "title", type: "text", required: true },

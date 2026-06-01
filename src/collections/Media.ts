@@ -1,6 +1,7 @@
 import type { CollectionConfig } from "payload";
 
 import { approvedMediaOrEditor, editorsOnly } from "./access";
+import { revalidateAfterChange, revalidateAfterDelete } from "./revalidate";
 
 const asRecord = (value: unknown): Record<string, unknown> =>
   value && typeof value === "object" ? (value as Record<string, unknown>) : {};
@@ -22,6 +23,10 @@ export const Media: CollectionConfig = {
   },
   admin: {
     useAsTitle: "alt",
+  },
+  hooks: {
+    afterChange: [revalidateAfterChange],
+    afterDelete: [revalidateAfterDelete],
   },
   upload: {
     adminThumbnail,

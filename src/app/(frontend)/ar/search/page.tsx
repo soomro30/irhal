@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { SearchPageContent, type SearchPageProps } from "@/app/search/page";
+import { SearchPageContent, type SearchPageProps } from "@/app/(frontend)/search/page";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({

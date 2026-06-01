@@ -3,28 +3,28 @@ import localFont from "next/font/local";
 import { headers } from "next/headers";
 import { LocaleRouteSync } from "@/components/locale-document-sync";
 import { NavigationProgress } from "@/components/navigation-progress";
-import "./globals.css";
+import "../globals.css";
 
 const tripSans = localFont({
   preload: false,
   src: [
     {
-      path: "../../public/fonts/Trip-Sans-Font/trip-sans.otf",
+      path: "../../../public/fonts/Trip-Sans-Font/trip-sans.otf",
       weight: "400",
       style: "normal",
     },
     {
-      path: "../../public/fonts/Trip-Sans-Font/trip-sans-medium.otf",
+      path: "../../../public/fonts/Trip-Sans-Font/trip-sans-medium.otf",
       weight: "500",
       style: "normal",
     },
     {
-      path: "../../public/fonts/Trip-Sans-Font/trip-sans-bold.otf",
+      path: "../../../public/fonts/Trip-Sans-Font/trip-sans-bold.otf",
       weight: "700 800",
       style: "normal",
     },
     {
-      path: "../../public/fonts/Trip-Sans-Font/trip-sans-ultra.otf",
+      path: "../../../public/fonts/Trip-Sans-Font/trip-sans-ultra.otf",
       weight: "900",
       style: "normal",
     },
@@ -36,7 +36,7 @@ const tripSans = localFont({
 
 const tripSansMono = localFont({
   preload: false,
-  src: "../../public/fonts/Trip-Sans-Font/trip-sans-mono-regular.otf",
+  src: "../../../public/fonts/Trip-Sans-Font/trip-sans-mono-regular.otf",
   variable: "--font-geist-mono",
   display: "swap",
   fallback: ["Menlo", "Consolas", "monospace"],
@@ -45,12 +45,12 @@ const tripSansMono = localFont({
 const cairo = localFont({
   preload: false,
   src: [
-    { path: "../../public/fonts/arabic/cairo-400.ttf", weight: "400", style: "normal" },
-    { path: "../../public/fonts/arabic/cairo-500.ttf", weight: "500", style: "normal" },
-    { path: "../../public/fonts/arabic/cairo-600.ttf", weight: "600", style: "normal" },
-    { path: "../../public/fonts/arabic/cairo-700.ttf", weight: "700", style: "normal" },
-    { path: "../../public/fonts/arabic/cairo-800.ttf", weight: "800", style: "normal" },
-    { path: "../../public/fonts/arabic/cairo-900.ttf", weight: "900", style: "normal" },
+    { path: "../../../public/fonts/arabic/cairo-400.ttf", weight: "400", style: "normal" },
+    { path: "../../../public/fonts/arabic/cairo-500.ttf", weight: "500", style: "normal" },
+    { path: "../../../public/fonts/arabic/cairo-600.ttf", weight: "600", style: "normal" },
+    { path: "../../../public/fonts/arabic/cairo-700.ttf", weight: "700", style: "normal" },
+    { path: "../../../public/fonts/arabic/cairo-800.ttf", weight: "800", style: "normal" },
+    { path: "../../../public/fonts/arabic/cairo-900.ttf", weight: "900", style: "normal" },
   ],
   variable: "--font-cairo",
   display: "swap",
@@ -61,32 +61,32 @@ const notoSansArabic = localFont({
   preload: false,
   src: [
     {
-      path: "../../public/fonts/arabic/noto-sans-arabic-400.ttf",
+      path: "../../../public/fonts/arabic/noto-sans-arabic-400.ttf",
       weight: "400",
       style: "normal",
     },
     {
-      path: "../../public/fonts/arabic/noto-sans-arabic-500.ttf",
+      path: "../../../public/fonts/arabic/noto-sans-arabic-500.ttf",
       weight: "500",
       style: "normal",
     },
     {
-      path: "../../public/fonts/arabic/noto-sans-arabic-600.ttf",
+      path: "../../../public/fonts/arabic/noto-sans-arabic-600.ttf",
       weight: "600",
       style: "normal",
     },
     {
-      path: "../../public/fonts/arabic/noto-sans-arabic-700.ttf",
+      path: "../../../public/fonts/arabic/noto-sans-arabic-700.ttf",
       weight: "700",
       style: "normal",
     },
     {
-      path: "../../public/fonts/arabic/noto-sans-arabic-800.ttf",
+      path: "../../../public/fonts/arabic/noto-sans-arabic-800.ttf",
       weight: "800",
       style: "normal",
     },
     {
-      path: "../../public/fonts/arabic/noto-sans-arabic-900.ttf",
+      path: "../../../public/fonts/arabic/noto-sans-arabic-900.ttf",
       weight: "900",
       style: "normal",
     },

@@ -1,6 +1,7 @@
 import type { CollectionConfig } from "payload";
 
 import { editorsOnly, publishedOrEditor } from "./access";
+import { revalidateAfterChange, revalidateAfterDelete } from "./revalidate";
 import { seoFields, sourceFields, workflowStatusField } from "./shared";
 
 export const Countries: CollectionConfig = {
@@ -15,6 +16,10 @@ export const Countries: CollectionConfig = {
     defaultColumns: ["name", "iso2", "region", "workflowStatus", "updatedAt"],
     group: "Geography",
     useAsTitle: "name",
+  },
+  hooks: {
+    afterChange: [revalidateAfterChange],
+    afterDelete: [revalidateAfterDelete],
   },
   versions: {
     drafts: true,

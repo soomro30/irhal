@@ -8,6 +8,7 @@ import {
   translationFields,
   workflowStatusField,
 } from "./shared";
+import { revalidateAfterChange, revalidateAfterDelete } from "./revalidate";
 
 export const Listings: CollectionConfig = {
   slug: "listings",
@@ -26,6 +27,10 @@ export const Listings: CollectionConfig = {
       "workflowStatus",
     ],
     useAsTitle: "name",
+  },
+  hooks: {
+    afterChange: [revalidateAfterChange],
+    afterDelete: [revalidateAfterDelete],
   },
   versions: {
     drafts: true,

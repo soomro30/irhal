@@ -1,6 +1,7 @@
 import type { CollectionConfig } from "payload";
 
 import { editorsOnly, workflowPublishedOrEditor } from "./access";
+import { revalidateAfterChange, revalidateAfterDelete } from "./revalidate";
 import { geoFields, sourceFields, workflowStatusField } from "./shared";
 
 export const Districts: CollectionConfig = {
@@ -14,6 +15,10 @@ export const Districts: CollectionConfig = {
   admin: {
     defaultColumns: ["name", "city", "zone", "workflowStatus"],
     useAsTitle: "name",
+  },
+  hooks: {
+    afterChange: [revalidateAfterChange],
+    afterDelete: [revalidateAfterDelete],
   },
   fields: [
     { name: "name", type: "text", required: true },

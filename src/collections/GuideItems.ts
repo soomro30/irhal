@@ -6,6 +6,7 @@ import {
   sourceFields,
   workflowStatusField,
 } from "./shared";
+import { revalidateAfterChange, revalidateAfterDelete } from "./revalidate";
 
 export const GuideItems: CollectionConfig = {
   slug: "guide-items",
@@ -26,6 +27,10 @@ export const GuideItems: CollectionConfig = {
       "workflowStatus",
     ],
     useAsTitle: "title",
+  },
+  hooks: {
+    afterChange: [revalidateAfterChange],
+    afterDelete: [revalidateAfterDelete],
   },
   versions: {
     drafts: true,

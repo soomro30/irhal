@@ -21,11 +21,6 @@ type CMSDoc = Record<string, unknown> & {
   id: number | string;
 };
 
-type CityCacheEntry = {
-  expiresAt: number;
-  value: CityGuide | undefined;
-};
-
 export type CityNavItem = {
   country: string;
   heroImageUrl?: string;
@@ -33,14 +28,12 @@ export type CityNavItem = {
   slug: string;
 };
 
-const cityCache = new Map<string, CityCacheEntry>();
-const cityRequests = new Map<string, Promise<CityGuide | undefined>>();
+const isProduction = process.env.NODE_ENV === "production";
 const defaultCityCacheTtlSeconds =
   process.env.NODE_ENV === "development" ? 5 : 60;
 const cityCacheTtlSeconds = Number(
   process.env.IRHAL_CITY_CACHE_SECONDS ?? defaultCityCacheTtlSeconds,
 );
-const cityCacheTtlMs = cityCacheTtlSeconds * 1000;
 
 const isCMSConfigured = () =>
   Boolean(
@@ -401,7 +394,15 @@ const localCityNavItems = (): CityNavItem[] =>
   }));
 
 const loadCityNavItems = async (): Promise<CityNavItem[]> => {
-  if (!isCMSConfigured()) return localCityNavItems();
+  if (!isCMSConfigured()) {
+    if (isProduction) {
+      throw new Error(
+        "Payload CMS is not configured in production. DATABASE_URL and PAYLOAD_SECRET are required.",
+      );
+    }
+
+    return localCityNavItems();
+  }
 
   try {
     const payload = await getPayload({ config });
@@ -429,6 +430,8 @@ const loadCityNavItems = async (): Promise<CityNavItem[]> => {
 
     return items.length > 0 ? items : localCityNavItems();
   } catch (error) {
+    if (isProduction) throw error;
+
     console.warn("Payload city nav source failed; falling back to local cities.", error);
     return localCityNavItems();
   }
@@ -450,6 +453,12 @@ const loadCityBySlug = async (slug: string): Promise<CityGuide | undefined> => {
   const fallbackCity = getLocalCityBySlug(slug);
 
   if (!isCMSConfigured()) {
+    if (isProduction) {
+      throw new Error(
+        "Payload CMS is not configured in production. DATABASE_URL and PAYLOAD_SECRET are required.",
+      );
+    }
+
     return fallbackCity;
   }
 
@@ -676,6 +685,8 @@ const loadCityBySlug = async (slug: string): Promise<CityGuide | undefined> => {
       fullGuide: structuredSections ?? fallbackCity?.fullGuide,
     } as CityGuide;
   } catch (error) {
+    if (isProduction) throw error;
+
     console.warn(
       `Payload city source failed for ${slug}; falling back to local import.`,
       error,
@@ -696,33 +707,7 @@ const cachedLoadCityBySlug = unstable_cache(
 export const getCityBySlug = async (
   slug: string,
 ): Promise<CityGuide | undefined> => {
-  const cacheKey = slug.toLowerCase();
-  const cached = cityCache.get(cacheKey);
-
-  if (cached && cached.expiresAt > Date.now()) {
-    return cached.value;
-  }
-
-  const inFlight = cityRequests.get(cacheKey);
-
-  if (inFlight) {
-    return inFlight;
-  }
-
-  const request = cachedLoadCityBySlug(cacheKey)
-    .then((city) => {
-      cityCache.set(cacheKey, {
-        expiresAt: Date.now() + cityCacheTtlMs,
-        value: city,
-      });
-      return city;
-    })
-    .finally(() => {
-      cityRequests.delete(cacheKey);
-    });
-
-  cityRequests.set(cacheKey, request);
-  return request;
+  return cachedLoadCityBySlug(slug.toLowerCase());
 };
 
 export const preloadCityBySlug = (slug: string) => {

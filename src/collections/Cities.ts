@@ -8,6 +8,7 @@ import {
   translationFields,
   workflowStatusField,
 } from "./shared";
+import { revalidateAfterChange, revalidateAfterDelete } from "./revalidate";
 
 export const Cities: CollectionConfig = {
   slug: "cities",
@@ -21,6 +22,10 @@ export const Cities: CollectionConfig = {
     defaultColumns: ["name", "country", "region", "workflowStatus", "updatedAt"],
     group: "Geography",
     useAsTitle: "name",
+  },
+  hooks: {
+    afterChange: [revalidateAfterChange],
+    afterDelete: [revalidateAfterDelete],
   },
   versions: {
     drafts: true,

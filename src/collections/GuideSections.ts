@@ -7,6 +7,7 @@ import {
   translationFields,
   workflowStatusField,
 } from "./shared";
+import { revalidateAfterChange, revalidateAfterDelete } from "./revalidate";
 
 export const GuideSections: CollectionConfig = {
   slug: "guide-sections",
@@ -19,6 +20,10 @@ export const GuideSections: CollectionConfig = {
   admin: {
     defaultColumns: ["title", "city", "sectionSlug", "workflowStatus"],
     useAsTitle: "title",
+  },
+  hooks: {
+    afterChange: [revalidateAfterChange],
+    afterDelete: [revalidateAfterDelete],
   },
   fields: [
     { name: "title", type: "text", required: true },

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { HomeContent, homeMetadata } from "@/app/page";
+import { HomeContent, homeMetadata } from "@/app/(frontend)/page";
 
 export function generateMetadata(): Metadata {
   return homeMetadata("ar");
