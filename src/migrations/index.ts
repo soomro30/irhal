@@ -2,6 +2,7 @@ import * as migration_20260528_074946_r2_media_fields from './20260528_074946_r2
 import * as migration_20260529_041500_arabic_translation_fields from './20260529_041500_arabic_translation_fields';
 import * as migration_20260530_043000_city_hero_gallery from './20260530_043000_city_hero_gallery';
 import * as migration_20260530_163000_guide_item_neighborhood_relationship from './20260530_163000_guide_item_neighborhood_relationship';
+import * as migration_20260601_101500_guide_item_editorial_address from './20260601_101500_guide_item_editorial_address';
 
 export const migrations = [
   {
@@ -23,5 +24,10 @@ export const migrations = [
     up: migration_20260530_163000_guide_item_neighborhood_relationship.up,
     down: migration_20260530_163000_guide_item_neighborhood_relationship.down,
     name: '20260530_163000_guide_item_neighborhood_relationship'
+  },
+  {
+    up: migration_20260601_101500_guide_item_editorial_address.up,
+    down: migration_20260601_101500_guide_item_editorial_address.down,
+    name: '20260601_101500_guide_item_editorial_address'
   },
 ];

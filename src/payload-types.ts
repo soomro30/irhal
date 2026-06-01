@@ -336,7 +336,7 @@ export interface City {
     | boolean
     | null;
   /**
-   * Locale-keyed editorial translations. Use {"ar": {...}} for Arabic title, summary, body, labels, and SEO copy.
+   * Arabic editor copy. Example: {"ar":{"title":"...","summary":"...","overview":["Paragraph 1","Paragraph 2"],"area":"...","category":"...","address":"..."}}
    */
   translations?:
     | {
@@ -407,7 +407,7 @@ export interface GuideSection {
     | boolean
     | null;
   /**
-   * Locale-keyed editorial translations. Use {"ar": {...}} for Arabic title, summary, body, labels, and SEO copy.
+   * Arabic editor copy. Example: {"ar":{"title":"...","summary":"...","overview":["Paragraph 1","Paragraph 2"],"area":"...","category":"...","address":"..."}}
    */
   translations?:
     | {
@@ -448,10 +448,6 @@ export interface GuideItem {
   id: number;
   title: string;
   slug: string;
-  kind: 'place' | 'hotel' | 'restaurant' | 'masjid' | 'shopping' | 'tour' | 'family' | 'festival';
-  city: number | City;
-  section?: (number | null) | GuideSection;
-  sectionSlug: string;
   summary: string;
   body?: {
     root: {
@@ -468,6 +464,19 @@ export interface GuideItem {
     };
     [k: string]: unknown;
   } | null;
+  arabicTitle?: string | null;
+  arabicSummary?: string | null;
+  /**
+   * Use blank lines between paragraphs. This feeds the Overview section on Arabic pages.
+   */
+  arabicOverview?: string | null;
+  arabicArea?: string | null;
+  arabicCategory?: string | null;
+  arabicAddress?: string | null;
+  kind: 'place' | 'hotel' | 'restaurant' | 'masjid' | 'shopping' | 'tour' | 'family' | 'festival';
+  city: number | City;
+  section?: (number | null) | GuideSection;
+  sectionSlug: string;
   image?: (number | null) | Media;
   gallery?:
     | {
@@ -477,14 +486,36 @@ export interface GuideItem {
     | null;
   imageAlt: string;
   area?: string | null;
-  neighborhood?: (number | null) | Neighborhood;
   category?: string | null;
+  address?: string | null;
+  neighborhood?: (number | null) | Neighborhood;
   budget?: string | null;
   mapUrl?: string | null;
   geoStatus: 'provider-enrichment-required' | 'coordinates-required' | 'verified';
   latitude?: number | null;
   longitude?: number | null;
   providerPlaceId?: string | null;
+  seo: {
+    title: string;
+    description: string;
+    canonicalUrl?: string | null;
+    openGraphImage?: (number | null) | Media;
+    robots: 'index,follow' | 'noindex,follow' | 'noindex,nofollow';
+    schemaType: string;
+  };
+  workflowStatus: 'draft' | 'review' | 'approved' | 'published' | 'updated' | 'archived';
+  sources?:
+    | {
+        label: string;
+        url: string;
+        type: 'official' | 'map-provider' | 'editorial' | 'partner' | 'user-submitted';
+        verifiedAt: string;
+        confidence: 'low' | 'medium' | 'high';
+        id?: string | null;
+      }[]
+    | null;
+  sourceTable?: string | null;
+  sourceRowId?: string | null;
   importedDetails?:
     | {
         [k: string]: unknown;
@@ -495,7 +526,7 @@ export interface GuideItem {
     | boolean
     | null;
   /**
-   * Locale-keyed editorial translations. Use {"ar": {...}} for Arabic title, summary, body, labels, and SEO copy.
+   * Legacy translation JSON retained for imports and backwards compatibility. Use the Arabic content fields for normal editing.
    */
   translations?:
     | {
@@ -505,27 +536,6 @@ export interface GuideItem {
     | string
     | number
     | boolean
-    | null;
-  sourceTable?: string | null;
-  sourceRowId?: string | null;
-  workflowStatus: 'draft' | 'review' | 'approved' | 'published' | 'updated' | 'archived';
-  seo: {
-    title: string;
-    description: string;
-    canonicalUrl?: string | null;
-    openGraphImage?: (number | null) | Media;
-    robots: 'index,follow' | 'noindex,follow' | 'noindex,nofollow';
-    schemaType: string;
-  };
-  sources?:
-    | {
-        label: string;
-        url: string;
-        type: 'official' | 'map-provider' | 'editorial' | 'partner' | 'user-submitted';
-        verifiedAt: string;
-        confidence: 'low' | 'medium' | 'high';
-        id?: string | null;
-      }[]
     | null;
   updatedAt: string;
   createdAt: string;
@@ -555,7 +565,7 @@ export interface Neighborhood {
   image?: (number | null) | Media;
   imageAlt?: string | null;
   /**
-   * Locale-keyed editorial translations. Use {"ar": {...}} for Arabic title, summary, body, labels, and SEO copy.
+   * Arabic editor copy. Example: {"ar":{"title":"...","summary":"...","overview":["Paragraph 1","Paragraph 2"],"area":"...","category":"...","address":"..."}}
    */
   translations?:
     | {
@@ -682,7 +692,7 @@ export interface Listing {
     | null;
   address: string;
   /**
-   * Locale-keyed editorial translations. Use {"ar": {...}} for Arabic title, summary, body, labels, and SEO copy.
+   * Arabic editor copy. Example: {"ar":{"title":"...","summary":"...","overview":["Paragraph 1","Paragraph 2"],"area":"...","category":"...","address":"..."}}
    */
   translations?:
     | {
@@ -758,7 +768,7 @@ export interface Itinerary {
   audience: 'first-time' | 'family' | 'muslim-traveler' | 'business' | 'budget' | 'luxury';
   summary: string;
   /**
-   * Locale-keyed editorial translations. Use {"ar": {...}} for Arabic title, summary, body, labels, and SEO copy.
+   * Arabic editor copy. Example: {"ar":{"title":"...","summary":"...","overview":["Paragraph 1","Paragraph 2"],"area":"...","category":"...","address":"..."}}
    */
   translations?:
     | {
@@ -1275,12 +1285,18 @@ export interface GuideSectionsSelect<T extends boolean = true> {
 export interface GuideItemsSelect<T extends boolean = true> {
   title?: T;
   slug?: T;
+  summary?: T;
+  body?: T;
+  arabicTitle?: T;
+  arabicSummary?: T;
+  arabicOverview?: T;
+  arabicArea?: T;
+  arabicCategory?: T;
+  arabicAddress?: T;
   kind?: T;
   city?: T;
   section?: T;
   sectionSlug?: T;
-  summary?: T;
-  body?: T;
   image?: T;
   gallery?:
     | T
@@ -1290,19 +1306,15 @@ export interface GuideItemsSelect<T extends boolean = true> {
       };
   imageAlt?: T;
   area?: T;
-  neighborhood?: T;
   category?: T;
+  address?: T;
+  neighborhood?: T;
   budget?: T;
   mapUrl?: T;
   geoStatus?: T;
   latitude?: T;
   longitude?: T;
   providerPlaceId?: T;
-  importedDetails?: T;
-  translations?: T;
-  sourceTable?: T;
-  sourceRowId?: T;
-  workflowStatus?: T;
   seo?:
     | T
     | {
@@ -1313,6 +1325,7 @@ export interface GuideItemsSelect<T extends boolean = true> {
         robots?: T;
         schemaType?: T;
       };
+  workflowStatus?: T;
   sources?:
     | T
     | {
@@ -1323,6 +1336,10 @@ export interface GuideItemsSelect<T extends boolean = true> {
         confidence?: T;
         id?: T;
       };
+  sourceTable?: T;
+  sourceRowId?: T;
+  importedDetails?: T;
+  translations?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;

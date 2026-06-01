@@ -5,6 +5,7 @@ import { getPayload } from "payload";
 import type {
   CityGuide,
   CityGuideImport,
+  CityGuideItem,
   Itinerary,
   LocaleTranslations,
   Listing,
@@ -34,7 +35,11 @@ export type CityNavItem = {
 
 const cityCache = new Map<string, CityCacheEntry>();
 const cityRequests = new Map<string, Promise<CityGuide | undefined>>();
-const cityCacheTtlSeconds = Number(process.env.IRHAL_CITY_CACHE_SECONDS ?? 1800);
+const defaultCityCacheTtlSeconds =
+  process.env.NODE_ENV === "development" ? 5 : 1800;
+const cityCacheTtlSeconds = Number(
+  process.env.IRHAL_CITY_CACHE_SECONDS ?? defaultCityCacheTtlSeconds,
+);
 const cityCacheTtlMs = cityCacheTtlSeconds * 1000;
 
 const isCMSConfigured = () =>
@@ -54,6 +59,79 @@ const asArray = (value: unknown): unknown[] =>
   Array.isArray(value) ? value : [];
 const normalizeTranslations = (value: unknown) =>
   asRecord(value) as LocaleTranslations;
+const splitParagraphs = (value: unknown): string[] =>
+  asString(value)
+    .split(/\n{2,}/)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean);
+
+const mergeGuideItemArabicFields = (
+  doc: CMSDoc,
+  translations: LocaleTranslations,
+): LocaleTranslations => {
+  const arabic = {
+    ...asRecord(translations.ar),
+    ...(asString(doc.arabicTitle) ? { title: asString(doc.arabicTitle) } : {}),
+    ...(asString(doc.arabicSummary)
+      ? { summary: asString(doc.arabicSummary) }
+      : {}),
+    ...(splitParagraphs(doc.arabicOverview).length > 0
+      ? { overview: splitParagraphs(doc.arabicOverview) }
+      : {}),
+    ...(asString(doc.arabicArea) ? { area: asString(doc.arabicArea) } : {}),
+    ...(asString(doc.arabicCategory)
+      ? { category: asString(doc.arabicCategory) }
+      : {}),
+    ...(asString(doc.arabicAddress)
+      ? { address: asString(doc.arabicAddress) }
+      : {}),
+  };
+
+  return Object.keys(arabic).length > 0
+    ? { ...translations, ar: arabic }
+    : translations;
+};
+
+const guideItemFallbackImageByKind: Record<CityGuideItem["kind"], string> = {
+  family: "/images/karachi-guide/family.svg",
+  festival: "/images/karachi-guide/festival.svg",
+  hotel: "/images/karachi-guide/hotel.svg",
+  masjid: "/images/karachi-guide/masjid.svg",
+  place: "/images/karachi-guide/place.svg",
+  restaurant: "/images/karachi-guide/restaurant.svg",
+  shopping: "/images/karachi-guide/shopping.svg",
+  tour: "/images/karachi-guide/tour.svg",
+};
+
+const isGuideItemKind = (value: string): value is CityGuideItem["kind"] =>
+  value in guideItemFallbackImageByKind;
+
+const plainTextFromLexicalNode = (value: unknown): string => {
+  const node = asRecord(value);
+  const text = asString(node.text);
+  const childText = asArray(node.children)
+    .map(plainTextFromLexicalNode)
+    .filter(Boolean)
+    .join("");
+
+  return text || childText;
+};
+
+const normalizeRichTextParagraphs = (value: unknown): string[] => {
+  if (typeof value === "string") {
+    return value
+      .split(/\n{2,}/)
+      .map((paragraph) => paragraph.trim())
+      .filter(Boolean);
+  }
+
+  const root = asRecord(asRecord(value).root);
+  const rootChildren = asArray(root.children);
+
+  return rootChildren
+    .map((node) => plainTextFromLexicalNode(node).replace(/\s+/g, " ").trim())
+    .filter(Boolean);
+};
 
 const relationshipId = (value: unknown) => {
   if (typeof value === "number" || typeof value === "string") return value;
@@ -196,6 +274,117 @@ const normalizeGuideItemTranslations = (docs: CMSDoc[]) =>
 
     return translations;
   }, {});
+
+const normalizeGuideItemOverrides = (docs: CMSDoc[]) =>
+  docs.reduce<NonNullable<CityGuide["guideItemOverrides"]>>((overrides, doc) => {
+    const slug = asString(doc.slug);
+    const kind = asString(doc.kind);
+    if (!slug) return overrides;
+
+    const body = normalizeRichTextParagraphs(doc.body);
+    const override = {
+      area: asString(doc.area) || undefined,
+      budget: asString(doc.budget) || undefined,
+      category: asString(doc.category) || undefined,
+      description: asString(doc.summary) || undefined,
+      geoStatus:
+        asString(doc.geoStatus) === "verified" ? ("verified" as const) : undefined,
+      imageAlt: asString(doc.imageAlt) || undefined,
+      mapUrl: asString(doc.mapUrl) || undefined,
+      originalContent: body.length > 0 ? body : undefined,
+      title: asString(doc.title) || undefined,
+    };
+
+    overrides[slug] = override;
+    if (kind) overrides[`${kind}:${slug}`] = override;
+
+    return overrides;
+  }, {});
+
+const normalizeImportedDetails = (value: unknown): Record<string, string> => {
+  return Object.entries(asRecord(value)).reduce<Record<string, string>>(
+    (details, [key, detail]) => {
+      if (detail == null) return details;
+      details[key] =
+        typeof detail === "string" ? detail : JSON.stringify(detail);
+      return details;
+    },
+    {},
+  );
+};
+
+const normalizeGuideItems = ({
+  citySlug,
+  docs,
+  guideItemGalleries,
+  guideItemImages,
+  guideItemNeighborhoods,
+}: {
+  citySlug: string;
+  docs: CMSDoc[];
+  guideItemGalleries: Record<string, string[]>;
+  guideItemImages: Record<string, string>;
+  guideItemNeighborhoods: Record<string, string>;
+}): CityGuideItem[] => {
+  return docs.flatMap((doc) => {
+      const kindValue = asString(doc.kind);
+      if (!isGuideItemKind(kindValue)) return [];
+
+      const slug = asString(doc.slug);
+      const title = asString(doc.title);
+      if (!slug || !title) return [];
+
+      const key = `${kindValue}:${slug}`;
+      const details = normalizeImportedDetails(doc.importedDetails);
+      const body = normalizeRichTextParagraphs(doc.body);
+      const area = asString(doc.area);
+      const category = asString(doc.category, kindValue);
+      const neighborhoodSlug =
+        guideItemNeighborhoods[key] ?? guideItemNeighborhoods[slug];
+      const primaryImage = guideItemImages[key] ?? guideItemImages[slug];
+      const gallery = guideItemGalleries[key] ?? guideItemGalleries[slug];
+      const sourceTable = asString(doc.sourceTable, "payload");
+      const translations = mergeGuideItemArabicFields(
+        doc,
+        normalizeTranslations(doc.translations),
+      );
+      const address =
+        asString(doc.address) ||
+        details.legacy_irhal_source_address ||
+        details.legacy_irhal_source_location;
+
+      const item: CityGuideItem = {
+        id: String(doc.id),
+        citySlug,
+        kind: kindValue,
+        sectionSlug: asString(doc.sectionSlug),
+        sourceTable,
+        title,
+        slug,
+        eyebrow: `${kindValue.replace("-", " ")} in ${area || citySlug}`,
+        area,
+        ...(neighborhoodSlug ? { neighborhoodSlug } : {}),
+        category,
+        description: asString(doc.summary, `${title} in ${area || citySlug}.`),
+        ...(asString(doc.budget) ? { budget: asString(doc.budget) } : {}),
+        ...(asString(doc.mapUrl) ? { mapUrl: asString(doc.mapUrl) } : {}),
+        imageUrl: primaryImage ?? guideItemFallbackImageByKind[kindValue],
+        imageAlt: asString(doc.imageAlt, `${title} ${kindValue} in ${citySlug}`),
+        ...(Object.keys(translations).length > 0 ? { translations } : {}),
+        details,
+        ...(body.length > 0 ? { originalContent: body } : {}),
+        ...(address ? { originalLocation: address } : {}),
+        ...(primaryImage ? { cmsImageUrl: primaryImage } : {}),
+        ...(gallery && gallery.length > 0 ? { galleryUrls: gallery } : {}),
+        geoStatus:
+          asString(doc.geoStatus) === "verified"
+            ? "verified"
+            : "provider-enrichment-required",
+      };
+
+      return [item];
+    });
+};
 
 const localCityNavItems = (): CityNavItem[] =>
   localCities.map((city) => ({
@@ -445,9 +634,17 @@ const loadCityBySlug = async (slug: string): Promise<CityGuide | undefined> => {
       guideItemTranslations: normalizeGuideItemTranslations(
         guideItemResult.docs as CMSDoc[],
       ),
+      guideItemOverrides: normalizeGuideItemOverrides(guideItemDocs),
       guideItemImages,
       guideItemGalleries,
       guideItemNeighborhoods,
+      guideItems: normalizeGuideItems({
+        citySlug: asString(cityDoc.slug),
+        docs: guideItemDocs,
+        guideItemGalleries,
+        guideItemImages,
+        guideItemNeighborhoods,
+      }),
       fastFacts: asArray(cityDoc.fastFacts).map((fact) => {
         const record = asRecord(fact);
         return { label: asString(record.label), value: asString(record.value) };

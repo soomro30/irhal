@@ -55,7 +55,7 @@ export const translationFields: Field = {
   type: "json",
   admin: {
     description:
-      'Locale-keyed editorial translations. Use {"ar": {...}} for Arabic title, summary, body, labels, and SEO copy.',
+      'Arabic editor copy. Example: {"ar":{"title":"...","summary":"...","overview":["Paragraph 1","Paragraph 2"],"area":"...","category":"...","address":"..."}}',
   },
 };
 

@@ -150,18 +150,33 @@ const withOriginalContent = (item: GuideItem): GuideItem => {
   };
 };
 
-// Prefer a Payload-managed image (served from Cloudflare R2) when the matching
-// guide-item document has one linked. Falls back to local presentation assets.
-const withCmsImage = (city: CityGuide, item: GuideItem): GuideItem => {
+// Prefer Payload-managed editorial fields/media when the matching guide-item
+// document has them. The imported guide tables remain the fallback.
+const withCmsGuideItem = (city: CityGuide, item: GuideItem): GuideItem => {
+  const key = `${item.kind}:${item.slug}`;
+  const override =
+    city.guideItemOverrides?.[key] ?? city.guideItemOverrides?.[item.slug];
   const url =
-    city.guideItemImages?.[`${item.kind}:${item.slug}`] ??
+    city.guideItemImages?.[key] ??
     city.guideItemImages?.[item.slug];
   const gallery =
-    city.guideItemGalleries?.[`${item.kind}:${item.slug}`] ??
+    city.guideItemGalleries?.[key] ??
     city.guideItemGalleries?.[item.slug];
-  if (!url && !gallery) return item;
+  if (!override && !url && !gallery) return item;
+
   return {
     ...item,
+    ...(override?.title ? { title: override.title } : {}),
+    ...(override?.area ? { area: override.area } : {}),
+    ...(override?.category ? { category: override.category } : {}),
+    ...(override?.description ? { description: override.description } : {}),
+    ...(override?.budget ? { budget: override.budget } : {}),
+    ...(override?.mapUrl ? { mapUrl: override.mapUrl } : {}),
+    ...(override?.imageAlt ? { imageAlt: override.imageAlt } : {}),
+    ...(override?.originalContent && override.originalContent.length > 0
+      ? { originalContent: override.originalContent }
+      : {}),
+    ...(override?.geoStatus ? { geoStatus: override.geoStatus } : {}),
     ...(url ? { cmsImageUrl: url } : {}),
     ...(gallery && gallery.length > 0 ? { galleryUrls: gallery } : {}),
   };
@@ -397,6 +412,26 @@ const asLocalizedText = (
   fallback: string,
 ) => (typeof value === "string" && value.trim() ? value : fallback);
 
+const asLocalizedParagraphs = (value: unknown): string[] | undefined => {
+  if (Array.isArray(value)) {
+    const paragraphs = value.filter(
+      (paragraph): paragraph is string =>
+        typeof paragraph === "string" && paragraph.trim().length > 0,
+    );
+    return paragraphs.length > 0 ? paragraphs : undefined;
+  }
+
+  if (typeof value === "string" && value.trim()) {
+    const paragraphs = value
+      .split(/\n{2,}/)
+      .map((paragraph) => paragraph.trim())
+      .filter(Boolean);
+    return paragraphs.length > 0 ? paragraphs : undefined;
+  }
+
+  return undefined;
+};
+
 const arabicKindLabel: Record<GuideItemKind, string> = {
   family: "عائلي",
   festival: "فعالية",
@@ -473,12 +508,9 @@ export const localizeGuideItem = (
   const title = asLocalizedText(translation.title ?? translation.name, item.title);
   const area = asLocalizedText(translation.area, item.area);
   const category = asLocalizedText(translation.category, item.category);
-  const overview = Array.isArray(translation.overview)
-    ? (translation.overview as unknown[]).filter(
-        (paragraph): paragraph is string =>
-          typeof paragraph === "string" && paragraph.trim().length > 0,
-      )
-    : undefined;
+  const overview =
+    asLocalizedParagraphs(translation.overview) ??
+    asLocalizedParagraphs(translation.body);
   const address = asLocalizedText(translation.address, "");
 
   return {
@@ -500,6 +532,10 @@ export const localizeGuideItem = (
 };
 
 export const getGuideItems = (city: CityGuide): GuideItem[] => {
+  if (city.guideItems && city.guideItems.length > 0) {
+    return city.guideItems.map((item) => withTranslations(city, item));
+  }
+
   const configs = [
     {
       purpose: "festivals",
@@ -599,7 +635,10 @@ export const getGuideItems = (city: CityGuide): GuideItem[] => {
         city,
         withNeighborhood(
           city,
-          withCmsImage(city, withOriginalContent(withIrhalLegacyUpdate(baseItem))),
+          withCmsGuideItem(
+            city,
+            withOriginalContent(withIrhalLegacyUpdate(baseItem)),
+          ),
         ),
       );
     });

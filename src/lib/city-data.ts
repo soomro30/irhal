@@ -141,6 +141,40 @@ export type CityGuideImport = {
   };
 };
 
+export type CityGuideItem = {
+  id: string;
+  citySlug: string;
+  kind:
+    | "place"
+    | "hotel"
+    | "restaurant"
+    | "masjid"
+    | "shopping"
+    | "tour"
+    | "family"
+    | "festival";
+  sectionSlug: string;
+  sourceTable: string;
+  title: string;
+  slug: string;
+  eyebrow: string;
+  area: string;
+  neighborhoodSlug?: string;
+  category: string;
+  description: string;
+  budget?: string;
+  mapUrl?: string;
+  imageUrl: string;
+  imageAlt: string;
+  translations?: Record<string, Record<string, unknown>>;
+  details: Record<string, string>;
+  originalContent?: string[];
+  originalLocation?: string;
+  cmsImageUrl?: string;
+  galleryUrls?: string[];
+  geoStatus: "provider-enrichment-required" | "verified";
+};
+
 export type CityGuide = {
   slug: string;
   name: string;
@@ -159,9 +193,24 @@ export type CityGuide = {
   lastVerifiedAt: string;
   translations?: LocaleTranslations;
   guideItemTranslations?: Record<string, LocaleTranslations>;
+  guideItemOverrides?: Record<
+    string,
+    {
+      area?: string;
+      budget?: string;
+      category?: string;
+      description?: string;
+      geoStatus?: "provider-enrichment-required" | "verified";
+      imageAlt?: string;
+      mapUrl?: string;
+      originalContent?: string[];
+      title?: string;
+    }
+  >;
   guideItemImages?: Record<string, string>;
   guideItemGalleries?: Record<string, string[]>;
   guideItemNeighborhoods?: Record<string, string>;
+  guideItems?: CityGuideItem[];
   fastFacts: { label: string; value: string }[];
   sections: {
     visitorInformation: string;
