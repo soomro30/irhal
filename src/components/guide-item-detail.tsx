@@ -13,12 +13,10 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 
-import { DiscoverPill } from "@/components/discover-action";
 import type { CityGuide } from "@/lib/city-data";
 import { getGuideItemImage, getGuideItemImages } from "@/lib/city-presentation";
 import type { GuideItem } from "@/lib/guide-items";
 import {
-  getGuideArticlesForSection,
   getGuideItems,
   guideKindOrder,
   kindPlural,
@@ -123,8 +121,6 @@ export function GuideItemDetail({
         price: "السعر",
         quickFacts: "حقائق سريعة",
         railSubtitle: `واصل استكشاف ${cityName} وأضف المزيد من المحطات إلى خطتك.`,
-        readArticle: "اقرأ المقال كاملًا",
-        relatedGuides: "أدلة ذات صلة",
         share: "مشاركة",
         tip1: "تأكد من ساعات العمل وقواعد التذاكر ومواعيد العطلات قبل زيارتك.",
         tip2: `للخطط الطويلة عبر المدينة، اجمع المواقع القريبة معًا حتى لا يستهلك ازدحام ${cityName} يومك.`,
@@ -160,8 +156,6 @@ export function GuideItemDetail({
         price: "Price",
         quickFacts: "Quick facts",
         railSubtitle: `Keep exploring ${cityName} and add more stops to your plan.`,
-        readArticle: "Read full article",
-        relatedGuides: "Related guides",
         share: "Share",
         tip1: "Check opening hours, ticket rules, and holiday schedules close to your visit.",
         tip2: `For longer cross-city plans, group nearby stops together so ${cityName} traffic does not eat the day.`,
@@ -227,11 +221,6 @@ export function GuideItemDetail({
       (rail): rail is { kind: GuideItem["kind"]; href: string; items: GuideItem[] } =>
         Boolean(rail),
     );
-
-  const relatedArticles = getGuideArticlesForSection(city, item.sectionSlug).slice(
-    0,
-    3,
-  );
 
   const railTitle = (kind: GuideItem["kind"]) =>
     isArabic
@@ -549,42 +538,6 @@ export function GuideItemDetail({
                 title={railTitle(rail.kind)}
               />
             ))}
-          </section>
-        ) : null}
-
-        {/* Related guides (articles from the same section) */}
-        {relatedArticles.length > 0 ? (
-          <section className="border-t border-ink/10 bg-paper py-12">
-            <div className="mx-auto max-w-7xl px-5">
-              <p className="text-xs font-black uppercase tracking-[0.22em] text-irhal-red">
-                {copy.relatedGuides}
-              </p>
-              <h2 className="mt-2 text-2xl font-black tracking-tight text-ink md:text-3xl">
-                {sectionTitle}
-              </h2>
-              <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                {relatedArticles.map((article) => (
-                  <Link
-                    href={`${cityBasePath}/section/${item.sectionSlug}/${article.slug}`}
-                    key={article.slug}
-                  >
-                    <Card className="h-full bg-white transition hover:-translate-y-0.5 hover:border-coastal/40">
-                      <CardContent className="flex h-full flex-col p-6">
-                        <h3 className="text-lg font-black leading-tight text-ink">
-                          {article.title}
-                        </h3>
-                        <p className="mt-3 line-clamp-3 text-sm leading-6 text-ink/70">
-                          {article.summary}
-                        </p>
-                        <div className="mt-auto pt-5">
-                          <DiscoverPill label={isArabic ? "اكتشف" : "Discover"} />
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                ))}
-              </div>
-            </div>
           </section>
         ) : null}
       </main>
