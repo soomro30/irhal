@@ -67,6 +67,8 @@ export type GuideItem = {
   originalLocation?: string;
   cmsImageUrl?: string;
   galleryUrls?: string[];
+  updatedAt?: string;
+  createdAt?: string;
   geoStatus: "provider-enrichment-required" | "verified";
 };
 
@@ -191,6 +193,38 @@ const withNeighborhood = (city: CityGuide, item: GuideItem): GuideItem => {
 
   return neighborhoodSlug ? { ...item, neighborhoodSlug } : item;
 };
+
+const hasEditorialMedia = (item: GuideItem) =>
+  Boolean(
+    item.cmsImageUrl ||
+      (item.galleryUrls && item.galleryUrls.length > 0) ||
+      (item.imageUrl && !item.imageUrl.endsWith(".svg")),
+  );
+
+const itemUpdateTime = (item: GuideItem) => {
+  const value = item.updatedAt ?? item.createdAt;
+  if (!value) return 0;
+
+  const time = Date.parse(value);
+  return Number.isFinite(time) ? time : 0;
+};
+
+const sortGuideItemsForEditorialDisplay = (items: GuideItem[]) =>
+  items
+    .map((item, index) => ({ index, item }))
+    .sort((left, right) => {
+      const mediaDelta =
+        Number(hasEditorialMedia(right.item)) -
+        Number(hasEditorialMedia(left.item));
+      if (mediaDelta !== 0) return mediaDelta;
+
+      const updateDelta =
+        itemUpdateTime(right.item) - itemUpdateTime(left.item);
+      if (updateDelta !== 0) return updateDelta;
+
+      return left.index - right.index;
+    })
+    .map(({ item }) => item);
 
 const irhalLegacyArticleUpdateByKey = (
   karachiIrhalLegacyArticleUpdates as IrhalLegacyArticleUpdate[]
@@ -533,7 +567,9 @@ export const localizeGuideItem = (
 
 export const getGuideItems = (city: CityGuide): GuideItem[] => {
   if (city.guideItems && city.guideItems.length > 0) {
-    return city.guideItems.map((item) => withTranslations(city, item));
+    return sortGuideItemsForEditorialDisplay(
+      city.guideItems.map((item) => withTranslations(city, item)),
+    );
   }
 
   const configs = [
@@ -612,37 +648,39 @@ export const getGuideItems = (city: CityGuide): GuideItem[] => {
     },
   ];
 
-  return configs.flatMap((config) => {
-    const table = getGuideTable(city, config.purpose);
-    if (!table) return [];
+  return sortGuideItemsForEditorialDisplay(
+    configs.flatMap((config) => {
+      const table = getGuideTable(city, config.purpose);
+      if (!table) return [];
 
-    return table.rows.map((row, index) => {
-      const baseItem = asItem({
-        city,
-        table,
-        row,
-        index,
-        kind: config.kind,
-        sectionSlug: config.sectionSlug,
-        titleKey: config.titleKey,
-        areaKey: config.areaKey,
-        categoryKey: config.categoryKey,
-        descriptionKey: config.descriptionKey,
-        budgetKey: "budgetKey" in config ? config.budgetKey : undefined,
-      });
-
-      return withTranslations(
-        city,
-        withNeighborhood(
+      return table.rows.map((row, index) => {
+        const baseItem = asItem({
           city,
-          withCmsGuideItem(
+          table,
+          row,
+          index,
+          kind: config.kind,
+          sectionSlug: config.sectionSlug,
+          titleKey: config.titleKey,
+          areaKey: config.areaKey,
+          categoryKey: config.categoryKey,
+          descriptionKey: config.descriptionKey,
+          budgetKey: "budgetKey" in config ? config.budgetKey : undefined,
+        });
+
+        return withTranslations(
+          city,
+          withNeighborhood(
             city,
-            withOriginalContent(withIrhalLegacyUpdate(baseItem)),
+            withCmsGuideItem(
+              city,
+              withOriginalContent(withIrhalLegacyUpdate(baseItem)),
+            ),
           ),
-        ),
-      );
-    });
-  });
+        );
+      });
+    }),
+  );
 };
 
 export const getGuideItemsForSection = (city: CityGuide, sectionSlug: string) =>

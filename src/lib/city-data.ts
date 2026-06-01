@@ -172,6 +172,8 @@ export type CityGuideItem = {
   originalLocation?: string;
   cmsImageUrl?: string;
   galleryUrls?: string[];
+  updatedAt?: string;
+  createdAt?: string;
   geoStatus: "provider-enrichment-required" | "verified";
 };
 

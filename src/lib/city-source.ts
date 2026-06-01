@@ -376,6 +376,12 @@ const normalizeGuideItems = ({
         ...(address ? { originalLocation: address } : {}),
         ...(primaryImage ? { cmsImageUrl: primaryImage } : {}),
         ...(gallery && gallery.length > 0 ? { galleryUrls: gallery } : {}),
+        ...(asString(doc.updatedAt)
+          ? { updatedAt: asString(doc.updatedAt) }
+          : {}),
+        ...(asString(doc.createdAt)
+          ? { createdAt: asString(doc.createdAt) }
+          : {}),
         geoStatus:
           asString(doc.geoStatus) === "verified"
             ? "verified"
