@@ -36,7 +36,7 @@ export type CityNavItem = {
 const cityCache = new Map<string, CityCacheEntry>();
 const cityRequests = new Map<string, Promise<CityGuide | undefined>>();
 const defaultCityCacheTtlSeconds =
-  process.env.NODE_ENV === "development" ? 5 : 1800;
+  process.env.NODE_ENV === "development" ? 5 : 60;
 const cityCacheTtlSeconds = Number(
   process.env.IRHAL_CITY_CACHE_SECONDS ?? defaultCityCacheTtlSeconds,
 );
@@ -680,7 +680,7 @@ const loadCityBySlug = async (slug: string): Promise<CityGuide | undefined> => {
 
 const cachedLoadCityBySlug = unstable_cache(
   loadCityBySlug,
-  ["irhal-city-by-slug-v2"],
+  ["irhal-city-by-slug-v3"],
   {
     revalidate: cityCacheTtlSeconds,
     tags: ["irhal-city"],
