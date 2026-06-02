@@ -4,7 +4,7 @@ import Link from "next/link";
 import { DiscoverPill } from "@/components/discover-action";
 import type { CityNavItem } from "@/lib/city-source";
 
-const fallbackCityImage = "/images/karachi-guide/karachi-coast-hero.png";
+const fallbackCityImage = "/images/karachi-guide/place.svg";
 
 export function CityImageCard({
   city,

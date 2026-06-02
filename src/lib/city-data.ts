@@ -80,9 +80,26 @@ export type Itinerary = {
   durationDays: number;
   audience: string;
   summary: string;
+  intro?: string;
+  planning?: {
+    stay?: string;
+    transport?: string;
+    meals?: {
+      breakfast?: string;
+      lunch?: string;
+      dinner?: string;
+    };
+  };
   days: {
     dayNumber: number;
     theme: string;
+    description?: string;
+    start?: string;
+    transport?: string;
+    breakfast?: string;
+    lunch?: string;
+    dinner?: string;
+    pacing?: string;
     stops: string[];
     routeNotes: string;
   }[];
@@ -178,6 +195,7 @@ export type CityGuideItem = {
 };
 
 export type CityGuide = {
+  contentSource?: "payload" | "local";
   slug: string;
   name: string;
   country: string;
@@ -532,18 +550,436 @@ export const cities: CityGuide[] = [
         durationDays: 1,
         audience: "first-time",
         summary:
-          "A tight first-time route that keeps the day focused on Clifton, Saddar heritage, and a halal-friendly dinner stop.",
+          "A full first-time Karachi day that starts with the national mausoleum, moves through civic heritage and Burns Road food, then finishes around Clifton, the shrine, Sea View, and a coastal dinner.",
+        intro:
+          "This is a high-energy one-day plan for travelers who want the city headline in a single sweep. Keep the day private-car based, start early, and treat the afternoon shift from the historic center to Clifton as the main traffic buffer.",
+        planning: {
+          stay:
+            "Best base: Civil Lines, Saddar, Clifton, or DHA. Civil Lines/Saddar keeps the morning short; Clifton/DHA makes the evening easier after Sea View and dinner.",
+          transport:
+            "Use one private car with driver or ride-hailing for the full day. Walking works only inside individual stops; the route itself is not walkable.",
+          meals: {
+            breakfast:
+              "Eat breakfast at the hotel before leaving so you can reach Mazar-e-Quaid soon after opening.",
+            lunch:
+              "Plan a late lunch or snack stop around Burns Road, then keep the next leg light because Clifton traffic can be slow.",
+            dinner:
+              "End with a reserved table around Do Darya or Clifton/DHA after sunset.",
+          },
+        },
         days: [
           {
             dayNumber: 1,
-            theme: "Coast, culture, and classic Karachi food",
+            theme: "Founder landmarks, colonial heritage, food, and the coast",
+            description:
+              "Begin with national and civic landmarks while the city is cooler, keep the middle of the day flexible for museum timings, then let the evening become a calmer coastal route with prayer, beach, and dinner stops.",
+            start:
+              "Leave the hotel by 8:00 AM, carrying water, modest layers for shrine or masjid visits, and a printed or saved route.",
+            transport:
+              "Keep the same driver from morning to dinner and ask them to wait at each stop instead of searching for new cars in crowded areas.",
+            breakfast:
+              "Hotel breakfast before departure, or a simple cafe stop near your base if you are staying in Clifton or DHA.",
+            lunch:
+              "Burns Road for classic Karachi food; keep the stop early enough to avoid turning the afternoon into a traffic rush.",
+            dinner:
+              "Do Darya for the coast-facing finale, with Clifton or DHA as easier backup areas if traffic or weather changes.",
+            pacing:
+              "This is a full day. Skip one museum or shorten Burns Road if children, elders, heat, or traffic start to slow the route.",
             stops: [
-              "mohatta-palace",
-              "quaid-e-azam-mausoleum",
-              "bbq-tonight-clifton",
+              "mazar-e-quaid",
+              "frere-hall",
+              "national-museum-of-pakistan",
+              "burns-road-food-street",
+              "mohatta-palace-museum",
+              "abdullah-shah-ghazi-shrine",
+              "clifton-beach-sea-view",
+              "do-darya",
             ],
             routeNotes:
-              "Start in Clifton, move to the central landmark cluster, then return coastal for dinner.",
+              "Start early at Mazar-e-Quaid before the heat, keep the heritage stops close around Saddar and Civil Lines, then move to Clifton for the museum, shrine, beach sunset, and dinner.",
+          },
+        ],
+      },
+      {
+        slug: "karachi-two-day-classic",
+        title: "Karachi Two-Day Classic",
+        durationDays: 2,
+        audience: "first-time",
+        summary:
+          "A balanced two-day route for visitors who want Karachi's history, museums, old food districts, Clifton culture, shopping, and a calmer second-day pace.",
+        intro:
+          "This is the most comfortable first Karachi itinerary: day one stays around the historic center and old food districts, while day two moves through museums, Clifton, the coast, and dinner. It works well for couples, families with older children, and first-time visitors who want a full city feel without compressing everything into one day.",
+        planning: {
+          stay:
+            "Best base: Clifton, DHA, Civil Lines, or Saddar. Clifton/DHA is easier for evening dining and family comfort; Civil Lines/Saddar is better if your priority is old-city history.",
+          transport:
+            "Book a private car with driver for both days, or use ride-hailing for shorter hops with a dedicated driver for the old-city cluster. Avoid planning this as a walking itinerary.",
+          meals: {
+            breakfast:
+              "Breakfast near the hotel both mornings. Keep it predictable so the sightseeing day starts on time.",
+            lunch:
+              "Use Burns Road or Saddar on day one, then a museum, mall, Boat Basin, or Clifton/DHA stop on day two depending on your route speed.",
+            dinner:
+              "Day one can finish near Burns Road or Clifton; day two should end at Do Darya, Boat Basin, or a reserved Clifton/DHA restaurant.",
+          },
+        },
+        days: [
+          {
+            dayNumber: 1,
+            theme: "Core Karachi history and old-city food",
+            description:
+              "Make this the city-origin story: founding landmark, museum context, colonial commercial streets, historic masjid, then classic food. The day is richer with a local guide because the old-city stops are close in meaning but not always easy to navigate alone.",
+            start:
+              "Start by 8:30 AM at Mazar-e-Quaid or the National Museum, then move into Tower and M.A. Jinnah Road before late afternoon congestion builds.",
+            transport:
+              "Use a local driver or guide, keep parking decisions with them, and walk only short, visible stretches between nearby old-city points.",
+            breakfast:
+              "Have breakfast at your hotel before leaving; this is not the day to search for breakfast inside the old-city traffic pattern.",
+            lunch:
+              "Plan Burns Road as lunch, late lunch, or an early dinner depending on museum timings and crowd levels.",
+            dinner:
+              "If Burns Road becomes lunch, finish later around Clifton/DHA. If Burns Road becomes dinner, keep Frere Hall as a calmer late-afternoon stop first.",
+            pacing:
+              "Keep one optional stop in reserve. If Tower, Denso Hall, and Memon Masjid take longer than expected, skip the least important stop rather than rushing meals.",
+            stops: [
+              "mazar-e-quaid",
+              "national-museum-of-pakistan",
+              "merewether-clock-tower",
+              "denso-hall",
+              "memon-masjid",
+              "burns-road-food-street",
+              "frere-hall",
+            ],
+            routeNotes:
+              "Keep this day central and guided where possible. Begin with major civic landmarks, then move carefully through the old-city heritage cluster before ending with Burns Road and Frere Hall.",
+          },
+          {
+            dayNumber: 2,
+            theme: "Museums, Clifton culture, shrine, mall, and dinner",
+            description:
+              "Use this as the smoother cultural day: family-friendly museums in the morning, then a clean westward shift to Clifton for Mohatta Palace, shopping, prayer-aware pauses, beach air, and a relaxed dinner.",
+            start:
+              "Start after breakfast around 9:30 AM with the Karsaz museum cluster, then move to Clifton after lunch or in the early afternoon.",
+            transport:
+              "Private car or ride-hailing works well. Keep the route one-directional from Karsaz toward Clifton to avoid doubling back.",
+            breakfast:
+              "Breakfast at the hotel or a nearby cafe before the museum block.",
+            lunch:
+              "Use a cafe, mall, or Clifton/Boat Basin stop between museums and Mohatta Palace.",
+            dinner:
+              "Reserve Do Darya for the final meal, or stay around Boat Basin/Clifton if the sea breeze, weather, or children make a shorter finish better.",
+            pacing:
+              "This day should feel calmer than day one. Use Dolmen Mall as an air-conditioned pause, not just a shopping stop.",
+            stops: [
+              "paf-museum",
+              "pakistan-maritime-museum",
+              "mohatta-palace-museum",
+              "dolmen-mall-clifton",
+              "abdullah-shah-ghazi-shrine",
+              "clifton-beach-sea-view",
+              "do-darya",
+            ],
+            routeNotes:
+              "Use the morning for Karsaz museums, then shift west to Clifton for culture, shopping, prayer-aware pauses, beach time, and an easy coastal dinner.",
+          },
+        ],
+      },
+      {
+        slug: "karachi-three-day-deep-dive",
+        title: "Karachi Three-Day Deep Dive",
+        durationDays: 3,
+        audience: "first-time",
+        summary:
+          "A deeper Karachi plan for travelers who want the old city, Clifton and DHA, family-friendly museums, shopping, and a final day shaped around either beaches or a big family outing.",
+        intro:
+          "This three-day plan gives Karachi room to breathe. It separates the old city, Clifton/coast, and family or beach choices so each day has a clear mood instead of becoming one long traffic negotiation.",
+        planning: {
+          stay:
+            "Best base: Clifton or DHA for comfort, restaurants, and the coastal days. Civil Lines is also practical if your group is strongly heritage-focused.",
+          transport:
+            "Use a dedicated car with driver for day one and any western-beach outing. Ride-hailing can work for Clifton/DHA evenings when the group is small.",
+          meals: {
+            breakfast:
+              "Keep breakfasts close to the hotel. Save exploration energy for lunch and dinner neighborhoods.",
+            lunch:
+              "Match lunch to the day cluster: Burns Road/Saddar on day one, Clifton/Boat Basin on day two, and a packed or pre-booked option for beach outings.",
+            dinner:
+              "Use dinner as the soft landing each day: Burns Road or Clifton, then Do Darya/Boat Basin, then an easy restaurant near your base.",
+          },
+        },
+        days: [
+          {
+            dayNumber: 1,
+            theme: "Historic core, markets, and classic food",
+            description:
+              "Spend the first day on Karachi's civic and old-port identity. This is the densest day, so it benefits from early movement, modest expectations around traffic, and a guide who understands where walking is practical.",
+            start:
+              "Leave by 8:30 AM and keep the morning for Mazar-e-Quaid, Tower, and M.A. Jinnah Road before crowds thicken.",
+            transport:
+              "Private car with local driver or guide. Keep bags minimal and avoid long unsupervised walks through market lanes.",
+            breakfast:
+              "Hotel breakfast before departure.",
+            lunch:
+              "Burns Road or a Saddar stop, timed according to how the old-city cluster is moving.",
+            dinner:
+              "Either stay with Burns Road as the main meal or move to a quieter Clifton/DHA dinner if the day has been heavy.",
+            pacing:
+              "Dense heritage day. Protect energy by dropping one stop if heat, crowding, or parking becomes difficult.",
+            stops: [
+              "mazar-e-quaid",
+              "merewether-clock-tower",
+              "denso-hall",
+              "wazir-mansion",
+              "memon-masjid",
+              "burns-road-food-street",
+              "frere-hall",
+            ],
+            routeNotes:
+              "Treat this as the old-city day: start early, use a local driver or guide, keep valuables discreet, and allow traffic buffers between the central landmarks.",
+          },
+          {
+            dayNumber: 2,
+            theme: "Sea, culture, shrine, and Clifton/DHA dining",
+            description:
+              "Keep the second day around Clifton, DHA, and the coast. It should feel slower: architecture and museum time first, then shrine, mall or cafe pause, sunset beach, and dinner.",
+            start:
+              "Start mid-morning after breakfast so Mohatta Palace and Clifton stops do not feel rushed.",
+            transport:
+              "Ride-hailing or private car. Distances are shorter than day one, but traffic around beach and mall access still needs buffers.",
+            breakfast:
+              "Breakfast near the hotel, especially if you are staying in Clifton or DHA.",
+            lunch:
+              "Clifton cafe, Boat Basin, or Dolmen Mall depending on prayer time, children, and heat.",
+            dinner:
+              "Do Darya or Boat Basin, preferably with a reservation for families or larger groups.",
+            pacing:
+              "Use the mall or cafe stop as a planned reset before sunset rather than as an afterthought.",
+            stops: [
+              "mohatta-palace-museum",
+              "abdullah-shah-ghazi-shrine",
+              "dolmen-mall-clifton",
+              "clifton-beach-sea-view",
+              "boat-basin-food-street",
+              "do-darya",
+            ],
+            routeNotes:
+              "Keep the day around Clifton and DHA so the route feels relaxed. Build in a prayer or rest pause before sunset and dinner.",
+          },
+          {
+            dayNumber: 3,
+            theme: "Museums, family stops, or the western beaches",
+            description:
+              "Choose the day-three version that fits your group: an easier museum-and-family route inside the city, or a bigger western-beach outing that needs advance planning and daylight travel.",
+            start:
+              "For museums, start around 9:30 AM. For Hawksbay or Sandspit, leave earlier and confirm hut access, tides, and sea conditions first.",
+            transport:
+              "Private car is strongly recommended for the western beaches. For the in-city version, ride-hailing can work if you keep stops clustered.",
+            breakfast:
+              "Full breakfast at the hotel, especially before a beach day.",
+            lunch:
+              "Carry snacks and water for the beach version; for the city version, use a mall or family restaurant between activities.",
+            dinner:
+              "Keep dinner close to your hotel or in Clifton/DHA after a beach outing so the return does not become another long event.",
+            pacing:
+              "Do not combine every family stop with the western beaches. Pick one main route and let the last evening stay easy.",
+            stops: [
+              "paf-museum",
+              "pakistan-maritime-museum",
+              "tdf-magnifiscience-centre",
+              "safari-park",
+              "hawksbay-beach",
+              "sandspit-beach",
+            ],
+            routeNotes:
+              "Choose the Karsaz/Gulshan museum-and-family cluster for an easier day, or switch to Hawksbay and Sandspit with advance planning, daylight travel, and current sea-condition checks.",
+          },
+        ],
+      },
+      {
+        slug: "karachi-family-weekend",
+        title: "Karachi Family Weekend",
+        durationDays: 2,
+        audience: "family",
+        summary:
+          "A child-friendly Karachi weekend that avoids overloaded market walking and combines interactive museums, open-air pauses, malls, beaches, and easy family meals.",
+        intro:
+          "This weekend plan is built around children, elders, stroller breaks, prayer pauses, and heat management. It avoids forcing old-city walking into a family trip and gives you clear places to pause when the day needs to slow down.",
+        planning: {
+          stay:
+            "Best base: Clifton or DHA for family restaurants, mall access, and a shorter evening return. Karsaz can work if museums are the priority.",
+          transport:
+            "Use a private car or reliable ride-hailing with enough room for bags, snacks, and tired children. Keep beach and Bahria Town decisions separate.",
+          meals: {
+            breakfast:
+              "Breakfast at the hotel before leaving. Families should not start the day hungry and then negotiate Karachi traffic.",
+            lunch:
+              "Use Dolmen Mall, Boat Basin, or a museum-adjacent family restaurant as the controlled lunch stop.",
+            dinner:
+              "Choose Boat Basin, Clifton/DHA, or a reserved family restaurant rather than leaving dinner open-ended after beach time.",
+          },
+        },
+        days: [
+          {
+            dayNumber: 1,
+            theme: "Hands-on learning, lawns, and Clifton comfort",
+            description:
+              "Start with interactive museums while children have energy, then shift toward Clifton for an air-conditioned break, a visible beach stretch, and an easy meal. The day is designed to keep exits simple if someone gets tired.",
+            start:
+              "Leave after a proper breakfast, around 9:00 AM, with water, hats, light snacks, and a change of clothes if beach activity is likely.",
+            transport:
+              "Private car or roomy ride-hailing. Keep one adult focused on bags and pickup points at each stop.",
+            breakfast:
+              "Hotel breakfast or a familiar cafe near your base.",
+            lunch:
+              "Dolmen Mall or Boat Basin so restrooms, seating, and familiar food options are easy.",
+            dinner:
+              "Boat Basin or Clifton/DHA. Keep dinner near the final stop rather than crossing the city late.",
+            pacing:
+              "Two museums may be enough. Treat the beach as optional if the children are already tired.",
+            stops: [
+              "tdf-magnifiscience-centre",
+              "paf-museum",
+              "pakistan-maritime-museum",
+              "dolmen-mall-clifton",
+              "clifton-beach-horse-camel-rides",
+              "boat-basin-food-street",
+            ],
+            routeNotes:
+              "Keep museums early, then use Dolmen Mall or Boat Basin as a flexible air-conditioned break. Beach activities should stay on busy, visible stretches.",
+          },
+          {
+            dayNumber: 2,
+            theme: "Park time and a bigger family outing",
+            description:
+              "Make a deliberate choice: stay in the city with Safari Park, Mohatta, and Sea View, or commit to Bahria Town as the bigger outing. Families usually enjoy the day more when it has one clear anchor.",
+            start:
+              "Start around 9:30 AM for the in-city version. For Bahria Town, leave earlier and confirm opening hours, ticket rules, and return timing.",
+            transport:
+              "Private car is best, especially for Bahria Town. Keep ride-hailing as backup for shorter Clifton movements only.",
+            breakfast:
+              "Hotel breakfast before departure.",
+            lunch:
+              "Use a mall, family restaurant, or pre-planned stop before the long outing begins.",
+            dinner:
+              "If returning from Bahria Town, keep dinner simple near the hotel. If staying in Clifton, use Boat Basin or DHA.",
+            pacing:
+              "Do not force both Safari Park and Bahria Town into a tired afternoon. Pick the route that fits the youngest traveler.",
+            stops: [
+              "safari-park",
+              "mohatta-palace-museum",
+              "clifton-beach-sea-view",
+              "bahria-adventure-land",
+              "grand-jamia-masjid-bahria-town-karachi",
+            ],
+            routeNotes:
+              "Pick either the in-city Clifton/Safari Park rhythm or the Bahria Town outing. Do not try to force both if children are tired or the heat is heavy.",
+          },
+        ],
+      },
+      {
+        slug: "karachi-old-city-half-day",
+        title: "Karachi Old City Half-Day",
+        durationDays: 1,
+        audience: "budget",
+        summary:
+          "A focused heritage walk through Tower, M.A. Jinnah Road, old civic buildings, Memon Masjid, Kharadar, Wazir Mansion, and Burns Road.",
+        intro:
+          "This is a compact, guided old-city plan for travelers who want Karachi's port-era streets, civic buildings, masjid stop, and classic food without spending a full day. It is best done early and with a local host.",
+        planning: {
+          stay:
+            "Best base: Saddar, Civil Lines, or Clifton. Saddar and Civil Lines shorten the route; Clifton is more comfortable for returning after food.",
+          transport:
+            "Use a driver to enter and leave the area, then walk only selected short stretches with a guide or local host.",
+          meals: {
+            breakfast:
+              "Eat before arriving. The route works best when you begin sightseeing immediately.",
+            lunch:
+              "Burns Road is the natural lunch or late-lunch anchor.",
+            dinner:
+              "If you start late, Burns Road can become early dinner; otherwise finish with tea or dessert and return to your base.",
+          },
+        },
+        days: [
+          {
+            dayNumber: 1,
+            theme: "Guided heritage walk and old-city food",
+            description:
+              "Start at Tower, read the old city through its public buildings and masjid, then finish at Burns Road. Keep the route flexible because access, crowds, and traffic can change block by block.",
+            start:
+              "Begin by 8:30 or 9:00 AM at Merewether Clock Tower with your guide or driver already coordinated for pickup.",
+            transport:
+              "Driver plus short guided walks. Avoid treating this as a fully independent walking tour.",
+            breakfast:
+              "Breakfast at your hotel before the route.",
+            lunch:
+              "Burns Road for the main food stop.",
+            dinner:
+              "Not required for a half day; if continuing, move to Clifton/DHA for a calmer evening.",
+            pacing:
+              "Half-day route. Leave before peak heat or extend only if your guide says the area is moving comfortably.",
+            stops: [
+              "merewether-clock-tower",
+              "denso-hall",
+              "memon-masjid",
+              "wazir-mansion",
+              "burns-road-food-street",
+            ],
+            routeNotes:
+              "Start early, keep the route flexible, and use a guide or local host because crowds, parking, traffic, and security conditions can change quickly in the old city.",
+          },
+        ],
+      },
+      {
+        slug: "karachi-beach-and-coast-day",
+        title: "Karachi Beach And Coast Day",
+        durationDays: 1,
+        audience: "family",
+        summary:
+          "A coastal Karachi day that can stay easy around Clifton and Sea View or become a planned western-beach outing with advance booking and daylight travel.",
+        intro:
+          "This coastal plan has two versions: an easy Clifton sunset day or a bigger Hawksbay/Sandspit beach outing. The western-beach version should be planned in advance with confirmed transport, hut access where relevant, and daylight return timing.",
+        planning: {
+          stay:
+            "Best base: Clifton or DHA. You will be closer to Sea View, Do Darya, and the easiest restaurant choices after sunset.",
+          transport:
+            "Use private transport for Hawksbay or Sandspit. Ride-hailing is fine for Clifton, Mohatta Palace, the shrine, Sea View, and dinner.",
+          meals: {
+            breakfast:
+              "Eat at the hotel before leaving, especially for a western-beach day.",
+            lunch:
+              "For Clifton, use a cafe or Boat Basin. For Hawksbay/Sandspit, carry water and snacks and confirm food arrangements beforehand.",
+            dinner:
+              "Do Darya, Boat Basin, or a Clifton/DHA restaurant after sunset.",
+          },
+        },
+        days: [
+          {
+            dayNumber: 1,
+            theme: "Clifton sunset or western beach escape",
+            description:
+              "Keep the easy version around Mohatta Palace, the shrine, Sea View, and dinner. Choose Hawksbay or Sandspit only when the group is ready for a longer drive and beach logistics.",
+            start:
+              "For Clifton, begin late morning or early afternoon. For Hawksbay/Sandspit, leave early and confirm sea conditions before departure.",
+            transport:
+              "Ride-hailing for the Clifton route; private car with a clear return plan for western beaches.",
+            breakfast:
+              "Hotel breakfast before departure.",
+            lunch:
+              "Clifton cafe or pre-arranged beach food depending on the version you choose.",
+            dinner:
+              "Do Darya or Clifton/DHA after sunset, with a reservation for families or larger groups.",
+            pacing:
+              "Do not combine both Clifton sightseeing and a full western-beach outing unless you have a very early start and strong transport support.",
+            stops: [
+              "mohatta-palace-museum",
+              "abdullah-shah-ghazi-shrine",
+              "clifton-beach-sea-view",
+              "hawksbay-beach",
+              "sandspit-beach",
+              "do-darya",
+            ],
+            routeNotes:
+              "For an easy day, stay with Clifton, the shrine, Sea View, and dinner. For Hawksbay or Sandspit, book transport and huts ahead, travel in daylight, and confirm sea conditions.",
           },
         ],
       },

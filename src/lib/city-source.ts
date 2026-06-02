@@ -44,8 +44,16 @@ const isCMSConfigured = () =>
 
 const asString = (value: unknown, fallback = "") =>
   typeof value === "string" ? value : fallback;
-const asNumber = (value: unknown, fallback = 0) =>
-  typeof value === "number" ? value : fallback;
+const asNumber = (value: unknown, fallback = 0) => {
+  const parsed =
+    typeof value === "number"
+      ? value
+      : typeof value === "string" && value.trim()
+        ? Number(value)
+        : fallback;
+
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
 const asRecord = (value: unknown): Record<string, unknown> =>
   value && typeof value === "object" ? (value as Record<string, unknown>) : {};
 const asArray = (value: unknown): unknown[] =>
@@ -146,6 +154,23 @@ const mediaUrl = (value: unknown) => {
   return asString(media.url) || asString(hero.url) || asString(card.url);
 };
 
+const guideItemMediaUrl = (value: unknown) => {
+  const media = asRecord(value);
+  const usageStatus = asString(media.usageStatus);
+  if (usageStatus === "needs-replacement" || usageStatus === "archived") {
+    return undefined;
+  }
+
+  const width = asNumber(media.width);
+  const height = asNumber(media.height);
+  const filesize = asNumber(media.filesize);
+  if (width > 0 && width < 480) return undefined;
+  if (height > 0 && height < 320) return undefined;
+  if (filesize > 0 && filesize < 15000) return undefined;
+
+  return mediaUrl(media);
+};
+
 const normalizeSeo = (
   value: unknown,
   fallbackTitle: string,
@@ -157,6 +182,45 @@ const normalizeSeo = (
     description: asString(seo.description, fallbackDescription),
     canonicalPath: asString(seo.canonicalPath),
     schemaType: asString(seo.schemaType, "TravelGuide"),
+  };
+};
+
+const emptySections = {
+  visitorInformation: "",
+  climateWhenToGo: "",
+  transportSystem: "",
+  festivalsEvents: "",
+  healthSafety: "",
+  muslimTravel: "",
+};
+
+const emptyGuideImport = (doc: CMSDoc): CityGuideImport => {
+  const name = asString(doc.name);
+  const slug = asString(doc.slug);
+
+  return {
+    source: {
+      fileName: "payload",
+      extractedAt: asString(doc.updatedAt) || new Date(0).toISOString(),
+      formatVersion: "payload",
+    },
+    city: {
+      name,
+      slug,
+      country: relationshipName(doc.country),
+      region: asString(doc.region),
+      updatedLabel: asString(doc.lastVerifiedAt),
+    },
+    introBlocks: [],
+    sections: [],
+    tables: [],
+    coverage: {
+      sectionCount: 0,
+      tableCount: 0,
+      requiredSectionSlugs: [],
+      missingRequiredSectionSlugs: [],
+      tableRowCounts: {},
+    },
   };
 };
 
@@ -253,6 +317,59 @@ const normalizeItinerary = (doc: CMSDoc): Itinerary => ({
     };
   }),
 });
+
+const mergeCmsItinerariesWithFallback = (
+  cmsItineraries: Itinerary[],
+  fallbackItineraries: Itinerary[] = [],
+) => {
+  if (cmsItineraries.length === 0) return fallbackItineraries;
+
+  const fallbackBySlug = new Map(
+    fallbackItineraries.map((itinerary) => [itinerary.slug, itinerary]),
+  );
+  const cmsSlugs = new Set(cmsItineraries.map((itinerary) => itinerary.slug));
+  const mergedCmsItineraries = cmsItineraries.map((itinerary) => {
+    const fallback = fallbackBySlug.get(itinerary.slug);
+    if (!fallback) return itinerary;
+
+    const fallbackDaysByNumber = new Map(
+      fallback.days.map((day) => [day.dayNumber, day]),
+    );
+    const cmsDayNumbers = new Set(itinerary.days.map((day) => day.dayNumber));
+
+    return {
+      ...fallback,
+      ...itinerary,
+      intro: itinerary.intro || fallback.intro,
+      planning: itinerary.planning || fallback.planning,
+      days: [
+        ...itinerary.days.map((day) => {
+          const fallbackDay = fallbackDaysByNumber.get(day.dayNumber);
+
+          return {
+            ...fallbackDay,
+            ...day,
+            breakfast: day.breakfast || fallbackDay?.breakfast,
+            description: day.description || fallbackDay?.description,
+            dinner: day.dinner || fallbackDay?.dinner,
+            lunch: day.lunch || fallbackDay?.lunch,
+            pacing: day.pacing || fallbackDay?.pacing,
+            start: day.start || fallbackDay?.start,
+            stops: day.stops.length > 0 ? day.stops : (fallbackDay?.stops ?? []),
+            transport: day.transport || fallbackDay?.transport,
+            routeNotes: day.routeNotes || fallbackDay?.routeNotes || "",
+          };
+        }),
+        ...fallback.days.filter((day) => !cmsDayNumbers.has(day.dayNumber)),
+      ],
+    };
+  });
+
+  return [
+    ...mergedCmsItineraries,
+    ...fallbackItineraries.filter((itinerary) => !cmsSlugs.has(itinerary.slug)),
+  ];
+};
 
 const normalizeGuideItemTranslations = (docs: CMSDoc[]) =>
   docs.reduce<Record<string, LocaleTranslations>>((translations, doc) => {
@@ -417,23 +534,20 @@ const loadCityNavItems = async (): Promise<CityNavItem[]> => {
     const items = (cityResult.docs as CMSDoc[])
       .map((doc) => {
         const slug = asString(doc.slug);
-        const fallbackCity = getLocalCityBySlug(slug);
 
         return {
-          country: relationshipName(doc.country, fallbackCity?.country),
-          heroImageUrl: mediaUrl(doc.heroImage) || fallbackCity?.heroImageUrl,
+          country: relationshipName(doc.country),
+          heroImageUrl: mediaUrl(doc.heroImage) || undefined,
           name: asString(doc.name),
           slug,
         };
       })
       .filter((item) => item.name && item.slug);
 
-    return items.length > 0 ? items : localCityNavItems();
+    return items;
   } catch (error) {
-    if (isProduction) throw error;
-
-    console.warn("Payload city nav source failed; falling back to local cities.", error);
-    return localCityNavItems();
+    console.error("Payload city nav source failed.", error);
+    throw error;
   }
 };
 
@@ -450,8 +564,6 @@ export const getCityNavItems = async (): Promise<CityNavItem[]> =>
   cachedLoadCityNavItems();
 
 const loadCityBySlug = async (slug: string): Promise<CityGuide | undefined> => {
-  const fallbackCity = getLocalCityBySlug(slug);
-
   if (!isCMSConfigured()) {
     if (isProduction) {
       throw new Error(
@@ -459,7 +571,8 @@ const loadCityBySlug = async (slug: string): Promise<CityGuide | undefined> => {
       );
     }
 
-    return fallbackCity;
+    const fallbackCity = getLocalCityBySlug(slug);
+    return fallbackCity ? { ...fallbackCity, contentSource: "local" } : undefined;
   }
 
   try {
@@ -476,7 +589,7 @@ const loadCityBySlug = async (slug: string): Promise<CityGuide | undefined> => {
       },
     });
     const cityDoc = cityResult.docs[0] as CMSDoc | undefined;
-    if (!cityDoc) return fallbackCity;
+    if (!cityDoc) return undefined;
 
     const cityId = relationshipId(cityDoc);
     const cityHeroGalleryIds = () =>
@@ -510,11 +623,7 @@ const loadCityBySlug = async (slug: string): Promise<CityGuide | undefined> => {
       (url): url is string => Boolean(url),
     );
     const heroImageUrls = Array.from(
-      new Set(
-        cmsHeroImageUrls.length > 0
-          ? cmsHeroImageUrls
-          : (fallbackCity?.heroImageUrls ?? []),
-      ),
+      new Set(cmsHeroImageUrls),
     );
     const [
       neighborhoodResult,
@@ -549,6 +658,7 @@ const loadCityBySlug = async (slug: string): Promise<CityGuide | undefined> => {
           depth: 0,
           limit: 700,
           overrideAccess: true,
+          sort: "id",
           where: { city: { equals: cityId } },
         }),
       ]);
@@ -577,7 +687,7 @@ const loadCityBySlug = async (slug: string): Promise<CityGuide | undefined> => {
         where: { id: { in: imageIds } },
       });
       for (const mediaDoc of mediaResult.docs as CMSDoc[]) {
-        const url = mediaUrl(mediaDoc);
+        const url = guideItemMediaUrl(mediaDoc);
         if (url) mediaUrlById.set(mediaDoc.id, url);
       }
     }
@@ -625,26 +735,28 @@ const loadCityBySlug = async (slug: string): Promise<CityGuide | undefined> => {
     const structuredSections = cityDoc.structuredSections as
       | CityGuideImport
       | undefined;
+    const fallbackCity = getLocalCityBySlug(asString(cityDoc.slug));
+    const cmsItineraries = (itineraryResult.docs as CMSDoc[]).map(
+      normalizeItinerary,
+    );
 
     return {
+      contentSource: "payload",
       slug: asString(cityDoc.slug),
       name: asString(cityDoc.name),
-      country: relationshipName(cityDoc.country, fallbackCity?.country),
-      region: asString(cityDoc.region, fallbackCity?.region),
-      locale: asString(cityDoc.locale, fallbackCity?.locale ?? "en"),
-      lede: asString(cityDoc.lede, fallbackCity?.lede),
-      heroImageUrl: cityHeroImageUrl || fallbackCity?.heroImageUrl,
+      country: relationshipName(cityDoc.country),
+      region: asString(cityDoc.region),
+      locale: asString(cityDoc.locale, "en"),
+      lede: asString(cityDoc.lede),
+      heroImageUrl: cityHeroImageUrl || undefined,
       heroImageUrls: heroImageUrls.length > 0 ? heroImageUrls : undefined,
-      timezone: asString(cityDoc.timezone, fallbackCity?.timezone),
-      currency: asString(cityDoc.currency, fallbackCity?.currency),
+      timezone: asString(cityDoc.timezone),
+      currency: asString(cityDoc.currency),
       languages: normalizeLanguages(cityDoc.languages),
-      latitude: asNumber(cityDoc.latitude, fallbackCity?.latitude),
-      longitude: asNumber(cityDoc.longitude, fallbackCity?.longitude),
-      mapUrl: asString(cityDoc.mapUrl, fallbackCity?.mapUrl),
-      lastVerifiedAt: asString(
-        cityDoc.lastVerifiedAt,
-        fallbackCity?.lastVerifiedAt,
-      ),
+      latitude: asNumber(cityDoc.latitude),
+      longitude: asNumber(cityDoc.longitude),
+      mapUrl: asString(cityDoc.mapUrl),
+      lastVerifiedAt: asString(cityDoc.lastVerifiedAt),
       translations: normalizeTranslations(cityDoc.translations),
       guideItemTranslations: normalizeGuideItemTranslations(
         guideItemResult.docs as CMSDoc[],
@@ -664,34 +776,25 @@ const loadCityBySlug = async (slug: string): Promise<CityGuide | undefined> => {
         const record = asRecord(fact);
         return { label: asString(record.label), value: asString(record.value) };
       }),
-      sections: fallbackCity?.sections ?? {
-        visitorInformation: "",
-        climateWhenToGo: "",
-        transportSystem: "",
-        festivalsEvents: "",
-        healthSafety: "",
-        muslimTravel: "",
-      },
+      sections: emptySections,
       neighborhoods: (neighborhoodResult.docs as CMSDoc[]).map(
         normalizeNeighborhood,
       ),
       listings: (listingResult.docs as CMSDoc[]).map(normalizeListing),
-      itineraries: (itineraryResult.docs as CMSDoc[]).map(normalizeItinerary),
+      itineraries: mergeCmsItinerariesWithFallback(
+        cmsItineraries,
+        fallbackCity?.itineraries,
+      ),
       seo: normalizeSeo(
         cityDoc.seo,
-        fallbackCity?.seo.title ?? asString(cityDoc.name),
-        fallbackCity?.seo.description ?? asString(cityDoc.lede),
+        asString(cityDoc.name),
+        asString(cityDoc.lede),
       ),
-      fullGuide: structuredSections ?? fallbackCity?.fullGuide,
+      fullGuide: structuredSections ?? emptyGuideImport(cityDoc),
     } as CityGuide;
   } catch (error) {
-    if (isProduction) throw error;
-
-    console.warn(
-      `Payload city source failed for ${slug}; falling back to local import.`,
-      error,
-    );
-    return fallbackCity;
+    console.error(`Payload city source failed for ${slug}.`, error);
+    throw error;
   }
 };
 

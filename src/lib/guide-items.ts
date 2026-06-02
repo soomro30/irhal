@@ -80,6 +80,7 @@ export type GuideSectionCard = {
 };
 
 export type GuideArticle = {
+  contentSource?: CityGuide["contentSource"];
   citySlug: string;
   sectionSlug: string;
   title: string;
@@ -147,8 +148,13 @@ const withOriginalContent = (item: GuideItem): GuideItem => {
 
   return {
     ...item,
-    originalContent: paragraphs.length > 0 ? paragraphs : undefined,
-    originalLocation: location || undefined,
+    originalContent:
+      item.originalContent && item.originalContent.length > 0
+        ? item.originalContent
+        : paragraphs.length > 0
+          ? paragraphs
+          : undefined,
+    originalLocation: item.originalLocation || location || undefined,
   };
 };
 
@@ -194,37 +200,9 @@ const withNeighborhood = (city: CityGuide, item: GuideItem): GuideItem => {
   return neighborhoodSlug ? { ...item, neighborhoodSlug } : item;
 };
 
-const hasEditorialMedia = (item: GuideItem) =>
-  Boolean(
-    item.cmsImageUrl ||
-      (item.galleryUrls && item.galleryUrls.length > 0) ||
-      (item.imageUrl && !item.imageUrl.endsWith(".svg")),
-  );
-
-const itemUpdateTime = (item: GuideItem) => {
-  const value = item.updatedAt ?? item.createdAt;
-  if (!value) return 0;
-
-  const time = Date.parse(value);
-  return Number.isFinite(time) ? time : 0;
-};
-
-const sortGuideItemsForEditorialDisplay = (items: GuideItem[]) =>
-  items
-    .map((item, index) => ({ index, item }))
-    .sort((left, right) => {
-      const mediaDelta =
-        Number(hasEditorialMedia(right.item)) -
-        Number(hasEditorialMedia(left.item));
-      if (mediaDelta !== 0) return mediaDelta;
-
-      const updateDelta =
-        itemUpdateTime(right.item) - itemUpdateTime(left.item);
-      if (updateDelta !== 0) return updateDelta;
-
-      return left.index - right.index;
-    })
-    .map(({ item }) => item);
+// Public guide item order must be stable. Do not reorder by media presence or
+// updatedAt, because ordinary CMS edits would move items around the public site.
+const sortGuideItemsForEditorialDisplay = (items: GuideItem[]) => items;
 
 const irhalLegacyArticleUpdateByKey = (
   karachiIrhalLegacyArticleUpdates as IrhalLegacyArticleUpdate[]
@@ -509,8 +487,6 @@ const withTranslations = (city: CityGuide, item: GuideItem): GuideItem => {
   const cmsTranslations =
     city.guideItemTranslations?.[`${item.kind}:${item.slug}`] ??
     city.guideItemTranslations?.[item.slug];
-
-  // Local editorial Arabic (repo-managed); CMS translations take precedence.
   const localAr = localArItems[`${item.kind}:${item.slug}`];
   const arEntry =
     localAr || cmsTranslations?.ar
@@ -568,9 +544,14 @@ export const localizeGuideItem = (
 export const getGuideItems = (city: CityGuide): GuideItem[] => {
   if (city.guideItems && city.guideItems.length > 0) {
     return sortGuideItemsForEditorialDisplay(
-      city.guideItems.map((item) => withTranslations(city, item)),
+      city.guideItems.map((item) => {
+        const canonicalItem = withOriginalContent(withIrhalLegacyUpdate(item));
+        return withTranslations(city, canonicalItem);
+      }),
     );
   }
+
+  if (city.contentSource === "payload") return [];
 
   const configs = [
     {
@@ -841,6 +822,7 @@ export const getGuideArticlesForSection = (city: CityGuide, sectionSlug: string)
           slug: slugifyGuideItem(section.title),
           summary: "",
           blocks: [],
+          contentSource: city.contentSource,
         };
       }
       current.blocks.push(block);
@@ -871,6 +853,7 @@ export const getGuideArticlesForSection = (city: CityGuide, sectionSlug: string)
         slug: headingSlug,
         summary: "",
         blocks: [],
+        contentSource: city.contentSource,
       };
       continue;
     }
@@ -883,6 +866,7 @@ export const getGuideArticlesForSection = (city: CityGuide, sectionSlug: string)
         slug: slugifyGuideItem(section.title),
         summary: "",
         blocks: [],
+        contentSource: city.contentSource,
       };
     }
 
@@ -893,10 +877,13 @@ export const getGuideArticlesForSection = (city: CityGuide, sectionSlug: string)
   }
 
   if (current) articles.push(current);
-  return articles
+  const normalizedArticles = articles
     .filter((article) => article.summary || article.blocks.length > 0)
-    .map((article) => withArticleSummary(withArticleTable(city, article)))
-    .map(withIrhalLegacyArticleUpdate);
+    .map((article) => withArticleSummary(withArticleTable(city, article)));
+
+  return city.contentSource === "payload"
+    ? normalizedArticles
+    : normalizedArticles.map(withIrhalLegacyArticleUpdate);
 };
 
 export const getGuideArticle = (city: CityGuide, sectionSlug: string, slug: string) =>

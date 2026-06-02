@@ -14,7 +14,10 @@ import Image from "next/image";
 import Link from "next/link";
 
 import type { CityGuide } from "@/lib/city-data";
-import { getGuideItemImage, getGuideItemImages } from "@/lib/city-presentation";
+import {
+  getGuideItemImage,
+  getGuideItemImages,
+} from "@/lib/city-presentation";
 import type { GuideItem } from "@/lib/guide-items";
 import {
   getGuideItems,
@@ -74,6 +77,7 @@ export function GuideItemDetail({
     item.sectionSlug;
   const visual = getGuideItemImage(item);
   const galleryImages = getGuideItemImages(item);
+  const hasMediaGallery = galleryImages.length > 0;
   const arTranslation = item.translations?.ar as
     | { overview?: string[]; address?: string }
     | undefined;
@@ -262,7 +266,7 @@ export function GuideItemDetail({
             slug: item.slug,
             title: item.title,
             description: overviewParagraphs?.[0] ?? item.description,
-            image: visual.image,
+            image: hasMediaGallery ? visual.image : undefined,
             address: overviewAddress,
             locale,
           }),
@@ -310,17 +314,19 @@ export function GuideItemDetail({
 
             <div className="mt-7 grid gap-8 lg:grid-cols-[minmax(0,1fr)_390px] lg:items-start">
               <div className="min-w-0 space-y-8">
-                <DetailMediaGallery
-                  alt={item.imageAlt}
-                  dir={isArabic ? "rtl" : "ltr"}
-                  images={galleryImages}
-                  labels={{
-                    close: copy.galleryClose,
-                    next: copy.galleryNext,
-                    previous: copy.galleryPrevious,
-                    viewAll: copy.galleryViewAll,
-                  }}
-                />
+                {hasMediaGallery ? (
+                  <DetailMediaGallery
+                    alt={item.imageAlt}
+                    dir={isArabic ? "rtl" : "ltr"}
+                    images={galleryImages}
+                    labels={{
+                      close: copy.galleryClose,
+                      next: copy.galleryNext,
+                      previous: copy.galleryPrevious,
+                      viewAll: copy.galleryViewAll,
+                    }}
+                  />
+                ) : null}
 
                 {leadParagraph ? (
                   <p className="max-w-4xl text-lg font-bold leading-8 text-travel-navy">
@@ -487,15 +493,17 @@ export function GuideItemDetail({
                             className="group flex items-center gap-3 rounded-lg p-2 transition hover:bg-paper-deep"
                             href={related.href}
                           >
-                            <span className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md bg-paper-deep">
-                              <Image
-                                alt={related.title}
-                                className="object-cover"
-                                fill
-                                sizes="64px"
-                                src={related.image}
-                              />
-                            </span>
+                            {related.image ? (
+                              <span className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md bg-paper-deep">
+                                <Image
+                                  alt={related.title}
+                                  className="object-cover"
+                                  fill
+                                  sizes="64px"
+                                  src={related.image}
+                                />
+                              </span>
+                            ) : null}
                             <span className="min-w-0">
                               <span className="block line-clamp-2 text-sm font-bold text-travel-navy group-hover:text-irhal-red">
                                 {related.title}

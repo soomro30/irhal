@@ -11,7 +11,7 @@ import { pageMetadata } from "@/lib/seo";
 
 type HomeLocale = "en" | "ar";
 
-const fallbackCityImage = "/images/karachi-guide/karachi-coast-hero.png";
+const fallbackCityImage = "/images/karachi-guide/place.svg";
 
 export function homeMetadata(locale: HomeLocale): Metadata {
   const isArabic = locale === "ar";

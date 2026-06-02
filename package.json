@@ -16,7 +16,8 @@
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
     "generate:importmap": "cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap",
     "generate:types": "cross-env NODE_OPTIONS=--no-deprecation payload generate:types",
-    "seed:karachi-guide": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/seed-karachi-guide.ts"
+    "seed:karachi-guide": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/seed-karachi-guide.ts",
+    "seed:karachi-guide:reset": "cross-env IRHAL_ALLOW_DESTRUCTIVE_SEED=true NODE_OPTIONS=--no-deprecation tsx scripts/seed-karachi-guide.ts"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "^3.85.0",

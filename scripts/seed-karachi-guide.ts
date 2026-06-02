@@ -2,6 +2,11 @@ import nextEnv from "@next/env";
 import { randomUUID } from "node:crypto";
 import { createRequire } from "node:module";
 
+import {
+  assertSafeCityBaselineSeed,
+  type SeedDbClient,
+} from "./lib/payload-seed-safety";
+
 nextEnv.loadEnvConfig(process.cwd());
 
 const require = createRequire(import.meta.url);
@@ -16,8 +21,7 @@ const { getGuideArticlesForSection, getGuideItems, getIrhalLegacyArticleUpdate, 
 type DbClient = {
   connect: () => Promise<void>;
   end: () => Promise<void>;
-  query: (text: string, values?: unknown[]) => Promise<{ rows: Record<string, unknown>[] }>;
-};
+} & SeedDbClient;
 
 type Source = {
   label: string;
@@ -29,6 +33,7 @@ type Source = {
 
 const city = cities.find((item) => item.slug === "karachi");
 const databaseUrl = process.env.DATABASE_URL?.includes("<") ? "" : process.env.DATABASE_URL;
+const allowDestructiveSeed = process.env.IRHAL_ALLOW_DESTRUCTIVE_SEED === "true";
 
 if (!city) {
   throw new Error("Karachi guide data was not found.");
@@ -55,6 +60,52 @@ const sourceValues = (overrideConfidence?: string) => [
   source.verifiedAt,
   overrideConfidence ?? source.confidence,
 ];
+
+const guideItemMediaKeyOverrides: Record<string, string[]> = {
+  "masjid:memon-masjid": ["masjid-memon-masjid"],
+  "place:merewether-clock-tower": [
+    "clock-tower-karachi-merewether-wajahatali001",
+    "merewether-clock-tower-1",
+  ],
+  "place:national-museum-of-pakistan": [
+    "place-national-museum-of-pakistan",
+  ],
+};
+
+const guideItemFieldOverrides: Record<
+  string,
+  {
+    category?: string;
+  }
+> = {
+  "place:merewether-clock-tower": {
+    category: "Historic landmark",
+  },
+};
+
+const guideItemFieldOverride = ({
+  kind,
+  slug,
+}: {
+  kind: string;
+  slug: string;
+}) => guideItemFieldOverrides[`${kind}:${slug}`] ?? guideItemFieldOverrides[slug];
+
+const guideItemMediaMatchKeys = ({
+  kind,
+  slug,
+}: {
+  kind: string;
+  slug: string;
+}) =>
+  Array.from(
+    new Set([
+      slug,
+      `${kind}-${slug}`,
+      ...(guideItemMediaKeyOverrides[`${kind}:${slug}`] ?? []),
+      ...(guideItemMediaKeyOverrides[slug] ?? []),
+    ]),
+  );
 
 const insertSource = async (client: DbClient, tableName: string, parentId: number | string, order = 0, confidence?: string) => {
   await client.query(
@@ -379,7 +430,13 @@ const replaceCityChildrenBulk = async (client: DbClient, cityId: number) => {
       seo_description: section.summary,
     };
   });
-  const guideItemRows = getGuideItems(city).map((item) => ({
+  const guideItemRows = getGuideItems(city).map((item) => {
+    const fieldOverride = guideItemFieldOverride({
+      kind: item.kind,
+      slug: item.slug,
+    });
+
+    return {
     title: item.title,
     slug: item.slug,
     kind: item.kind,
@@ -389,7 +446,7 @@ const replaceCityChildrenBulk = async (client: DbClient, cityId: number) => {
     image_alt: item.imageAlt,
     area: item.area ?? null,
     neighborhood_slug: item.neighborhoodSlug ?? null,
-    category: item.category ?? null,
+    category: fieldOverride?.category ?? item.category ?? null,
     budget: item.budget ?? null,
     map_url: item.mapUrl ?? null,
     geo_status: item.geoStatus,
@@ -400,7 +457,12 @@ const replaceCityChildrenBulk = async (client: DbClient, cityId: number) => {
     seo_description: item.description,
     seo_schema_type:
       item.kind === "restaurant" ? "Restaurant" : item.kind === "hotel" ? "Hotel" : item.kind === "festival" ? "Event" : "Place",
-  }));
+    media_match_keys: guideItemMediaMatchKeys({
+      kind: item.kind,
+      slug: item.slug,
+    }),
+    };
+  });
   const itineraryRows = city.itineraries.map((itinerary) => ({
     title: itinerary.title,
     slug: itinerary.slug,
@@ -452,17 +514,30 @@ const replaceCityChildrenBulk = async (client: DbClient, cityId: number) => {
        rows.slug,
        rows.kind,
        media.id
-     from jsonb_to_recordset($1::jsonb) as rows (slug text, kind text)
+     from jsonb_to_recordset($1::jsonb) as rows (
+       slug text,
+       kind text,
+       media_match_keys jsonb
+     )
+     cross join lateral jsonb_array_elements_text(rows.media_match_keys) with ordinality as media_key(value, ordinality)
      join payload.media media
        on regexp_replace(
          lower(media.filename),
          '(-[0-9]+x[0-9]+)?\\.(webp|jpg|jpeg|png)$',
          ''
-       ) = rows.slug
-     order by rows.slug, rows.kind, (lower(media.filename) = rows.slug || '.webp') desc, media.id
+       ) = media_key.value
+     order by rows.slug, rows.kind, media_key.ordinality, media.id
      on conflict (slug, kind) do update
        set image_id = excluded.image_id`,
-    [JSON.stringify(guideItemRows.map((row) => ({ slug: row.slug, kind: row.kind })))],
+    [
+      JSON.stringify(
+        guideItemRows.map((row) => ({
+          slug: row.slug,
+          kind: row.kind,
+          media_match_keys: row.media_match_keys,
+        })),
+      ),
+    ],
   );
 
   await client.query(
@@ -799,7 +874,8 @@ const replaceCityChildrenBulk = async (client: DbClient, cityId: number) => {
          source_row_id text,
          seo_title text,
          seo_description text,
-         seo_schema_type text
+         seo_schema_type text,
+         media_match_keys jsonb
        )
      ),
      inserted as (
@@ -1102,6 +1178,13 @@ const client = new Client({
 await client.connect();
 
 try {
+  await assertSafeCityBaselineSeed({
+    allowDestructiveSeed,
+    cityLabel: city.name,
+    citySlug: city.slug,
+    client,
+    resetCommand: "npm run seed:karachi-guide:reset",
+  });
   await client.query("begin");
 
   const countryId = await upsertCountry(client);

@@ -21,12 +21,6 @@ type LocalizedNeighbourhoodCopy = {
   name: string;
 };
 
-type CityPresentation = {
-  heroImage?: string;
-  heroImages?: string[];
-  placeVisuals?: Record<string, ImageVisual>;
-};
-
 const GENERIC_FALLBACK_IMAGE = "/images/karachi-guide/place.svg";
 
 const karachiArabicNeighbourhoodCopy: Record<
@@ -106,49 +100,8 @@ const localizeKarachiNeighbourhood = (
   return karachiArabicNeighbourhoodCopy[item.slug] ?? item;
 };
 
-/**
- * Per-city presentation curation. This is intentionally source-agnostic: it
- * works whether the city loads from Payload CMS or the local JSON fallback, and
- * keeps city-specific imagery/area curation out of the generic page template.
- *
- * NOTE: This is an interim home for approved presentation assets. The eventual
- * canonical source for imagery is Payload Media (Cloudflare R2); once guide
- * items carry real media, `getGuideItemImage` should prefer the CMS image.
- */
-const presentationByCity: Record<string, CityPresentation> = {
-  karachi: {
-    heroImage: "/images/karachi-guide/karachi-coast-hero.png",
-    heroImages: [
-      "/images/karachi-guide/karachi-coast-hero.png",
-      "/images/karachi-guide/place-mohatta-palace.jpg",
-      "/images/karachi-guide/place-mazar-e-quaid.jpg",
-      "/images/karachi-guide/place-frere-hall.jpg",
-    ],
-    placeVisuals: {
-      "mohatta-palace-museum": {
-        image: "/images/karachi-guide/place-mohatta-palace.jpg",
-        objectPosition: "center",
-      },
-      "mazar-e-quaid": {
-        image: "/images/karachi-guide/place-mazar-e-quaid.jpg",
-        objectPosition: "center",
-      },
-      "frere-hall": {
-        image: "/images/karachi-guide/place-frere-hall.jpg",
-        objectPosition: "center",
-      },
-      "national-museum-of-pakistan": {
-        image: "/images/karachi-guide/neighborhood-saddar.jpg",
-        objectPosition: "center",
-      },
-    },
-  },
-};
-
 export const getCityHeroImage = (city: CityGuide): string =>
-  city.heroImageUrl ||
-  presentationByCity[city.slug]?.heroImage ||
-  GENERIC_FALLBACK_IMAGE;
+  city.heroImageUrl || GENERIC_FALLBACK_IMAGE;
 
 export const getCityHeroImages = (city: CityGuide): string[] => {
   const configuredImages = city.heroImageUrls?.length
@@ -156,51 +109,44 @@ export const getCityHeroImages = (city: CityGuide): string[] => {
     : city.heroImageUrl
       ? [city.heroImageUrl]
       : [];
-  const curatedImages = presentationByCity[city.slug]?.heroImages ?? [];
-  const fallbackImage =
-    city.heroImageUrl ||
-    presentationByCity[city.slug]?.heroImage ||
-    GENERIC_FALLBACK_IMAGE;
+  const fallbackImage = city.heroImageUrl || GENERIC_FALLBACK_IMAGE;
 
   return Array.from(
     new Set(
       configuredImages.length > 0
         ? configuredImages
-        : curatedImages.length > 0
-          ? curatedImages
-          : [fallbackImage],
+        : [fallbackImage],
     ),
   );
 };
 
-export const getPlaceVisual = (
-  citySlug: string,
-  placeSlug: string,
-): ImageVisual | undefined =>
-  presentationByCity[citySlug]?.placeVisuals?.[placeSlug];
+export const hasGuideItemMedia = (item: GuideItem) =>
+  Boolean(
+    (item.galleryUrls && item.galleryUrls.length > 0) ||
+      item.cmsImageUrl ||
+      (item.imageUrl && !item.imageUrl.endsWith(".svg")),
+  );
 
 /**
- * Resolves the best available image for a guide item. Prefers curated/approved
- * presentation media, then falls back to the per-kind placeholder carried on
- * the item itself.
+ * Resolves the best available image for a guide item. Payload-managed media is
+ * canonical; otherwise the per-kind placeholder carried on the item is shown.
  */
 export const getGuideItemImage = (item: GuideItem): ImageVisual => {
-  // Payload-managed media (Cloudflare R2) is the source of truth when present.
   if (item.galleryUrls && item.galleryUrls.length > 0) {
     return { image: item.galleryUrls[0], objectPosition: "center" };
   }
   if (item.cmsImageUrl) {
     return { image: item.cmsImageUrl, objectPosition: "center" };
   }
-  const visual = getPlaceVisual(item.citySlug, item.slug);
   return {
-    image: visual?.image ?? item.imageUrl,
-    objectPosition: visual?.objectPosition ?? "center",
+    image: item.imageUrl,
+    objectPosition: "center",
   };
 };
 
 // Full ordered list of images for an item (primary + gallery), for carousels.
 export const getGuideItemImages = (item: GuideItem): string[] => {
+  if (!hasGuideItemMedia(item)) return [];
   if (item.galleryUrls && item.galleryUrls.length > 0) return item.galleryUrls;
   return [getGuideItemImage(item).image];
 };
