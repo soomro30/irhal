@@ -4,6 +4,7 @@ import {
   type Itinerary,
   type Listing,
 } from "./city-data";
+import { getGuideItemImage } from "./city-presentation";
 import {
   getGuideItems,
   localizeGuideItem,
@@ -47,11 +48,6 @@ const prefixedKindAndSlug = (value: string) => {
 const guideItemPath = (city: CityGuide, item: GuideItem) =>
   `/city/${city.slug}/${item.kind}/${item.slug}`;
 
-const imageForGuideItem = (item: GuideItem) =>
-  item.galleryUrls?.[0] ||
-  item.cmsImageUrl ||
-  item.imageUrl;
-
 const stopFromGuideItem = ({
   city,
   item,
@@ -70,7 +66,7 @@ const stopFromGuideItem = ({
     eyebrow: displayItem.eyebrow,
     href: `${locale === "ar" ? "/ar" : "/en"}${guideItemPath(city, item)}`,
     imageAlt: displayItem.imageAlt,
-    imageUrl: imageForGuideItem(item),
+    imageUrl: getGuideItemImage(item).image,
     mapUrl: item.mapUrl,
   };
 };

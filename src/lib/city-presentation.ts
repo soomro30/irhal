@@ -23,6 +23,28 @@ type LocalizedNeighbourhoodCopy = {
 
 const GENERIC_FALLBACK_IMAGE = "/images/karachi-guide/place.svg";
 
+const approvedGuideItemFallbackImages: Record<
+  string,
+  { image: string; objectPosition?: string }
+> = {
+  "place:frere-hall": {
+    image: "/images/karachi-guide/place-frere-hall.jpg",
+  },
+  "place:karachi-port-trust-building": {
+    image: "/images/karachi-guide/karachi-port-trust.jpg",
+  },
+  "place:mazar-e-quaid": {
+    image: "/images/karachi-guide/place-mazar-e-quaid.jpg",
+  },
+  "place:mohatta-palace-museum": {
+    image: "/images/karachi-guide/place-mohatta-palace.jpg",
+  },
+};
+
+const approvedGuideItemFallback = (item: GuideItem) =>
+  approvedGuideItemFallbackImages[`${item.kind}:${item.slug}`] ??
+  approvedGuideItemFallbackImages[item.slug];
+
 const karachiArabicNeighbourhoodCopy: Record<
   string,
   LocalizedNeighbourhoodCopy
@@ -124,12 +146,15 @@ export const hasGuideItemMedia = (item: GuideItem) =>
   Boolean(
     (item.galleryUrls && item.galleryUrls.length > 0) ||
       item.cmsImageUrl ||
+      approvedGuideItemFallback(item) ||
       (item.imageUrl && !item.imageUrl.endsWith(".svg")),
   );
 
 /**
  * Resolves the best available image for a guide item. Payload-managed media is
- * canonical; otherwise the per-kind placeholder carried on the item is shown.
+ * canonical. Approved repo fallbacks are used only for vetted Karachi images
+ * that predate full Payload media coverage; otherwise the per-kind placeholder
+ * carried on the item is shown.
  */
 export const getGuideItemImage = (item: GuideItem): ImageVisual => {
   if (item.galleryUrls && item.galleryUrls.length > 0) {
@@ -137,6 +162,13 @@ export const getGuideItemImage = (item: GuideItem): ImageVisual => {
   }
   if (item.cmsImageUrl) {
     return { image: item.cmsImageUrl, objectPosition: "center" };
+  }
+  const fallback = approvedGuideItemFallback(item);
+  if (fallback) {
+    return {
+      image: fallback.image,
+      objectPosition: fallback.objectPosition ?? "center",
+    };
   }
   return {
     image: item.imageUrl,
