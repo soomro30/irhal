@@ -43,6 +43,17 @@ type SearchDocument = SiteSearchResult & {
   priority: number;
 };
 
+const guideItemResultTypes = new Set<SiteSearchResult["type"]>([
+  "family",
+  "festival",
+  "hotel",
+  "masjid",
+  "place",
+  "restaurant",
+  "shopping",
+  "tour",
+]);
+
 const toPublicResult = (document: SearchDocument): SiteSearchResult => ({
   city: document.city,
   description: document.description,
@@ -113,6 +124,17 @@ const normalize = (value: string) =>
     .replace(/\s+/g, " ")
     .trim()
     .toLowerCase();
+
+const titleEntityKey = (title: string, city?: string) => {
+  const cityTokens = new Set(normalize(city ?? "").split(" ").filter(Boolean));
+  const titleTokens = normalize(title)
+    .split(" ")
+    .filter(Boolean)
+    .filter((token) => !cityTokens.has(token));
+
+  const tokens = titleTokens.length > 0 ? titleTokens : normalize(title).split(" ").filter(Boolean);
+  return tokens.sort().join(" ");
+};
 
 const expandQueryTokens = (query: string) => {
   const tokens = normalize(query).split(" ").filter(Boolean);
@@ -221,6 +243,28 @@ const documentScore = (document: SearchDocument, query: string) => {
   }
 
   return score;
+};
+
+const removeDuplicateEntities = (documents: SearchDocument[]) => {
+  const guideItemEntityKeys = new Set(
+    documents
+      .filter((document) => guideItemResultTypes.has(document.type))
+      .map((document) => `${document.city ?? ""}:${titleEntityKey(document.title, document.city)}`),
+  );
+  const seenEntityKeys = new Set<string>();
+
+  return documents.filter((document) => {
+    if (document.type !== "article" && !guideItemResultTypes.has(document.type)) {
+      return true;
+    }
+
+    const key = `${document.city ?? ""}:${titleEntityKey(document.title, document.city)}`;
+    if (document.type === "article" && guideItemEntityKeys.has(key)) return false;
+    if (seenEntityKeys.has(key)) return false;
+
+    seenEntityKeys.add(key);
+    return true;
+  });
 };
 
 const buildCityDocuments = async (locale: SearchLocale): Promise<SearchDocument[]> => {
@@ -364,13 +408,15 @@ export const searchSite = async ({
   const documents = await getSearchDocuments(locale);
   const normalizedQuery = normalize(query);
 
-  return documents
+  const rankedDocuments = documents
     .map((document) => ({
       ...document,
       score: documentScore(document, normalizedQuery),
     }))
     .filter((result) => (normalizedQuery ? result.score > result.priority - 20 : result.type === "city"))
-    .sort((a, b) => b.score - a.score || a.title.localeCompare(b.title))
+    .sort((a, b) => b.score - a.score || a.title.localeCompare(b.title));
+
+  return removeDuplicateEntities(rankedDocuments)
     .slice(0, limit)
     .map(toPublicResult);
 };
