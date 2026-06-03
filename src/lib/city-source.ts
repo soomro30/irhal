@@ -998,7 +998,7 @@ const loadCityBySlug = async (slug: string): Promise<CityGuide | undefined> => {
 
 const cachedLoadCityBySlug = unstable_cache(
   loadCityBySlug,
-  ["irhal-city-by-slug-v4"],
+  ["irhal-city-by-slug-v5"],
   {
     revalidate: cityCacheTtlSeconds,
     tags: ["irhal-city"],
