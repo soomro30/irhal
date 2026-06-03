@@ -69,6 +69,18 @@ Istanbul, and every future destination.
    explicitly asks to publish.
 7. Local JSON, fixture data, or document-extraction output is only a bootstrap
    input. Once imported, it is not the source of truth for that city.
+8. Translations, long descriptions, overviews, summaries, SEO metadata, media
+   relationships, image alt text, galleries, itinerary copy, listing copy, and
+   guide-section/article copy must be written to Payload as soon as they are
+   generated or edited. If an agent drafts or translates content in a JSON file,
+   seed file, script, or local fixture at the user's request, that file is only
+   a staging artifact and the same turn must update the corresponding Payload
+   records unless Payload is unreachable.
+9. Public routes must not use local JSON, fixture files, component dictionaries,
+   or script constants as the canonical source for imported city content or
+   translations when Payload is configured. Missing Payload translations should
+   surface as Arabic CMS-missing copy or validation errors, not silent English
+   fallbacks.
 
 
 ## Arabic Translation Protocol

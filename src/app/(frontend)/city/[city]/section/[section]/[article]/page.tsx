@@ -6,7 +6,6 @@ import { notFound } from "next/navigation";
 import { GuideContent } from "@/components/guide-content";
 import { DiscoverPill } from "@/components/discover-action";
 import { GuideItemRail } from "@/components/guide-item-card";
-import { arabicSectionCopy } from "@/components/guide-section-grid";
 import { JsonLd } from "@/components/json-ld";
 import { PageShell } from "@/components/page-shell";
 import { Badge } from "@/components/ui/badge";
@@ -17,12 +16,12 @@ import {
   getGuideArticle,
   getGuideArticlesForSection,
   getGuideItems,
+  getLocalizedGuideSectionCopy,
   guideKindOrder,
   isPublicGuideSection,
   kindPlural,
   localizeGuideArticle,
   localizeGuideItem,
-  sectionCards,
   type GuideItem,
 } from "@/lib/guide-items";
 import { breadcrumbJsonLd, pageMetadata } from "@/lib/seo";
@@ -76,7 +75,6 @@ export async function GuideArticlePageContent({
     : undefined;
   if (!city || !article || !isPublicGuideSection(section)) notFound();
 
-  const sectionCard = sectionCards.find((item) => item.slug === section);
   const isArabic = locale === "ar";
   const displayArticle = localizeGuideArticle(article, locale);
   const sectionArticles = getGuideArticlesForSection(city, section).map(
@@ -85,10 +83,11 @@ export async function GuideArticlePageContent({
   const relatedArticles = sectionArticles.filter(
     (item) => item.slug !== displayArticle.slug,
   );
-  const sectionTitle =
-    (isArabic ? arabicSectionCopy[section]?.title : undefined) ??
-    sectionCard?.title ??
-    section;
+  const sectionTitle = getLocalizedGuideSectionCopy(
+    city,
+    section,
+    locale,
+  ).title;
   const cityName =
     (typeof city.translations?.[locale]?.name === "string" &&
       city.translations[locale].name) ||

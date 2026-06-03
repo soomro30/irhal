@@ -21,18 +21,17 @@ import {
 import type { GuideItem } from "@/lib/guide-items";
 import {
   getGuideItems,
+  getLocalizedGuideSectionCopy,
   guideKindOrder,
   kindPlural,
   kindSingular,
   localizeGuideItem,
   pathForGuideItem,
-  sectionCards,
 } from "@/lib/guide-items";
 import { breadcrumbJsonLd, guideItemJsonLd } from "@/lib/seo";
 import { DetailMediaGallery } from "./detail-media-gallery";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
-import { arabicSectionCopy } from "./guide-section-grid";
 import { GuideItemRail } from "./guide-item-card";
 import { JsonLd } from "./json-ld";
 import { PageShell } from "./page-shell";
@@ -68,13 +67,11 @@ export function GuideItemDetail({
       city.translations[locale].name) ||
     (isArabic && city.slug === "karachi" ? "كراتشي" : city.name);
   const cityBasePath = `${localePrefix}/city/${city.slug}`;
-  const section = sectionCards.find(
-    (sectionCard) => sectionCard.slug === item.sectionSlug,
-  );
-  const sectionTitle =
-    (isArabic ? arabicSectionCopy[item.sectionSlug]?.title : undefined) ??
-    section?.title ??
-    item.sectionSlug;
+  const sectionTitle = getLocalizedGuideSectionCopy(
+    city,
+    item.sectionSlug,
+    locale,
+  ).title;
   const visual = getGuideItemImage(item);
   const galleryImages = getGuideItemImages(item);
   const hasMediaGallery = galleryImages.length > 0;
@@ -250,7 +247,7 @@ export function GuideItemDetail({
             { name: "Home", path: "/" },
             { name: city.name, path: `/city/${city.slug}` },
             {
-              name: section?.title ?? item.sectionSlug,
+              name: sectionTitle,
               path: `/city/${city.slug}/section/${item.sectionSlug}`,
             },
             {

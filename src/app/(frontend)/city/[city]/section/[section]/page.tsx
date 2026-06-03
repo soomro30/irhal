@@ -5,7 +5,6 @@ import { notFound } from "next/navigation";
 
 import { DiscoverPill } from "@/components/discover-action";
 import { GuideItemGrid, GuideItemRail } from "@/components/guide-item-card";
-import { arabicSectionCopy } from "@/components/guide-section-grid";
 import { JsonLd } from "@/components/json-ld";
 import { PageShell } from "@/components/page-shell";
 import { SectionSidebar } from "@/components/section-sidebar";
@@ -17,6 +16,7 @@ import {
   getGuideItems,
   getGuideArticlesForSection,
   getGuideItemsForSection,
+  getLocalizedGuideSectionCopy,
   guideKindOrder,
   isPublicGuideSection,
   kindPlural,
@@ -24,7 +24,6 @@ import {
   localizeGuideArticle,
   localizeGuideItem,
   pathForGuideItem,
-  sectionCards,
   type GuideItem,
   type GuideItemKind,
 } from "@/lib/guide-items";
@@ -73,17 +72,10 @@ export async function generateGuideSectionMetadata(
   const guideSection = city ? getGuideSection(city, sectionSlug) : undefined;
   if (!city || !guideSection || !isPublicGuideSection(sectionSlug)) return {};
 
-  const card = sectionCards.find((item) => item.slug === sectionSlug);
-  const sectionCopy = locale === "ar" ? arabicSectionCopy[sectionSlug] : undefined;
   const cityName = localizedCityName(city, locale);
-  const sectionTitle =
-    sectionCopy?.title ??
-    card?.title ??
-    guideSection.title.replace(/^[0-9]+\.\s*/, "");
-  const description =
-    sectionCopy?.summary ??
-    card?.summary ??
-    `${cityName} ${guideSection.title} from the Irhal city guide.`;
+  const sectionCopy = getLocalizedGuideSectionCopy(city, sectionSlug, locale);
+  const sectionTitle = sectionCopy.title;
+  const description = sectionCopy.summary;
 
   return pageMetadata({
     title: `${sectionTitle} | ${cityName}`,
@@ -107,7 +99,6 @@ export async function CityGuideSectionPageContent({
   const guideSection = city ? getGuideSection(city, sectionSlug) : undefined;
   if (!city || !guideSection || !isPublicGuideSection(sectionSlug)) notFound();
 
-  const card = sectionCards.find((item) => item.slug === sectionSlug);
   const items = getGuideItemsForSection(city, sectionSlug);
   const localizedItems = items.map((item) => localizeGuideItem(item, locale));
   const isArabic = locale === "ar";
@@ -167,15 +158,9 @@ export async function CityGuideSectionPageContent({
   const sectionPath = `${cityBasePath}/section/${sectionSlug}`;
   const pageHref = (page: number) =>
     page <= 1 ? sectionPath : `${sectionPath}?page=${page}`;
-  const sectionCopy = isArabic ? arabicSectionCopy[sectionSlug] : undefined;
-  const sectionTitle =
-    sectionCopy?.title ??
-    card?.title ??
-    guideSection.title.replace(/^[0-9]+\.\s*/, "");
-  const sectionSummary =
-    sectionCopy?.summary ??
-    card?.summary ??
-    `${guideSection.title} brings together useful planning notes, places, and local context for your trip.`;
+  const sectionCopy = getLocalizedGuideSectionCopy(city, sectionSlug, locale);
+  const sectionTitle = sectionCopy.title;
+  const sectionSummary = sectionCopy.summary;
   const itemLabels = isArabic
     ? { discover: "اكتشف", map: "الخريطة", savePrefix: "حفظ", verified: "تم التحقق" }
     : { discover: "Discover", map: "Map", savePrefix: "Save", verified: "Verified" };
@@ -234,7 +219,7 @@ export async function CityGuideSectionPageContent({
           { name: "Home", path: "/" },
           { name: city.name, path: cityBasePath },
           {
-            name: card?.title ?? guideSection.title,
+            name: sectionTitle,
             path: `${cityBasePath}/section/${guideSection.slug}`,
           },
         ], locale)}
@@ -392,6 +377,7 @@ export async function CityGuideSectionPageContent({
               </div>
 
               <SectionSidebar
+                city={city}
                 cityBasePath={cityBasePath}
                 cityName={cityName}
                 currentSlug={sectionSlug}

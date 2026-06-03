@@ -16,11 +16,6 @@ export type NeighbourhoodHighlight = {
 
 type Locale = "en" | "ar";
 
-type LocalizedNeighbourhoodCopy = {
-  description: string;
-  name: string;
-};
-
 const GENERIC_FALLBACK_IMAGE = "/images/karachi-guide/place.svg";
 
 const approvedGuideItemFallbackImages: Record<
@@ -45,57 +40,6 @@ const approvedGuideItemFallback = (item: GuideItem) =>
   approvedGuideItemFallbackImages[`${item.kind}:${item.slug}`] ??
   approvedGuideItemFallbackImages[item.slug];
 
-const karachiArabicNeighbourhoodCopy: Record<
-  string,
-  LocalizedNeighbourhoodCopy
-> = {
-  "airport-malir": {
-    description:
-      "منطقة عملية للوصول والمغادرة المبكرة وترتيبات العائلات والإقامة القريبة من مطار جناح الدولي.",
-    name: "المطار وملير",
-  },
-  "boat-basin-zamzama": {
-    description:
-      "تجمعات مطاعم ومقاهٍ تناسب أمسيات هادئة مع كليفتون ودي إتش إيه.",
-    name: "بوت بيسن وزمزما",
-  },
-  "burns-road": {
-    description:
-      "منطقة طعام في المدينة القديمة للأطباق الكلاسيكية، والتوقفات المسائية القصيرة، والمشي قرب مواقع التراث.",
-    name: "بيرنز رود",
-  },
-  clifton: {
-    description:
-      "تصلح كليفتون كقاعدة ساحلية مميزة للزوار أول مرة، والعائلات، والمراكز التجارية، والمطاعم، والوصول إلى الشاطئ، والتنقلات القصيرة نحو دي إتش إيه.",
-    name: "كليفتون",
-  },
-  dha: {
-    description:
-      "منطقة سكنية وتجارية قريبة من المطاعم والمقاهي والواجهة البحرية، ومناسبة للتنقل بين كليفتون وزمزما ودو دريا.",
-    name: "دي إتش إيه",
-  },
-  "gulshan-e-iqbal": {
-    description:
-      "منطقة مفيدة للوجهات العائلية والجامعات والحدائق والمطاعم المتوسطة والتنقل في شرق كراتشي.",
-    name: "غلشن إقبال",
-  },
-  pechs: {
-    description:
-      "قاعدة سكنية وتجارية مركزية تضم مقاهي وفنادق عملية وشوارع طعام، مع وصول سريع نحو طارق رود.",
-    name: "بي إي سي إتش إس",
-  },
-  saddar: {
-    description:
-      "صدر هي القلب التاريخي التجاري الكثيف، ومفيدة للمعالم ذات الطابع الاستعماري والأسواق وشوارع الطعام القديمة ومسارات التراث.",
-    name: "صدر",
-  },
-  "tariq-road": {
-    description:
-      "حي تسوق نشط للأزياء والمراكز التجارية والمطاعم غير الرسمية وحركة التجزئة المسائية.",
-    name: "طارق رود",
-  },
-};
-
 const localizeKarachiNeighbourhood = (
   citySlug: string,
   item: Pick<NeighbourhoodHighlight, "description" | "name" | "slug"> & {
@@ -114,12 +58,17 @@ const localizeKarachiNeighbourhood = (
         : undefined;
   if (name || description) {
     return {
-      description: description ?? item.description,
-      name: name ?? item.name,
+      description:
+        description ?? "وصف هذه المنطقة غير مكتمل في نظام إدارة المحتوى.",
+      name: name ?? "منطقة قيد الترجمة",
       slug: item.slug,
     };
   }
-  return karachiArabicNeighbourhoodCopy[item.slug] ?? item;
+  return {
+    description: "وصف هذه المنطقة غير مكتمل في نظام إدارة المحتوى.",
+    name: "منطقة قيد الترجمة",
+    slug: item.slug,
+  };
 };
 
 export const getCityHeroImage = (city: CityGuide): string =>

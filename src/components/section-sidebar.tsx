@@ -2,10 +2,13 @@ import { Compass, MapPin, Route } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
-import { arabicSectionCopy } from "@/components/guide-section-grid";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { publicSectionCards } from "@/lib/guide-items";
+import type { CityGuide } from "@/lib/city-data";
+import {
+  getLocalizedGuideSectionCopy,
+  publicSectionCards,
+} from "@/lib/guide-items";
 import { cn } from "@/lib/utils";
 
 export type SidebarRelatedItem = {
@@ -16,6 +19,7 @@ export type SidebarRelatedItem = {
 };
 
 type SectionSidebarProps = {
+  city: CityGuide;
   cityBasePath: string;
   cityName: string;
   currentSlug: string;
@@ -26,6 +30,7 @@ type SectionSidebarProps = {
 };
 
 export function SectionSidebar({
+  city,
   cityBasePath,
   cityName,
   currentSlug,
@@ -61,9 +66,11 @@ export function SectionSidebar({
         </p>
         <nav className="mt-3 flex flex-col">
           {publicSectionCards.map((sectionCard) => {
-            const title = isArabic
-              ? arabicSectionCopy[sectionCard.slug]?.title ?? sectionCard.title
-              : sectionCard.title;
+            const title = getLocalizedGuideSectionCopy(
+              city,
+              sectionCard.slug,
+              locale,
+            ).title;
             const active = sectionCard.slug === currentSlug;
 
             return (

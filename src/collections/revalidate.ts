@@ -177,9 +177,14 @@ export const revalidatePublicCityContent = async ({
 
 export const revalidateAfterChange: CollectionAfterChangeHook = async ({
   collection,
+  context,
   doc,
   req,
 }) => {
+  if ((context as { skipPublicRevalidate?: boolean }).skipPublicRevalidate) {
+    return;
+  }
+
   await revalidatePublicCityContent({
     collection: collection.slug,
     doc: doc as CMSDoc,
@@ -189,9 +194,14 @@ export const revalidateAfterChange: CollectionAfterChangeHook = async ({
 
 export const revalidateAfterDelete: CollectionAfterDeleteHook = async ({
   collection,
+  context,
   doc,
   req,
 }) => {
+  if ((context as { skipPublicRevalidate?: boolean }).skipPublicRevalidate) {
+    return;
+  }
+
   await revalidatePublicCityContent({
     collection: collection.slug,
     doc: doc as CMSDoc,

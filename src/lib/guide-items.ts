@@ -1,13 +1,6 @@
-import type { CityGuide, GuideBlock, GuideTableBlock } from "./city-data";
-import {
-  getCanonicalNeighborhoodSlugForArea,
-  getGuideSection,
-  getGuideTable,
-} from "./city-data";
-import karachiAr from "../data/karachi-ar.json";
+import type { CityGuide, GuideBlock } from "./city-data";
+import { getGuideSection, getGuideTable } from "./city-data";
 import karachiIrhalLegacyArticleUpdates from "../data/karachi-irhal-legacy-article-updates.json";
-import karachiIrhalLegacyUpdates from "../data/karachi-irhal-legacy-updates.json";
-import karachiOriginalContent from "../data/karachi-original-content.json";
 
 export type GuideItemKind = "place" | "hotel" | "restaurant" | "masjid" | "shopping" | "tour" | "family" | "festival";
 
@@ -87,18 +80,7 @@ export type GuideArticle = {
   slug: string;
   summary: string;
   blocks: GuideBlock[];
-};
-
-type IrhalLegacyUpdate = {
-  kind: GuideItemKind;
-  slug: string;
-  sourceTitle: string;
-  sourceUrl: string;
-  sourceModifiedAt: string;
-  editorialUpdate: string;
-  verificationNote: string;
-  sourceAddress?: string;
-  sourceLocation?: string;
+  translations?: Record<string, Record<string, unknown>>;
 };
 
 export type IrhalLegacyArticleUpdate = {
@@ -109,95 +91,6 @@ export type IrhalLegacyArticleUpdate = {
   sourceModifiedAt: string;
   editorialUpdate: string;
   verificationNote: string;
-};
-
-const imageByKind: Record<GuideItemKind, string> = {
-  place: "/images/karachi-guide/place.svg",
-  hotel: "/images/karachi-guide/hotel.svg",
-  restaurant: "/images/karachi-guide/restaurant.svg",
-  masjid: "/images/karachi-guide/masjid.svg",
-  shopping: "/images/karachi-guide/shopping.svg",
-  tour: "/images/karachi-guide/tour.svg",
-  family: "/images/karachi-guide/family.svg",
-  festival: "/images/karachi-guide/festival.svg",
-};
-
-const irhalLegacyUpdateByKey = new Map(
-  (karachiIrhalLegacyUpdates as IrhalLegacyUpdate[]).map((update) => [
-    `${update.kind}:${update.slug}`,
-    update,
-  ]),
-);
-
-type OriginalContentEntry = {
-  paragraphs?: string[];
-  location?: string;
-};
-
-const originalContentByKey = karachiOriginalContent as Record<
-  string,
-  OriginalContentEntry
->;
-
-const withOriginalContent = (item: GuideItem): GuideItem => {
-  const entry = originalContentByKey[`${item.kind}:${item.slug}`];
-  if (!entry) return item;
-
-  const paragraphs = (entry.paragraphs ?? []).filter((p) => p.trim());
-  const location = entry.location?.trim();
-
-  return {
-    ...item,
-    originalContent:
-      item.originalContent && item.originalContent.length > 0
-        ? item.originalContent
-        : paragraphs.length > 0
-          ? paragraphs
-          : undefined,
-    originalLocation: item.originalLocation || location || undefined,
-  };
-};
-
-// Prefer Payload-managed editorial fields/media when the matching guide-item
-// document has them. The imported guide tables remain the fallback.
-const withCmsGuideItem = (city: CityGuide, item: GuideItem): GuideItem => {
-  const key = `${item.kind}:${item.slug}`;
-  const override =
-    city.guideItemOverrides?.[key] ?? city.guideItemOverrides?.[item.slug];
-  const url =
-    city.guideItemImages?.[key] ??
-    city.guideItemImages?.[item.slug];
-  const gallery =
-    city.guideItemGalleries?.[key] ??
-    city.guideItemGalleries?.[item.slug];
-  if (!override && !url && !gallery) return item;
-
-  return {
-    ...item,
-    ...(override?.title ? { title: override.title } : {}),
-    ...(override?.area ? { area: override.area } : {}),
-    ...(override?.category ? { category: override.category } : {}),
-    ...(override?.description ? { description: override.description } : {}),
-    ...(override?.budget ? { budget: override.budget } : {}),
-    ...(override?.mapUrl ? { mapUrl: override.mapUrl } : {}),
-    ...(override?.imageAlt ? { imageAlt: override.imageAlt } : {}),
-    ...(override?.originalContent && override.originalContent.length > 0
-      ? { originalContent: override.originalContent }
-      : {}),
-    ...(override?.geoStatus ? { geoStatus: override.geoStatus } : {}),
-    ...(url ? { cmsImageUrl: url } : {}),
-    ...(gallery && gallery.length > 0 ? { galleryUrls: gallery } : {}),
-  };
-};
-
-const withNeighborhood = (city: CityGuide, item: GuideItem): GuideItem => {
-  const key = `${item.kind}:${item.slug}`;
-  const neighborhoodSlug =
-    city.guideItemNeighborhoods?.[key] ??
-    city.guideItemNeighborhoods?.[item.slug] ??
-    getCanonicalNeighborhoodSlugForArea(city, item.area);
-
-  return neighborhoodSlug ? { ...item, neighborhoodSlug } : item;
 };
 
 // Public guide item order must be stable. Do not reorder by media presence or
@@ -211,33 +104,6 @@ const irhalLegacyArticleUpdateByKey = (
   updatesByKey.set(key, [...(updatesByKey.get(key) ?? []), update]);
   return updatesByKey;
 }, new Map());
-
-const withIrhalLegacyUpdate = (item: GuideItem): GuideItem => {
-  const update = irhalLegacyUpdateByKey.get(`${item.kind}:${item.slug}`);
-  if (!update) return item;
-
-  return {
-    ...item,
-    details: {
-      ...item.details,
-      original_in_house_summary: item.description,
-      legacy_irhal_editorial_update: update.editorialUpdate,
-      legacy_irhal_verification_note: update.verificationNote,
-      legacy_irhal_source_title: update.sourceTitle,
-      legacy_irhal_source_url: update.sourceUrl,
-      legacy_irhal_source_modified_at: update.sourceModifiedAt,
-      legacy_irhal_verified_at: "2026-05-29",
-      legacy_irhal_source_type: "editorial",
-      legacy_irhal_confidence: "medium",
-      ...(update.sourceAddress
-        ? { legacy_irhal_source_address: update.sourceAddress }
-        : {}),
-      ...(update.sourceLocation
-        ? { legacy_irhal_source_location: update.sourceLocation }
-        : {}),
-    },
-  };
-};
 
 const withIrhalLegacyArticleUpdate = (article: GuideArticle): GuideArticle => {
   return article;
@@ -350,6 +216,45 @@ export const publicSectionCards = sectionCards.filter((card) =>
   isPublicGuideSection(card.slug),
 );
 
+export const getLocalizedGuideSectionCopy = (
+  city: CityGuide,
+  sectionSlug: string,
+  locale: "en" | "ar",
+) => {
+  const guideSection = getGuideSection(city, sectionSlug);
+  const card = sectionCards.find((item) => item.slug === sectionSlug);
+  const translation = guideSection?.translations?.[locale];
+  const fallbackTitle =
+    guideSection?.title.replace(/^[0-9]+\.\s*/, "") ??
+    card?.title ??
+    sectionSlug;
+  const fallbackSummary =
+    guideSection?.summary ??
+    card?.summary ??
+    `${fallbackTitle} from the Irhal city guide.`;
+
+  if (locale === "ar") {
+    return {
+      summary: asArabicText(
+        translation?.summary,
+        "ملخص هذا القسم غير مكتمل في نظام إدارة المحتوى.",
+      ),
+      title: asArabicText(translation?.title, "قسم قيد الترجمة"),
+    };
+  }
+
+  return {
+    summary:
+      typeof translation?.summary === "string" && translation.summary.trim()
+        ? translation.summary
+        : fallbackSummary,
+    title:
+      typeof translation?.title === "string" && translation.title.trim()
+        ? translation.title
+        : fallbackTitle,
+  };
+};
+
 export const slugifyGuideItem = (value: string) =>
   value
     .toLowerCase()
@@ -358,71 +263,13 @@ export const slugifyGuideItem = (value: string) =>
     .replace(/^-+|-+$/g, "")
     .slice(0, 90);
 
-const getMapUrl = (row: GuideTableBlock["rows"][number]) => {
-  const possibleKeys = ["map", "map_search"];
-  for (const key of possibleKeys) {
-    const link = row.links[key]?.[0]?.url;
-    if (link) return link;
-  }
-  return undefined;
-};
+const arabicTextPattern = /[\u0600-\u06ff]/;
 
-const asItem = ({
-  city,
-  table,
-  row,
-  index,
-  kind,
-  sectionSlug,
-  titleKey,
-  areaKey,
-  categoryKey,
-  descriptionKey,
-  budgetKey,
-}: {
-  city: CityGuide;
-  table: GuideTableBlock;
-  row: GuideTableBlock["rows"][number];
-  index: number;
-  kind: GuideItemKind;
-  sectionSlug: string;
-  titleKey: string;
-  areaKey: string;
-  categoryKey: string;
-  descriptionKey: string;
-  budgetKey?: string;
-}): GuideItem => {
-  const title = row.values[titleKey] || "Untitled";
-  const area = row.values[areaKey] || city.name;
-  const category = row.values[categoryKey] || kind;
-  const description = row.values[descriptionKey] || `${title} in ${area}.`;
-  const mapUrl = getMapUrl(row);
+const hasArabicText = (value: unknown): value is string =>
+  typeof value === "string" && arabicTextPattern.test(value);
 
-  return {
-    id: `${table.purpose}-${index}`,
-    citySlug: city.slug,
-    kind,
-    sectionSlug,
-    sourceTable: table.purpose,
-    title,
-    slug: slugifyGuideItem(title),
-    eyebrow: `${kind.replace("-", " ")} in ${area}`,
-    area,
-    category,
-    description,
-    budget: budgetKey ? row.values[budgetKey] : undefined,
-    mapUrl,
-    imageUrl: imageByKind[kind],
-    imageAlt: `${title} ${kind} in ${city.name}`,
-    details: row.values,
-    geoStatus: "provider-enrichment-required",
-  };
-};
-
-const asLocalizedText = (
-  value: unknown,
-  fallback: string,
-) => (typeof value === "string" && value.trim() ? value : fallback);
+const asArabicText = (value: unknown, fallback: string) =>
+  hasArabicText(value) ? value.trim() : fallback;
 
 const asLocalizedParagraphs = (value: unknown): string[] | undefined => {
   if (Array.isArray(value)) {
@@ -442,6 +289,11 @@ const asLocalizedParagraphs = (value: unknown): string[] | undefined => {
   }
 
   return undefined;
+};
+
+const asArabicParagraphs = (value: unknown): string[] | undefined => {
+  const paragraphs = asLocalizedParagraphs(value)?.filter(hasArabicText);
+  return paragraphs && paragraphs.length > 0 ? paragraphs : undefined;
 };
 
 const arabicKindLabel: Record<GuideItemKind, string> = {
@@ -471,32 +323,16 @@ const arabicAreaLabel: Record<string, string> = {
   "tariq road": "طارق رود",
 };
 
-const localizeAreaFallback = (area: string) =>
-  arabicAreaLabel[area.toLowerCase()] ?? area;
-
-const localArItems = (karachiAr as { items?: Record<string, Record<string, unknown>> })
-  .items ?? {};
-const localArArticles =
-  (
-    karachiAr as {
-      articles?: Record<string, Record<string, Record<string, unknown>>>;
-    }
-  ).articles ?? {};
+const localizeKnownArabicArea = (area: string) =>
+  arabicAreaLabel[area.toLowerCase()];
 
 const withTranslations = (city: CityGuide, item: GuideItem): GuideItem => {
   const cmsTranslations =
     city.guideItemTranslations?.[`${item.kind}:${item.slug}`] ??
     city.guideItemTranslations?.[item.slug];
-  const localAr = localArItems[`${item.kind}:${item.slug}`];
-  const arEntry =
-    localAr || cmsTranslations?.ar
-      ? { ar: { ...(localAr ?? {}), ...(cmsTranslations?.ar ?? {}) } }
-      : undefined;
-
-  const translations =
-    cmsTranslations || arEntry
-      ? { ...(cmsTranslations ?? {}), ...(arEntry ?? {}) }
-      : undefined;
+  const translations = cmsTranslations
+    ? { ...(item.translations ?? {}), ...cmsTranslations }
+    : item.translations;
 
   return translations ? { ...item, translations } : item;
 };
@@ -507,160 +343,52 @@ export const localizeGuideItem = (
 ): GuideItem => {
   if (locale === "en") return item;
 
-  const translation = item.translations?.[locale];
-  if (!translation) {
-    return {
-      ...item,
-      eyebrow: `${arabicKindLabel[item.kind]} في ${localizeAreaFallback(item.area)}`,
-    };
-  }
-
-  const title = asLocalizedText(translation.title ?? translation.name, item.title);
-  const area = asLocalizedText(translation.area, item.area);
-  const category = asLocalizedText(translation.category, item.category);
+  const translation = item.translations?.[locale] ?? {};
+  const missingCopy =
+    "المحتوى العربي لهذا العنصر غير مكتمل في نظام إدارة المحتوى.";
+  const area = asArabicText(
+    translation.area,
+    localizeKnownArabicArea(item.area) ?? "غير محدد",
+  );
+  const category = asArabicText(
+    translation.category,
+    arabicKindLabel[item.kind],
+  );
+  const description = asArabicText(
+    translation.summary ?? translation.description,
+    missingCopy,
+  );
   const overview =
-    asLocalizedParagraphs(translation.overview) ??
-    asLocalizedParagraphs(translation.body);
-  const address = asLocalizedText(translation.address, "");
+    asArabicParagraphs(translation.overview) ??
+    asArabicParagraphs(translation.body) ??
+    [description];
+  const title = asArabicText(
+    translation.title ?? translation.name,
+    `${arabicKindLabel[item.kind]} قيد الترجمة`,
+  );
+  const address = asArabicText(
+    translation.address,
+    "العنوان العربي غير مكتمل في نظام إدارة المحتوى.",
+  );
 
   return {
     ...item,
     area,
     category,
-    description: asLocalizedText(
-      translation.summary ?? translation.description,
-      item.description,
-    ),
-    eyebrow: asLocalizedText(translation.eyebrow, `${category} في ${area}`),
-    imageAlt: asLocalizedText(translation.imageAlt, item.imageAlt),
+    description,
+    eyebrow: asArabicText(translation.eyebrow, `${category} في ${area}`),
+    imageAlt: asArabicText(translation.imageAlt, title),
     title,
     // Localize the long-form overview/address too, so cards and detail pages
-    // show translated content instead of the English original.
-    ...(overview && overview.length > 0 ? { originalContent: overview } : {}),
-    ...(address ? { originalLocation: address } : {}),
+    // never fall through to the English Payload fields on Arabic routes.
+    originalContent: overview,
+    originalLocation: address,
   };
 };
 
 export const getGuideItems = (city: CityGuide): GuideItem[] => {
-  if (city.guideItems && city.guideItems.length > 0) {
-    return sortGuideItemsForEditorialDisplay(
-      city.guideItems.map((item) => {
-        const canonicalItem = withOriginalContent(withIrhalLegacyUpdate(item));
-        return withTranslations(city, canonicalItem);
-      }),
-    );
-  }
-
-  if (city.contentSource === "payload") return [];
-
-  const configs = [
-    {
-      purpose: "festivals",
-      kind: "festival" as const,
-      sectionSlug: "festivals-and-annual-events",
-      titleKey: "festival_season",
-      areaKey: "month",
-      categoryKey: "month",
-      descriptionKey: "what_it_means_for_visitors",
-    },
-    {
-      purpose: "places_to_visit",
-      kind: "place" as const,
-      sectionSlug: "places-to-visit",
-      titleKey: "place",
-      areaKey: "area",
-      categoryKey: "type",
-      descriptionKey: "why_it_matters_editorial_note",
-    },
-    {
-      purpose: "hotels",
-      kind: "hotel" as const,
-      sectionSlug: "hotels",
-      titleKey: "hotel_stay",
-      areaKey: "area",
-      categoryKey: "tier",
-      descriptionKey: "guide_note",
-    },
-    {
-      purpose: "food_restaurants",
-      kind: "restaurant" as const,
-      sectionSlug: "food-and-restaurants",
-      titleKey: "restaurant_food_area",
-      areaKey: "area",
-      categoryKey: "cuisine_type",
-      descriptionKey: "what_to_order_why_go",
-      budgetKey: "budget",
-    },
-    {
-      purpose: "masjids",
-      kind: "masjid" as const,
-      sectionSlug: "muslim-visitor-information",
-      titleKey: "masjid",
-      areaKey: "area",
-      categoryKey: "type",
-      descriptionKey: "guide_note",
-    },
-    {
-      purpose: "shopping",
-      kind: "shopping" as const,
-      sectionSlug: "shopping",
-      titleKey: "shopping_area_store",
-      areaKey: "area",
-      categoryKey: "class",
-      descriptionKey: "description",
-    },
-    {
-      purpose: "organized_tours",
-      kind: "tour" as const,
-      sectionSlug: "organized-tours",
-      titleKey: "tour_type",
-      areaKey: "sites_experience",
-      categoryKey: "tour_type",
-      descriptionKey: "guide_note",
-    },
-    {
-      purpose: "children_in_tow",
-      kind: "family" as const,
-      sectionSlug: "children-in-tow",
-      titleKey: "child_friendly_place",
-      areaKey: "child_friendly_place",
-      categoryKey: "child_friendly_place",
-      descriptionKey: "why_go_caution",
-    },
-  ];
-
   return sortGuideItemsForEditorialDisplay(
-    configs.flatMap((config) => {
-      const table = getGuideTable(city, config.purpose);
-      if (!table) return [];
-
-      return table.rows.map((row, index) => {
-        const baseItem = asItem({
-          city,
-          table,
-          row,
-          index,
-          kind: config.kind,
-          sectionSlug: config.sectionSlug,
-          titleKey: config.titleKey,
-          areaKey: config.areaKey,
-          categoryKey: config.categoryKey,
-          descriptionKey: config.descriptionKey,
-          budgetKey: "budgetKey" in config ? config.budgetKey : undefined,
-        });
-
-        return withTranslations(
-          city,
-          withNeighborhood(
-            city,
-            withCmsGuideItem(
-              city,
-              withOriginalContent(withIrhalLegacyUpdate(baseItem)),
-            ),
-          ),
-        );
-      });
-    }),
+    (city.guideItems ?? []).map((item) => withTranslations(city, item)),
   );
 };
 
@@ -763,24 +491,6 @@ const withArticleSummary = (article: GuideArticle): GuideArticle => {
   };
 };
 
-const arabicArticleFallback: Record<
-  string,
-  { summary?: string; title: string }
-> = {
-  "health-and-safety:useful-emergency-numbers": {
-    summary: "أرقام الطوارئ والخدمات الأساسية التي يحتاجها المسافر في كراتشي.",
-    title: "أرقام الطوارئ المفيدة",
-  },
-  "visitor-information:fast-facts": {
-    summary: "حقائق سريعة عن الموقع، الاتصال، الطوارئ، السكان، اللغة، التوقيت، والعملة.",
-    title: "حقائق سريعة",
-  },
-  "visitor-information:annual-temperature-and-climate-guide": {
-    summary: "درجات الحرارة الشهرية وإرشادات التخطيط للطقس في كراتشي على مدار العام.",
-    title: "دليل درجات الحرارة والمناخ السنوي",
-  },
-};
-
 const withArticleTable = (city: CityGuide, article: GuideArticle): GuideArticle => {
   const purpose = articleTablePurpose(article.sectionSlug, article.slug);
   if (!purpose || article.blocks.some((block) => block.type === "table" && block.purpose === purpose)) {
@@ -803,6 +513,15 @@ const withArticleTable = (city: CityGuide, article: GuideArticle): GuideArticle 
       table,
     ],
   };
+};
+
+const withGuideArticleTranslations = (
+  city: CityGuide,
+  article: GuideArticle,
+): GuideArticle => {
+  const translations =
+    city.guideArticleTranslations?.[`${article.sectionSlug}:${article.slug}`];
+  return translations ? { ...article, translations } : article;
 };
 
 export const getGuideArticlesForSection = (city: CityGuide, sectionSlug: string): GuideArticle[] => {
@@ -879,7 +598,12 @@ export const getGuideArticlesForSection = (city: CityGuide, sectionSlug: string)
   if (current) articles.push(current);
   const normalizedArticles = articles
     .filter((article) => article.summary || article.blocks.length > 0)
-    .map((article) => withArticleSummary(withArticleTable(city, article)));
+    .map((article) =>
+      withGuideArticleTranslations(
+        city,
+        withArticleSummary(withArticleTable(city, article)),
+      ),
+    );
 
   return city.contentSource === "payload"
     ? normalizedArticles
@@ -895,43 +619,25 @@ export const localizeGuideArticle = (
 ): GuideArticle => {
   if (locale === "en") return article;
 
-  const translation = localArArticles[article.sectionSlug]?.[article.slug];
-  const fallback = arabicArticleFallback[`${article.sectionSlug}:${article.slug}`];
-  if (!translation && !fallback) return article;
-
-  const translatedParagraphs = Array.isArray(translation?.blocks)
-    ? (translation.blocks as GuideBlock[]).filter(
-        (block): block is GuideBlock & { type: "paragraph" } =>
-          block.type === "paragraph",
-      )
-    : [];
-  let translatedParagraphIndex = 0;
-  const blocks =
-    translatedParagraphs.length > 0
-      ? article.blocks.map((block) => {
-          if (block.type === "table") return block;
-
-          const translated = translatedParagraphs[translatedParagraphIndex];
-          translatedParagraphIndex += 1;
-
-          return translated
-            ? {
-                ...block,
-                links: translated.links ?? block.links,
-                style: translated.style ?? block.style,
-                text: asLocalizedText(translated.text, block.text),
-              }
-            : block;
-        })
-      : article.blocks;
+  const translation = article.translations?.[locale] ?? {};
+  const translatedBlocks = Array.isArray(translation.blocks)
+    ? (translation.blocks as GuideBlock[])
+    : undefined;
+  const missingCopy =
+    "المحتوى العربي لهذا المقال غير مكتمل في نظام إدارة المحتوى.";
+  const title = asArabicText(
+    translation.title,
+    "مقال قيد الترجمة",
+  );
+  const summary = asArabicText(translation.summary, missingCopy);
 
   return {
     ...article,
-    blocks,
-    summary: asLocalizedText(
-      translation?.summary ?? fallback?.summary,
-      article.summary,
-    ),
-    title: asLocalizedText(translation?.title ?? fallback?.title, article.title),
+    blocks:
+      translatedBlocks && translatedBlocks.length > 0
+        ? translatedBlocks
+        : [{ type: "paragraph", style: "Normal", text: missingCopy, links: [] }],
+    summary,
+    title,
   };
 };

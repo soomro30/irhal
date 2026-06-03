@@ -4,8 +4,11 @@ import { getPayload } from "payload";
 
 import type {
   CityGuide,
+  GuideBlock,
   CityGuideImport,
   CityGuideItem,
+  GuideSection,
+  GuideTableBlock,
   Itinerary,
   LocaleTranslations,
   Listing,
@@ -224,6 +227,172 @@ const emptyGuideImport = (doc: CMSDoc): CityGuideImport => {
   };
 };
 
+const isGuideParagraphBlock = (
+  value: unknown,
+): value is Extract<GuideBlock, { type: "paragraph" }> => {
+  const block = asRecord(value);
+  return block.type === "paragraph" && typeof block.text === "string";
+};
+
+const isGuideTableBlock = (value: unknown): value is GuideTableBlock => {
+  const block = asRecord(value);
+  return block.type === "table" && Array.isArray(block.rows);
+};
+
+const normalizeGuideBlocks = (value: unknown): GuideBlock[] =>
+  asArray(value).flatMap((block): GuideBlock[] => {
+    if (isGuideParagraphBlock(block)) {
+      return [
+        {
+          type: "paragraph",
+          style: asString(block.style, "Normal"),
+          text: block.text,
+          links: asArray(block.links).filter(
+            (link): link is { text: string; url: string } =>
+              typeof asRecord(link).text === "string" &&
+              typeof asRecord(link).url === "string",
+          ),
+        },
+      ];
+    }
+
+    if (isGuideTableBlock(block)) {
+      return [block];
+    }
+
+    return [];
+  });
+
+const normalizeRichTextBlocks = (value: unknown): GuideBlock[] =>
+  normalizeRichTextParagraphs(value).map((text) => ({
+    type: "paragraph",
+    style: "Normal",
+    text,
+    links: [],
+  }));
+
+const normalizeGuideSectionBlocks = (doc: CMSDoc): GuideBlock[] => {
+  const sourceImport = asRecord(doc.sourceImport);
+  const articles = asArray(sourceImport.articles);
+  const articleBlocks = articles.flatMap((articleValue) => {
+    const article = asRecord(articleValue);
+    const title = asString(article.title);
+    const blocks = normalizeGuideBlocks(article.blocks);
+    const summary = asString(article.summary);
+
+    return [
+      ...(title
+        ? [
+            {
+              type: "paragraph" as const,
+              style: "Heading 2",
+              text: title,
+              links: [],
+            },
+          ]
+        : []),
+      ...(blocks.length > 0
+        ? blocks
+        : summary
+          ? [
+              {
+                type: "paragraph" as const,
+                style: "Normal",
+                text: summary,
+                links: [],
+              },
+            ]
+          : []),
+    ];
+  });
+
+  if (articleBlocks.length > 0) return articleBlocks;
+
+  const bodyBlocks = normalizeRichTextBlocks(doc.body);
+  if (bodyBlocks.length > 0) return bodyBlocks;
+
+  const summary = asString(doc.summary);
+  return summary
+    ? [{ type: "paragraph", style: "Normal", text: summary, links: [] }]
+    : [];
+};
+
+const normalizeCmsGuideSections = ({
+  cityDoc,
+  docs,
+  fallbackGuide,
+}: {
+  cityDoc: CMSDoc;
+  docs: CMSDoc[];
+  fallbackGuide?: CityGuideImport;
+}): CityGuideImport | undefined => {
+  if (docs.length === 0) return undefined;
+
+  const fallbackOrder = new Map(
+    (fallbackGuide?.sections ?? []).map((section, index) => [
+      section.slug,
+      index,
+    ]),
+  );
+  const sections: GuideSection[] = docs
+    .map((doc) => ({
+      title: asString(doc.title),
+      slug: asString(doc.sectionSlug),
+      summary: asString(doc.summary) || undefined,
+      blocks: normalizeGuideSectionBlocks(doc),
+      translations: normalizeTranslations(doc.translations),
+    }))
+    .filter((section) => section.title && section.slug)
+    .sort((a, b) => {
+      const aOrder = fallbackOrder.get(a.slug) ?? Number.MAX_SAFE_INTEGER;
+      const bOrder = fallbackOrder.get(b.slug) ?? Number.MAX_SAFE_INTEGER;
+      if (aOrder !== bOrder) return aOrder - bOrder;
+      return a.title.localeCompare(b.title);
+    });
+
+  if (sections.length === 0) return undefined;
+
+  const tables = sections.flatMap((section) =>
+    section.blocks.filter(
+      (block): block is GuideTableBlock => block.type === "table",
+    ),
+  );
+
+  return {
+    source: {
+      fileName: "payload:guide-sections",
+      extractedAt: asString(cityDoc.updatedAt) || new Date(0).toISOString(),
+      formatVersion: "payload",
+    },
+    city: {
+      name: asString(cityDoc.name),
+      slug: asString(cityDoc.slug),
+      country: relationshipName(cityDoc.country),
+      region: asString(cityDoc.region),
+      updatedLabel: asString(cityDoc.lastVerifiedAt),
+    },
+    introBlocks: [],
+    sections,
+    tables,
+    coverage: {
+      sectionCount: sections.length,
+      tableCount: tables.length,
+      requiredSectionSlugs: sections.map((section) => section.slug),
+      missingRequiredSectionSlugs: [],
+      tableRowCounts: Object.fromEntries(
+        tables.map((table) => [table.purpose, table.rows.length]),
+      ),
+    },
+  };
+};
+
+const normalizeStructuredGuideImport = (
+  value: unknown,
+): CityGuideImport | undefined => {
+  const guide = asRecord(value);
+  return Array.isArray(guide.sections) ? (value as CityGuideImport) : undefined;
+};
+
 const normalizeLanguages = (value: unknown) =>
   asArray(value)
     .map((item) => {
@@ -380,6 +549,24 @@ const normalizeGuideItemTranslations = (docs: CMSDoc[]) =>
     if (slug && Object.keys(value).length > 0) {
       translations[slug] = value;
       if (kind) translations[`${kind}:${slug}`] = value;
+    }
+
+    return translations;
+  }, {});
+
+const normalizeGuideArticleTranslations = (docs: CMSDoc[]) =>
+  docs.reduce<Record<string, LocaleTranslations>>((translations, doc) => {
+    const sectionSlug = asString(doc.sectionSlug);
+    const ar = asRecord(normalizeTranslations(doc.translations).ar);
+    const articles = asRecord(ar.articles);
+    if (!sectionSlug || Object.keys(articles).length === 0) return translations;
+
+    for (const [articleSlug, articleTranslation] of Object.entries(articles)) {
+      if (articleSlug && articleTranslation) {
+        translations[`${sectionSlug}:${articleSlug}`] = {
+          ar: asRecord(articleTranslation),
+        };
+      }
     }
 
     return translations;
@@ -630,6 +817,7 @@ const loadCityBySlug = async (slug: string): Promise<CityGuide | undefined> => {
       listingResult,
       itineraryResult,
       guideItemResult,
+      guideSectionResult,
     ] =
       await Promise.all([
         payload.find({
@@ -657,6 +845,14 @@ const loadCityBySlug = async (slug: string): Promise<CityGuide | undefined> => {
           collection: "guide-items" as never,
           depth: 0,
           limit: 700,
+          overrideAccess: true,
+          sort: "id",
+          where: { city: { equals: cityId } },
+        }),
+        payload.find({
+          collection: "guide-sections" as never,
+          depth: 0,
+          limit: 100,
           overrideAccess: true,
           sort: "id",
           where: { city: { equals: cityId } },
@@ -732,10 +928,15 @@ const loadCityBySlug = async (slug: string): Promise<CityGuide | undefined> => {
       }
     }
 
-    const structuredSections = cityDoc.structuredSections as
-      | CityGuideImport
-      | undefined;
     const fallbackCity = getLocalCityBySlug(asString(cityDoc.slug));
+    const structuredSections = normalizeStructuredGuideImport(
+      cityDoc.structuredSections,
+    );
+    const cmsGuideSections = normalizeCmsGuideSections({
+      cityDoc,
+      docs: guideSectionResult.docs as CMSDoc[],
+      fallbackGuide: fallbackCity?.fullGuide,
+    });
     const cmsItineraries = (itineraryResult.docs as CMSDoc[]).map(
       normalizeItinerary,
     );
@@ -760,6 +961,9 @@ const loadCityBySlug = async (slug: string): Promise<CityGuide | undefined> => {
       translations: normalizeTranslations(cityDoc.translations),
       guideItemTranslations: normalizeGuideItemTranslations(
         guideItemResult.docs as CMSDoc[],
+      ),
+      guideArticleTranslations: normalizeGuideArticleTranslations(
+        guideSectionResult.docs as CMSDoc[],
       ),
       guideItemOverrides: normalizeGuideItemOverrides(guideItemDocs),
       guideItemImages,
@@ -790,7 +994,8 @@ const loadCityBySlug = async (slug: string): Promise<CityGuide | undefined> => {
         asString(cityDoc.name),
         asString(cityDoc.lede),
       ),
-      fullGuide: structuredSections ?? emptyGuideImport(cityDoc),
+      fullGuide:
+        cmsGuideSections ?? structuredSections ?? emptyGuideImport(cityDoc),
     } as CityGuide;
   } catch (error) {
     console.error(`Payload city source failed for ${slug}.`, error);
@@ -800,7 +1005,7 @@ const loadCityBySlug = async (slug: string): Promise<CityGuide | undefined> => {
 
 const cachedLoadCityBySlug = unstable_cache(
   loadCityBySlug,
-  ["irhal-city-by-slug-v3"],
+  ["irhal-city-by-slug-v4"],
   {
     revalidate: cityCacheTtlSeconds,
     tags: ["irhal-city"],

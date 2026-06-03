@@ -27,5 +27,8 @@ Later imports must be targeted and explicit:
 - Preserve existing Payload values by default.
 - Preserve `image`, `gallery`, workflow, source, translation, and editorial body fields unless the update request specifically names them.
 - Write new AI/imported content as `review` or `draft` unless an editor asked for published output.
+- Treat JSON, scripts, seeds, and local fixture files as transitional staging only. If an agent creates or edits translated copy, long descriptions, overviews, SEO fields, image metadata, galleries, listings, guide items, guide-section/article copy, itineraries, or media relationships in a local file, the same work must write those values into Payload unless Payload is unreachable.
+- Public routes must read imported city content, translations, SEO, and media from Payload when configured. Local files may support first-bootstrap imports or development-only unconfigured fallback, but they must not be the canonical runtime source after a city exists in Payload.
+- Missing Payload translations must be exposed as CMS gaps or Arabic missing-content copy instead of falling back silently to English on Arabic pages.
 
 For London, that means: first import can create London; later London imports must not overwrite London unless the command is intentionally an update/reset command.

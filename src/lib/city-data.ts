@@ -128,7 +128,9 @@ export type GuideBlock = GuideParagraphBlock | GuideTableBlock;
 export type GuideSection = {
   title: string;
   slug: string;
+  summary?: string;
   blocks: GuideBlock[];
+  translations?: LocaleTranslations;
 };
 
 export type LocaleTranslations = Record<string, Record<string, unknown>>;
@@ -213,6 +215,7 @@ export type CityGuide = {
   lastVerifiedAt: string;
   translations?: LocaleTranslations;
   guideItemTranslations?: Record<string, LocaleTranslations>;
+  guideArticleTranslations?: Record<string, LocaleTranslations>;
   guideItemOverrides?: Record<
     string,
     {
