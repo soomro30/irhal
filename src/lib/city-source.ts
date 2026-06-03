@@ -164,13 +164,6 @@ const guideItemMediaUrl = (value: unknown) => {
     return undefined;
   }
 
-  const width = asNumber(media.width);
-  const height = asNumber(media.height);
-  const filesize = asNumber(media.filesize);
-  if (width > 0 && width < 480) return undefined;
-  if (height > 0 && height < 320) return undefined;
-  if (filesize > 0 && filesize < 15000) return undefined;
-
   return mediaUrl(media);
 };
 
