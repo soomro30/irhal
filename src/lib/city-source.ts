@@ -1,6 +1,8 @@
 import config from "@/payload.config";
 import { unstable_cache } from "next/cache";
+import { after } from "next/server";
 import { getPayload } from "payload";
+import { cache } from "react";
 
 import type {
   CityGuide,
@@ -33,7 +35,7 @@ export type CityNavItem = {
 
 const isProduction = process.env.NODE_ENV === "production";
 const defaultCityCacheTtlSeconds =
-  process.env.NODE_ENV === "development" ? 5 : 60;
+  process.env.NODE_ENV === "development" ? 5 : 60 * 60;
 const cityCacheTtlSeconds = Number(
   process.env.IRHAL_CITY_CACHE_SECONDS ?? defaultCityCacheTtlSeconds,
 );
@@ -740,8 +742,10 @@ const cachedLoadCityNavItems = unstable_cache(
   },
 );
 
+const requestCachedLoadCityNavItems = cache(cachedLoadCityNavItems);
+
 export const getCityNavItems = async (): Promise<CityNavItem[]> =>
-  cachedLoadCityNavItems();
+  requestCachedLoadCityNavItems();
 
 const loadCityBySlug = async (slug: string): Promise<CityGuide | undefined> => {
   if (!isCMSConfigured()) {
@@ -1005,14 +1009,24 @@ const cachedLoadCityBySlug = unstable_cache(
   },
 );
 
+const requestCachedLoadCityBySlug = cache(cachedLoadCityBySlug);
+
 export const getCityBySlug = async (
   slug: string,
 ): Promise<CityGuide | undefined> => {
-  return cachedLoadCityBySlug(slug.toLowerCase());
+  return requestCachedLoadCityBySlug(slug.toLowerCase());
 };
 
 export const preloadCityBySlug = (slug: string) => {
-  void getCityBySlug(slug).catch((error) => {
-    console.warn(`City preload failed for ${slug}.`, error);
-  });
+  const normalizedSlug = slug.toLowerCase();
+  const preload = () =>
+    getCityBySlug(normalizedSlug).catch((error) => {
+      console.warn(`City preload failed for ${normalizedSlug}.`, error);
+    });
+
+  try {
+    after(preload);
+  } catch {
+    void preload();
+  }
 };

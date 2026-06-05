@@ -1,6 +1,6 @@
 # Irhal Portal V4 Feature Tracker
 
-Last updated: 2026-06-03
+Last updated: 2026-06-04
 
 This tracker reflects the current local implementation against the Irhal Enterprise City Guide V4 requirements. Status values are `Not Started`, `In Progress`, `Completed`, or `Blocked`.
 
@@ -27,6 +27,7 @@ This tracker reflects the current local implementation against the Irhal Enterpr
 - Karachi Port Trust Building now has Gulf-ready Arabic editorial fields in Payload and matching repo fallback translation: Arabic title, summary, area/category, address, and a three-paragraph overview replace the English fallback on `/ar/city/karachi/place/karachi-port-trust-building`.
 - CMS publishing now has first-class cache invalidation: Payload after-change/delete hooks on public content collections invalidate the `irhal-city` and `irhal-city-nav` data tags plus affected English/Arabic/root city paths. The extra process-memory city cache was removed so Next's data cache revalidation is authoritative, and production no longer silently falls back to local JSON when Payload/Supabase is unavailable or misconfigured; JSON fallback remains a development safety net only.
 - Added a protected `POST /api/revalidate` endpoint for operational CMS/script updates that happen outside a live Next request context, allowing authorized invalidation of `irhal-city` and `irhal-city-nav` plus specific paths without requiring a code deployment.
+- Public portal performance pass: production Payload city/nav data now keeps a one-hour Next data-cache TTL by default while preserving 5-second development freshness and on-demand tag/path revalidation. City/nav reads are request-deduped with React cache, and homepage Karachi warmup now runs through Next `after()` after the response instead of competing with the initial homepage render.
 - Guide item display order now favors editorially complete records across homepage rails, section grids, related rails, search-derived item lists, and Arabic pages: items with real Payload/R2 media or galleries rank before placeholder-only records, then newer CMS updates rank ahead of older content while preserving existing order for ties. This keeps newly edited/photo-backed entries visible first instead of leading city sections with sparse placeholder cards.
 - Search suggestions now collapse generated guide-article duplicates when a real guide item page represents the same entity, and exact duplicate guide-item titles are collapsed to the highest-ranked result. This prevents cases like Expo Centre appearing once as an imported article with an unrelated city hero image and again as the actual place page.
 - Payload admin LTR stability fix: `/admin` is now explicitly routed through the locale proxy as English/LTR and the client-side document locale synchronizer treats admin URLs as English, preventing the public Arabic default from leaking into the Payload dashboard. Verified that the admin page reloads with `<html lang="en" dir="ltr">`; Payload packages are already on current npm version `3.85.0`.
