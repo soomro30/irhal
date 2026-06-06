@@ -320,7 +320,7 @@ export async function CityPageContent({
     },
     {
       title: isArabic ? "مطاعم حلال" : "halal restaurants",
-      href: `${cityBasePath}/islamic-travel`,
+      href: `${cityBasePath}/section/food-and-restaurants`,
       iconGroup: "halal",
       tone: "bg-[#35aa32]",
       count:
