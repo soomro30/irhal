@@ -5,6 +5,7 @@ import { DiscoverPill } from "@/components/discover-action";
 import type { CityGuide } from "@/lib/city-data";
 import {
   getLocalizedGuideSectionCopy,
+  itineraryGuideSectionSlug,
   publicSectionCards,
 } from "@/lib/guide-items";
 
@@ -19,6 +20,7 @@ const imageBySection: Record<string, string> = {
   "organized-tours": "/images/karachi-guide/tour.svg",
   "children-in-tow": "/images/karachi-guide/family.svg",
   "muslim-visitor-information": "/images/karachi-guide/masjid.svg",
+  "city-in-a-day-and-longer-itineraries": "/images/karachi-guide/tour.svg",
 };
 
 export const sectionImage = (slug: string) =>
@@ -27,14 +29,18 @@ export const sectionImage = (slug: string) =>
 export function GuideSectionGrid({
   city,
   cityName = city.name,
+  excludeSlugs = [],
   locale = "en",
 }: {
   city: CityGuide;
   cityName?: string;
+  excludeSlugs?: string[];
   locale?: "en" | "ar";
 }) {
   const isArabic = locale === "ar";
   const basePath = isArabic ? `/ar/city/${city.slug}` : `/en/city/${city.slug}`;
+  const excluded = new Set(excludeSlugs);
+  const cards = publicSectionCards.filter((card) => !excluded.has(card.slug));
 
   return (
     <section className="border-t border-ink/10 bg-white py-10" dir={isArabic ? "rtl" : "ltr"}>
@@ -57,17 +63,21 @@ export function GuideSectionGrid({
           </p>
         </div>
         <div className="mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {publicSectionCards.map((card) => {
+          {cards.map((card) => {
             const sectionCopy = getLocalizedGuideSectionCopy(
               city,
               card.slug,
               locale,
             );
+            const href =
+              card.slug === itineraryGuideSectionSlug
+                ? `${basePath}/itineraries`
+                : `${basePath}/section/${card.slug}`;
 
             return (
             <Link
               className="group block rounded-lg border border-ink/10 bg-white shadow-none hover:border-coastal/40"
-              href={`${basePath}/section/${card.slug}`}
+              href={href}
               key={card.slug}
             >
               <div className="relative h-32 overflow-hidden rounded-t-lg bg-neutral-100">

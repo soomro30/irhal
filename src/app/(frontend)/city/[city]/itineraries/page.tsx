@@ -10,7 +10,18 @@ import { PageShell } from "@/components/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { getCityBySlug } from "@/lib/city-source";
-import { itineraryHeroImage, itineraryStopCount } from "@/lib/itineraries";
+import {
+  formatItineraryDuration,
+  formatItineraryStopCount,
+  itineraryCardImageMap,
+  itineraryHeroImage,
+  itineraryStopCount,
+  localizeItinerary,
+} from "@/lib/itineraries";
+import {
+  getLocalizedGuideSectionCopy,
+  itineraryGuideSectionSlug,
+} from "@/lib/guide-items";
 import {
   breadcrumbJsonLd,
   localizedCityName,
@@ -63,18 +74,28 @@ export async function ItinerariesPageContent({
   const cityBasePath = isArabic ? `/ar/city/${city.slug}` : `/en/city/${city.slug}`;
   const pageLabel = isArabic ? "مسارات الرحلة" : "Itineraries";
   const dir = isArabic ? "rtl" : "ltr";
+  const itinerarySectionCopy = getLocalizedGuideSectionCopy(
+    city,
+    itineraryGuideSectionSlug,
+    locale,
+  );
   const copy = {
     badge: isArabic ? "مسارات جاهزة للتخطيط" : "Route-aware plans",
-    title: isArabic ? `مسارات الرحلة في ${cityName}` : `${city.name} Itineraries`,
-    intro: isArabic
-      ? "اختر مسارا جاهزا حسب مدة الرحلة ونوع المسافر، مع محطات مترابطة حسب الأحياء والمعالم والمطاعم الحلال وإيقاع مناسب للعائلات."
-      : "Choose a ready route by trip length and traveler style, with connected neighborhoods, landmarks, halal-friendly food stops, and family-aware pacing.",
-    day: isArabic ? "يوم" : "day",
-    days: isArabic ? "أيام" : "days",
-    stops: isArabic ? "محطات" : "stops",
+    title: isArabic
+      ? itinerarySectionCopy.title
+      : `${city.name} ${itinerarySectionCopy.title}`,
+    intro: itinerarySectionCopy.summary,
     open: isArabic ? "فتح المسار" : "Open itinerary",
     ready: isArabic ? "جاهز للتخطيط" : "Ready to plan",
   };
+  const displayItineraries = city.itineraries.map((itinerary) =>
+    localizeItinerary(itinerary, locale),
+  );
+  const itineraryCardImages = itineraryCardImageMap({
+    city,
+    itineraries: city.itineraries,
+    locale,
+  });
 
   return (
     <PageShell
@@ -101,7 +122,7 @@ export async function ItinerariesPageContent({
           {
             "@context": "https://schema.org",
             "@type": "ItemList",
-            itemListElement: city.itineraries.map((itinerary, index) => ({
+            itemListElement: displayItineraries.map((itinerary, index) => ({
               "@type": "ListItem",
               position: index + 1,
               url: `${localizedUrl(`/city/${city.slug}/itineraries`, locale)}#${itinerary.slug}`,
@@ -128,10 +149,8 @@ export async function ItinerariesPageContent({
         </div>
 
         <section className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {city.itineraries.map((itinerary, index) => {
+          {displayItineraries.map((itinerary, index) => {
             const href = `${cityBasePath}/itineraries/${itinerary.slug}`;
-            const dayLabel =
-              itinerary.durationDays === 1 ? copy.day : copy.days;
 
             return (
               <Card
@@ -150,7 +169,10 @@ export async function ItinerariesPageContent({
                     fill
                     loading={index < 3 ? "eager" : "lazy"}
                     sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 390px"
-                    src={itineraryHeroImage({ city, itinerary, locale })}
+                    src={
+                      itineraryCardImages[itinerary.slug] ??
+                      itineraryHeroImage({ city, itinerary, locale })
+                    }
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
                   <div className="absolute bottom-4 left-4 right-4 flex flex-wrap gap-2">
@@ -162,11 +184,16 @@ export async function ItinerariesPageContent({
                   <div className="flex flex-wrap gap-3 text-xs font-black uppercase text-ink/60">
                     <span className="inline-flex items-center gap-1">
                       <CalendarDays aria-hidden="true" className="h-4 w-4" />
-                      {itinerary.durationDays} {dayLabel}
+                      <span>{formatItineraryDuration(itinerary.durationDays, locale)}</span>
                     </span>
                     <span className="inline-flex items-center gap-1">
                       <Route aria-hidden="true" className="h-4 w-4" />
-                      {itineraryStopCount(itinerary)} {copy.stops}
+                      <span>
+                        {formatItineraryStopCount(
+                          itineraryStopCount(itinerary),
+                          locale,
+                        )}
+                      </span>
                     </span>
                     <span className="inline-flex items-center gap-1">
                       <Users aria-hidden="true" className="h-4 w-4" />
@@ -187,8 +214,7 @@ export async function ItinerariesPageContent({
                     </Link>
                     <span className="inline-flex items-center gap-1 text-xs font-bold text-ink/55">
                       <Clock aria-hidden="true" className="h-4 w-4" />
-                      {itinerary.days.length}{" "}
-                      {itinerary.days.length === 1 ? copy.day : copy.days}
+                      {formatItineraryDuration(itinerary.days.length, locale)}
                     </span>
                   </div>
                 </CardContent>

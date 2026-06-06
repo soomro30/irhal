@@ -1,1 +1,123 @@
 /* Payload admin customizations belong here. Keep public UI styles in globals.css. */
+
+.irhal-media-discovery {
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: 8px;
+  margin-bottom: 24px;
+  padding: 16px;
+}
+
+.irhal-media-discovery__header {
+  align-items: flex-start;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+}
+
+.irhal-media-discovery__header h3 {
+  font-size: 16px;
+  line-height: 1.25;
+  margin: 0 0 4px;
+}
+
+.irhal-media-discovery__header p,
+.irhal-media-discovery__search span,
+.irhal-media-discovery__candidate-body span {
+  color: var(--theme-elevation-600);
+  font-size: 13px;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.irhal-media-discovery__search {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.irhal-media-discovery__search input {
+  background: var(--theme-input-bg);
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: 4px;
+  color: var(--theme-text);
+  flex: 1;
+  min-height: 40px;
+  padding: 0 12px;
+}
+
+.irhal-media-discovery__error {
+  color: var(--theme-error-600);
+  font-size: 13px;
+  margin: 12px 0 0;
+}
+
+.irhal-media-discovery__results {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.irhal-media-discovery__empty {
+  color: var(--theme-elevation-600);
+  font-size: 13px;
+  padding: 10px 0;
+}
+
+.irhal-media-discovery__candidate {
+  align-items: center;
+  border: 1px solid var(--theme-elevation-100);
+  border-radius: 6px;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 112px minmax(0, 1fr) auto;
+  padding: 10px;
+}
+
+.irhal-media-discovery__candidate img {
+  aspect-ratio: 16 / 10;
+  border-radius: 4px;
+  display: block;
+  height: auto;
+  object-fit: cover;
+  width: 112px;
+}
+
+.irhal-media-discovery__candidate-body {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.irhal-media-discovery__candidate-body strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.irhal-media-discovery__candidate-body a {
+  font-size: 13px;
+}
+
+@media (max-width: 768px) {
+  .irhal-media-discovery__header,
+  .irhal-media-discovery__search {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .irhal-media-discovery__candidate {
+    align-items: stretch;
+    grid-template-columns: 96px minmax(0, 1fr);
+  }
+
+  .irhal-media-discovery__candidate img {
+    width: 96px;
+  }
+
+  .irhal-media-discovery__candidate .btn {
+    grid-column: 1 / -1;
+  }
+}

@@ -114,7 +114,15 @@ export const getIrhalLegacyArticleUpdate = (
   articleSlug: string,
 ) => irhalLegacyArticleUpdateByKey.get(`${sectionSlug}:${articleSlug}`) ?? [];
 
+export const itineraryGuideSectionSlug = "city-in-a-day-and-longer-itineraries";
+
 export const sectionCards: GuideSectionCard[] = [
+  {
+    title: "Itineraries",
+    slug: itineraryGuideSectionSlug,
+    summary: "One-day, two-day, three-day, old-city, and beach clusters.",
+    icon: "calendar",
+  },
   {
     title: "Visitor Information",
     slug: "visitor-information",
@@ -180,12 +188,6 @@ export const sectionCards: GuideSectionCard[] = [
     slug: "health-and-safety",
     summary: "Practical safety, water, food, weather, transport, and emergency guidance.",
     icon: "shield",
-  },
-  {
-    title: "Itineraries",
-    slug: "city-in-a-day-and-longer-itineraries",
-    summary: "One-day, two-day, three-day, old-city, and beach clusters.",
-    icon: "calendar",
   },
   {
     title: "Traveling With Kids",

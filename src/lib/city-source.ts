@@ -466,6 +466,7 @@ const normalizeItinerary = (doc: CMSDoc): Itinerary => ({
   durationDays: asNumber(doc.durationDays, 1),
   audience: asString(doc.audience, "first-time"),
   summary: asString(doc.summary),
+  translations: normalizeTranslations(doc.translations),
   days: asArray(doc.days).map((item) => {
     const day = asRecord(item);
     return {

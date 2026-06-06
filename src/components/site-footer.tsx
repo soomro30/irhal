@@ -137,7 +137,7 @@ export function SiteFooter({
 
         <div className="mt-10 border-t border-white/10 pt-5">
           <p className="text-sm font-bold text-white/62">
-            {isArabic ? "© إرحل 2007 - 2026" : "© Irhal 2007 - 2026"}
+            {isArabic ? "© إرحل ٢٠٠٧ - ٢٠٢٦" : "© Irhal 2007 - 2026"}
           </p>
         </div>
       </div>

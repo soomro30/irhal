@@ -18,6 +18,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { ItineraryPdfButton } from "@/components/itinerary-pdf-button";
+import { GuideSectionGrid } from "@/components/guide-section-grid";
 import { JsonLd } from "@/components/json-ld";
 import { PageShell } from "@/components/page-shell";
 import { Badge } from "@/components/ui/badge";
@@ -25,10 +26,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { getCityBySlug } from "@/lib/city-source";
 import {
+  formatItineraryDayNumber,
+  formatItineraryDuration,
+  formatItineraryStopCount,
   itineraryHeroImage,
   itineraryStopCount,
+  localizeItinerary,
   resolveItineraryStops,
 } from "@/lib/itineraries";
+import { itineraryGuideSectionSlug } from "@/lib/guide-items";
 import {
   breadcrumbJsonLd,
   localizedCityName,
@@ -58,10 +64,11 @@ export async function generateItineraryMetadata(
   if (!city || !itinerary) return {};
 
   const cityName = localizedCityName(city, locale);
+  const displayItinerary = localizeItinerary(itinerary, locale);
 
   return pageMetadata({
-    title: `${itinerary.title} | ${cityName}`,
-    description: itinerary.summary,
+    title: `${displayItinerary.title} | ${cityName}`,
+    description: displayItinerary.summary,
     path: `${locale === "ar" ? "/ar" : "/en"}/city/${city.slug}/itineraries/${itinerary.slug}`,
   });
 }
@@ -82,20 +89,20 @@ export async function ItineraryDetailPageContent({
   if (!itinerary) notFound();
 
   const isArabic = locale === "ar";
+  const displayItinerary = localizeItinerary(itinerary, locale);
   const dir = isArabic ? "rtl" : "ltr";
   const cityName = localizedCityName(city, locale);
   const cityBasePath = isArabic ? `/ar/city/${city.slug}` : `/en/city/${city.slug}`;
   const itineraryBasePath = `${cityBasePath}/itineraries`;
   const resolvedDays = resolveItineraryStops({ city, itinerary, locale });
+  const displayDays = resolvedDays.map((day) => ({
+    ...day,
+    ...displayItinerary.days.find(
+      (displayDay) => displayDay.dayNumber === day.dayNumber,
+    ),
+    stops: day.stops,
+  }));
   const stopCount = itineraryStopCount(itinerary);
-  const dayLabel =
-    itinerary.durationDays === 1
-      ? isArabic
-        ? "يوم"
-        : "day"
-      : isArabic
-        ? "أيام"
-        : "days";
   const copy = {
     allItineraries: isArabic ? "كل المسارات" : "All itineraries",
     audience: isArabic ? "نوع الرحلة" : "Audience",
@@ -120,26 +127,26 @@ export async function ItineraryDetailPageContent({
     transport: isArabic ? "المواصلات" : "Transport",
     whereToStay: isArabic ? "مكان الإقامة" : "Where to stay",
   };
-  const mealPlan = itinerary.planning?.meals
+  const mealPlan = displayItinerary.planning?.meals
     ? [
-        itinerary.planning.meals.breakfast &&
-          `${copy.breakfast}: ${itinerary.planning.meals.breakfast}`,
-        itinerary.planning.meals.lunch &&
-          `${copy.lunch}: ${itinerary.planning.meals.lunch}`,
-        itinerary.planning.meals.dinner &&
-          `${copy.dinner}: ${itinerary.planning.meals.dinner}`,
+        displayItinerary.planning.meals.breakfast &&
+          `${copy.breakfast}: ${displayItinerary.planning.meals.breakfast}`,
+        displayItinerary.planning.meals.lunch &&
+          `${copy.lunch}: ${displayItinerary.planning.meals.lunch}`,
+        displayItinerary.planning.meals.dinner &&
+          `${copy.dinner}: ${displayItinerary.planning.meals.dinner}`,
       ]
         .filter(Boolean)
         .join(" ")
     : undefined;
   const planningCards = [
     {
-      body: itinerary.planning?.stay,
+      body: displayItinerary.planning?.stay,
       Icon: Hotel,
       title: copy.whereToStay,
     },
     {
-      body: itinerary.planning?.transport,
+      body: displayItinerary.planning?.transport,
       Icon: CarFront,
       title: copy.transport,
     },
@@ -159,7 +166,7 @@ export async function ItineraryDetailPageContent({
         },
         { label: cityName, href: cityBasePath },
         { label: isArabic ? "مسارات الرحلة" : "Itineraries", href: itineraryBasePath },
-        { label: itinerary.title },
+        { label: displayItinerary.title },
       ]}
       locale={locale}
     >
@@ -171,7 +178,7 @@ export async function ItineraryDetailPageContent({
               { name: city.name, path: cityBasePath },
               { name: "Itineraries", path: itineraryBasePath },
               {
-                name: itinerary.title,
+                name: displayItinerary.title,
                 path: `${itineraryBasePath}/${itinerary.slug}`,
               },
             ],
@@ -180,12 +187,12 @@ export async function ItineraryDetailPageContent({
           {
             "@context": "https://schema.org",
             "@type": "TouristTrip",
-            name: itinerary.title,
-            description: itinerary.summary,
+            name: displayItinerary.title,
+            description: displayItinerary.summary,
             itinerary: resolvedDays.flatMap((day) =>
               day.stops.map((stop) => stop.title),
             ),
-            touristType: itinerary.audience,
+            touristType: displayItinerary.audience,
             url: localizedUrl(
               `/city/${city.slug}/itineraries/${itinerary.slug}`,
               locale,
@@ -215,28 +222,32 @@ export async function ItineraryDetailPageContent({
             <div className="max-w-3xl">
               <Badge variant="saffron">{copy.introBadge}</Badge>
               <h1 className="mt-4 text-4xl font-black leading-tight md:text-6xl print:text-3xl">
-                {itinerary.title}
+                {displayItinerary.title}
               </h1>
               <p className="mt-5 text-lg leading-8 text-white/85 print:text-ink/70">
-                {itinerary.summary}
+                {displayItinerary.summary}
               </p>
-              {itinerary.intro ? (
+              {displayItinerary.intro ? (
                 <p className="mt-4 text-base leading-7 text-white/75 print:text-ink/65">
-                  {itinerary.intro}
+                  {displayItinerary.intro}
                 </p>
               ) : null}
               <div className="mt-6 flex flex-wrap gap-3 text-sm font-bold">
                 <span className="inline-flex items-center gap-2 rounded-md bg-white/12 px-3 py-2 print:border print:border-ink/15 print:bg-white">
                   <CalendarDays aria-hidden="true" className="h-4 w-4" />
-                  {itinerary.durationDays} {dayLabel}
+                  <span>
+                    {formatItineraryDuration(itinerary.durationDays, locale)}
+                  </span>
                 </span>
                 <span className="inline-flex items-center gap-2 rounded-md bg-white/12 px-3 py-2 print:border print:border-ink/15 print:bg-white">
                   <Route aria-hidden="true" className="h-4 w-4" />
-                  {stopCount} {copy.stops}
+                  <span>
+                    {formatItineraryStopCount(stopCount, locale)}
+                  </span>
                 </span>
                 <span className="inline-flex items-center gap-2 rounded-md bg-white/12 px-3 py-2 print:border print:border-ink/15 print:bg-white">
                   <Users aria-hidden="true" className="h-4 w-4" />
-                  {itinerary.audience}
+                  {displayItinerary.audience}
                 </span>
               </div>
               <div className="mt-7 flex flex-wrap gap-3 print:hidden">
@@ -283,7 +294,7 @@ export async function ItineraryDetailPageContent({
 
         <section className="mx-auto grid max-w-7xl gap-6 px-5 py-8 lg:grid-cols-[minmax(0,1fr)_320px] print:block print:px-0 print:py-4">
           <div className="grid gap-6">
-            {resolvedDays.map((day) => {
+            {displayDays.map((day) => {
               const dayPlanningItems = [
                 {
                   Icon: Sunrise,
@@ -324,7 +335,7 @@ export async function ItineraryDetailPageContent({
                 >
                   <CardHeader>
                     <p className="text-sm font-black uppercase tracking-wide text-irhal-red">
-                      {copy.day} {day.dayNumber}
+                      {copy.day} {formatItineraryDayNumber(day.dayNumber, locale)}
                     </p>
                     <h2 className="text-3xl font-black tracking-tight text-ink">
                       {day.theme}
@@ -378,7 +389,7 @@ export async function ItineraryDetailPageContent({
                           </div>
                           <div>
                             <p className="text-xs font-black uppercase tracking-wide text-ink/50">
-                              {index + 1}. {stop.eyebrow}
+                              {formatItineraryDayNumber(index + 1, locale)}. {stop.eyebrow}
                             </p>
                             <h3 className="mt-1 text-xl font-black text-ink">
                               {stop.href ? (
@@ -440,22 +451,35 @@ export async function ItineraryDetailPageContent({
                   <div className="flex items-center justify-between gap-4 border-b border-ink/10 pb-3">
                     <span className="font-bold text-ink/60">{copy.duration}</span>
                     <span className="font-black text-ink">
-                      {itinerary.durationDays} {dayLabel}
+                      {formatItineraryDuration(itinerary.durationDays, locale)}
                     </span>
                   </div>
                   <div className="flex items-center justify-between gap-4 border-b border-ink/10 pb-3">
                     <span className="font-bold text-ink/60">{copy.routeStops}</span>
-                    <span className="font-black text-ink">{stopCount}</span>
+                    <span className="font-black text-ink">
+                      {formatItineraryStopCount(stopCount, locale)}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between gap-4">
                     <span className="font-bold text-ink/60">{copy.audience}</span>
-                    <span className="font-black text-ink">{itinerary.audience}</span>
+                    <span className="font-black text-ink">
+                      {displayItinerary.audience}
+                    </span>
                   </div>
                 </div>
               </CardContent>
             </Card>
           </aside>
         </section>
+
+        <div className="print:hidden">
+          <GuideSectionGrid
+            city={city}
+            cityName={cityName}
+            excludeSlugs={[itineraryGuideSectionSlug]}
+            locale={locale}
+          />
+        </div>
       </main>
     </PageShell>
   );

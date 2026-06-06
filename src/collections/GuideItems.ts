@@ -130,6 +130,16 @@ export const GuideItems: CollectionConfig = {
         {
           label: "Media",
           fields: [
+            {
+              name: "mediaDiscovery",
+              type: "ui",
+              admin: {
+                components: {
+                  Field:
+                    "/components/admin/GuideItemMediaDiscovery#GuideItemMediaDiscovery",
+                },
+              },
+            },
             { name: "image", type: "upload", relationTo: "media" },
             {
               name: "gallery",

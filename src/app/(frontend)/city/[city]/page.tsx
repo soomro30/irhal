@@ -19,6 +19,7 @@ import {
   Thermometer,
   TreePalm,
   Utensils,
+  Users,
   type LucideIcon,
 } from "lucide-react";
 import type { Metadata } from "next";
@@ -44,8 +45,17 @@ import {
 } from "@/lib/city-presentation";
 import { getCityBySlug } from "@/lib/city-source";
 import {
+  formatItineraryDuration,
+  formatItineraryStopCount,
+  itineraryCardImageMap,
+  itineraryStopCount,
+  localizeItinerary,
+} from "@/lib/itineraries";
+import {
   getGuideArticlesForSection,
   getGuideItemsByKind,
+  getLocalizedGuideSectionCopy,
+  itineraryGuideSectionSlug,
   localizeGuideItem,
   pathForGuideItem,
   type GuideItem,
@@ -206,10 +216,30 @@ export async function CityPageContent({
   );
   const displayShopping = shopping.map((item) => localizeGuideItem(item, locale));
   const displayTours = tours.map((item) => localizeGuideItem(item, locale));
+  const displayItineraries = city.itineraries.map((itinerary) =>
+    localizeItinerary(itinerary, locale),
+  );
+  const itineraryCardImages = itineraryCardImageMap({
+    city,
+    itineraries: city.itineraries,
+    locale,
+  });
   const articleCountForSection = (sectionSlug: string) =>
     getGuideArticlesForSection(city, sectionSlug).length;
+  const itinerarySectionCopy = getLocalizedGuideSectionCopy(
+    city,
+    itineraryGuideSectionSlug,
+    locale,
+  );
   const heroImages = getCityHeroImages(city);
   const cityCategories: CityCategory[] = [
+    {
+      title: itinerarySectionCopy.title,
+      href: `${cityBasePath}/itineraries`,
+      icon: Route,
+      tone: "bg-[#cc2f2f]",
+      count: city.itineraries.length,
+    },
     {
       title: isArabic ? "أماكن تستحق الزيارة" : "places to visit",
       href: `${cityBasePath}/section/places-to-visit`,
@@ -312,6 +342,15 @@ export async function CityPageContent({
     locale,
   ).slice(0, neighbourhoodPreviewLimit);
   const famousSpots = dailyFamousSpots(displayPlaces, city.slug);
+  const itineraryCopy = {
+    action: isArabic ? "عرض كل المسارات" : "Explore all",
+    badge: isArabic ? "جاهز للتخطيط" : "Ready to plan",
+    open: isArabic ? "فتح المسار" : "Open itinerary",
+    subtitle: itinerarySectionCopy.summary,
+    title: isArabic
+      ? `مسارات الرحلة في ${displayCityName}`
+      : `${city.name} itineraries`,
+  };
 
   return (
     <PageShell
@@ -483,6 +522,100 @@ export async function CityPageContent({
             </div>
           </div>
         </section>
+
+        {displayItineraries.length > 0 ? (
+          <section
+            className="overflow-hidden border-t border-ink/10 bg-white py-14"
+            dir={dir}
+          >
+            <div className="mx-auto max-w-7xl px-5">
+              <div className="flex items-end justify-between gap-5">
+                <div>
+                  <h2 className="text-4xl font-black tracking-tight text-ink md:text-5xl">
+                    {itineraryCopy.title}
+                  </h2>
+                  <p className="mt-5 max-w-3xl text-lg leading-8 text-ink/65">
+                    {itineraryCopy.subtitle}
+                  </p>
+                </div>
+                <Button asChild className="hidden md:inline-flex" variant="outline">
+                  <Link href={`${cityBasePath}/itineraries`}>
+                    {itineraryCopy.action}
+                  </Link>
+                </Button>
+              </div>
+              <div className="mt-10 flex gap-8 overflow-x-auto pb-5">
+                {displayItineraries.map((itinerary, index) => {
+                  const href = `${cityBasePath}/itineraries/${itinerary.slug}`;
+                  const stopCount = itineraryStopCount(itinerary);
+
+                  return (
+                    <Card
+                      className="group flex h-full w-[282px] shrink-0 flex-col overflow-hidden rounded-lg border-ink/10 bg-white shadow-none"
+                      key={itinerary.slug}
+                    >
+                      <Link
+                        aria-label={`${itineraryCopy.open}: ${itinerary.title}`}
+                        className="relative block h-[174px] overflow-hidden bg-paper-deep"
+                        href={href}
+                      >
+                        <Image
+                          alt=""
+                          className="object-cover transition duration-500 group-hover:scale-105"
+                          fill
+                          loading={index < 4 ? "eager" : "lazy"}
+                          sizes="282px"
+                          src={itineraryCardImages[itinerary.slug]}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                        <Badge className="absolute left-3 top-3 rounded-md bg-[#16325c] px-2.5 py-1 text-xs font-bold leading-none text-white shadow-sm rtl:left-auto rtl:right-3">
+                          {itineraryCopy.badge}
+                        </Badge>
+                      </Link>
+                      <CardContent className="flex flex-1 flex-col p-4">
+                        <p className="text-sm font-bold leading-5 text-travel-navy/65">
+                          {displayCityName}
+                        </p>
+                        <h3 className="mt-1 line-clamp-2 text-lg font-bold leading-6 text-travel-navy">
+                          <Link className="hover:underline" href={href}>
+                            {itinerary.title}
+                          </Link>
+                        </h3>
+                        <div className="mt-2 flex flex-wrap gap-3 text-xs font-black uppercase text-ink/60">
+                          <span className="inline-flex items-center gap-1">
+                            <CalendarDays aria-hidden="true" className="h-4 w-4" />
+                            <span>
+                              {formatItineraryDuration(
+                                itinerary.durationDays,
+                                locale,
+                              )}
+                            </span>
+                          </span>
+                          <span className="inline-flex items-center gap-1">
+                            <Route aria-hidden="true" className="h-4 w-4" />
+                            <span>
+                              {formatItineraryStopCount(stopCount, locale)}
+                            </span>
+                          </span>
+                        </div>
+                        <p className="mt-2 line-clamp-4 text-sm leading-6 text-travel-navy/80">
+                          {itinerary.summary}
+                        </p>
+                        <div className="mt-auto flex flex-wrap items-center justify-between gap-3 pt-5">
+                          <DiscoverLink href={href} label={itineraryCopy.open} />
+                          <span className="ms-auto inline-flex items-center gap-1 text-xs font-bold text-ink/55">
+                            <Users aria-hidden="true" className="h-4 w-4" />
+                            {itinerary.audience}
+                          </span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+        ) : null}
 
         <GuideItemRail
           actionLabel={actionLabels.all}

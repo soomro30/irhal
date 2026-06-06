@@ -80,6 +80,7 @@ export type Itinerary = {
   durationDays: number;
   audience: string;
   summary: string;
+  translations?: LocaleTranslations;
   intro?: string;
   planning?: {
     stay?: string;
