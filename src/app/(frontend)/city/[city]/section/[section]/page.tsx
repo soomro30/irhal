@@ -64,10 +64,11 @@ type Props = {
 type PageLocale = "en" | "ar";
 
 export async function generateGuideSectionMetadata(
-  { params }: Props,
+  { params, searchParams }: Props,
   locale: PageLocale = "en",
 ): Promise<Metadata> {
   const { city: citySlug, section: sectionSlug } = await params;
+  const resolvedSearchParams = (await searchParams) ?? {};
   const city = await getCityBySlug(citySlug);
   const guideSection = city ? getGuideSection(city, sectionSlug) : undefined;
   if (!city || !guideSection || !isPublicGuideSection(sectionSlug)) return {};
@@ -76,11 +77,15 @@ export async function generateGuideSectionMetadata(
   const sectionCopy = getLocalizedGuideSectionCopy(city, sectionSlug, locale);
   const sectionTitle = sectionCopy.title;
   const description = sectionCopy.summary;
+  const totalItems = getGuideItemsForSection(city, sectionSlug).length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
+  const currentPage = clampPage(resolvedSearchParams.page, totalPages);
+  const pageSuffix = currentPage > 1 ? `?page=${currentPage}` : "";
 
   return pageMetadata({
     title: `${sectionTitle} | ${cityName}`,
     description,
-    path: `${locale === "ar" ? "/ar" : "/en"}/city/${city.slug}/section/${guideSection.slug}`,
+    path: `${locale === "ar" ? "/ar" : "/en"}/city/${city.slug}/section/${guideSection.slug}${pageSuffix}`,
   });
 }
 

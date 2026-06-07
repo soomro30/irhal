@@ -4,6 +4,7 @@ import { pathForListing } from "@/lib/city-data";
 import { getCityBySlug, getCityNavItems } from "@/lib/city-source";
 import {
   getGuideArticlesForSection,
+  getGuideItemsForSection,
   getGuideItems,
   pathForGuideItem,
   publicSectionCards,
@@ -11,6 +12,7 @@ import {
 import { localizedUrl, type PageLocale } from "@/lib/seo";
 
 type SitemapEntry = MetadataRoute.Sitemap[number];
+const SECTION_PAGE_SIZE = 24;
 
 const alternates = (path: string) => ({
   languages: {
@@ -92,6 +94,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         lastModified,
         priority: 0.78,
       });
+
+      const sectionItemCount = getGuideItemsForSection(city, section.slug).length;
+      const totalSectionPages = Math.ceil(sectionItemCount / SECTION_PAGE_SIZE);
+      for (let page = 2; page <= totalSectionPages; page += 1) {
+        addLocalizedEntries(entries, seen, `${sectionPath}?page=${page}`, {
+          changeFrequency: "monthly",
+          lastModified,
+          priority: 0.65,
+        });
+      }
 
       getGuideArticlesForSection(city, section.slug).forEach((article) => {
         addLocalizedEntries(entries, seen, `${sectionPath}/${article.slug}`, {
