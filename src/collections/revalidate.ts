@@ -1,6 +1,7 @@
 import type {
   CollectionAfterChangeHook,
   CollectionAfterDeleteHook,
+  GlobalAfterChangeHook,
   PayloadRequest,
 } from "payload";
 
@@ -207,4 +208,27 @@ export const revalidateAfterDelete: CollectionAfterDeleteHook = async ({
     doc: doc as CMSDoc,
     req,
   });
+};
+
+export const revalidateSiteSettingsAfterChange: GlobalAfterChangeHook = async ({
+  context,
+  req,
+}) => {
+  if ((context as { skipPublicRevalidate?: boolean }).skipPublicRevalidate) {
+    return;
+  }
+
+  try {
+    const { revalidatePath, revalidateTag } = await import("next/cache");
+
+    revalidateTag("irhal-site-settings", { expire: 0 });
+    for (const path of ["/", "/en", "/ar", "/robots.txt", "/sitemap.xml"]) {
+      revalidatePath(path);
+    }
+  } catch (error) {
+    req.payload.logger.warn({
+      err: error,
+      msg: "Site settings cache revalidation skipped.",
+    });
+  }
 };

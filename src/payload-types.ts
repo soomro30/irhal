@@ -109,8 +109,12 @@ export interface Config {
     defaultIDType: number;
   };
   fallbackLocale: ('false' | 'none' | 'null') | false | null | ('en' | 'ar' | 'ur') | ('en' | 'ar' | 'ur')[];
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    'site-settings': SiteSetting;
+  };
+  globalsSelect: {
+    'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
+  };
   locale: 'en' | 'ar' | 'ur';
   widgets: {
     collections: CollectionsWidget;
@@ -1612,6 +1616,89 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-settings".
+ */
+export interface SiteSetting {
+  id: number;
+  siteName: string;
+  /**
+   * Canonical production origin, for example https://irhal-portal.vercel.app. Falls back to NEXT_PUBLIC_SITE_URL if empty.
+   */
+  siteUrl?: string | null;
+  defaultSeoTitle: string;
+  defaultSeoDescription: string;
+  defaultOpenGraphImage?: (number | null) | Media;
+  /**
+   * Only the content value from Google's meta tag, not the full tag.
+   */
+  googleSiteVerification?: string | null;
+  /**
+   * Only the content value from Bing Webmaster Tools verification.
+   */
+  bingSiteVerification?: string | null;
+  yandexVerification?: string | null;
+  pinterestVerification?: string | null;
+  analyticsEnabled?: boolean | null;
+  /**
+   * When enabled, future consent UI can use this flag before loading analytics.
+   */
+  cookieConsentRequired?: boolean | null;
+  /**
+   * Public GA4 measurement ID, for example G-XXXXXXXXXX.
+   */
+  ga4MeasurementId?: string | null;
+  /**
+   * Public GTM container ID, for example GTM-XXXXXXX.
+   */
+  googleTagManagerId?: string | null;
+  organizationName?: string | null;
+  organizationUrl?: string | null;
+  organizationLogo?: (number | null) | Media;
+  /**
+   * Official social/profile URLs used in Organization JSON-LD.
+   */
+  sameAs?:
+    | {
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-settings_select".
+ */
+export interface SiteSettingsSelect<T extends boolean = true> {
+  siteName?: T;
+  siteUrl?: T;
+  defaultSeoTitle?: T;
+  defaultSeoDescription?: T;
+  defaultOpenGraphImage?: T;
+  googleSiteVerification?: T;
+  bingSiteVerification?: T;
+  yandexVerification?: T;
+  pinterestVerification?: T;
+  analyticsEnabled?: T;
+  cookieConsentRequired?: T;
+  ga4MeasurementId?: T;
+  googleTagManagerId?: T;
+  organizationName?: T;
+  organizationUrl?: T;
+  organizationLogo?: T;
+  sameAs?:
+    | T
+    | {
+        url?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

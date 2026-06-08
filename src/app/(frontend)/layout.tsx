@@ -1,8 +1,14 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { headers } from "next/headers";
+import {
+  GoogleTagManagerNoScript,
+  SiteAnalytics,
+} from "@/components/site-analytics";
+import { JsonLd } from "@/components/json-ld";
 import { LocaleRouteSync } from "@/components/locale-document-sync";
 import { NavigationProgress } from "@/components/navigation-progress";
+import { getSiteSettings, organizationJsonLd } from "@/lib/site-settings";
 import "../globals.css";
 
 const tripSans = localFont({
@@ -96,14 +102,51 @@ const notoSansArabic = localFont({
   fallback: ["Tahoma", "Arial", "sans-serif"],
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
-  title: {
-    default: "Irhal AI Travel",
-    template: "%s | Irhal AI Travel",
-  },
-  description: "Muslim-friendly city guides with maps, halal-aware planning, local areas, and practical travel essentials.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSiteSettings();
+  const verificationOther: Record<string, string> = {};
+
+  if (settings.bingSiteVerification) {
+    verificationOther["msvalidate.01"] = settings.bingSiteVerification;
+  }
+  if (settings.pinterestVerification) {
+    verificationOther["p:domain_verify"] = settings.pinterestVerification;
+  }
+
+  return {
+    metadataBase: new URL(settings.siteUrl),
+    title: {
+      default: settings.defaultSeoTitle,
+      template: "%s",
+    },
+    description: settings.defaultSeoDescription,
+    ...(settings.defaultOpenGraphImageUrl
+      ? {
+          openGraph: {
+            images: [settings.defaultOpenGraphImageUrl],
+            siteName: settings.siteName,
+          },
+          twitter: {
+            card: "summary_large_image",
+            images: [settings.defaultOpenGraphImageUrl],
+          },
+        }
+      : {
+          openGraph: {
+            siteName: settings.siteName,
+          },
+        }),
+    verification: {
+      ...(settings.googleSiteVerification
+        ? { google: settings.googleSiteVerification }
+        : {}),
+      ...(settings.yandexVerification ? { yandex: settings.yandexVerification } : {}),
+      ...(Object.keys(verificationOther).length > 0
+        ? { other: verificationOther }
+        : {}),
+    },
+  };
+}
 
 export default async function RootLayout({
   children,
@@ -112,6 +155,7 @@ export default async function RootLayout({
 }>) {
   const requestHeaders = await headers();
   const locale = requestHeaders.get("x-irhal-locale") === "en" ? "en" : "ar";
+  const settings = await getSiteSettings();
 
   return (
     <html
@@ -120,9 +164,12 @@ export default async function RootLayout({
       className={`${tripSans.variable} ${tripSansMono.variable} ${cairo.variable} ${notoSansArabic.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
+        <GoogleTagManagerNoScript settings={settings} />
         <LocaleRouteSync />
         <NavigationProgress />
         {children}
+        <SiteAnalytics settings={settings} />
+        <JsonLd data={organizationJsonLd(settings)} />
       </body>
     </html>
   );

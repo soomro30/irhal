@@ -1,15 +1,20 @@
 import type { MetadataRoute } from "next";
 
-import { absoluteUrl } from "@/lib/seo";
+import { getSiteSettings } from "@/lib/site-settings";
 
-export default function robots(): MetadataRoute.Robots {
+const absoluteFromOrigin = (origin: string, path: string) =>
+  new URL(path, origin).toString();
+
+export default async function robots(): Promise<MetadataRoute.Robots> {
+  const settings = await getSiteSettings();
+
   return {
     rules: {
       userAgent: "*",
       allow: "/",
       disallow: ["/admin/", "/payload-api/", "/api/"],
     },
-    sitemap: absoluteUrl("/sitemap.xml"),
-    host: absoluteUrl("/").replace(/\/$/, ""),
+    sitemap: absoluteFromOrigin(settings.siteUrl, "/sitemap.xml"),
+    host: settings.siteUrl,
   };
 }

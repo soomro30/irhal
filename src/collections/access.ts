@@ -45,6 +45,16 @@ export const editorsOnly: Access = ({ req }) => {
   return role === "admin" || role === "super-admin" || role === "editor";
 };
 
+export const seoSettingsEditors: Access = ({ req }) => {
+  const role = req.user?.role;
+  return (
+    role === "admin" ||
+    role === "super-admin" ||
+    role === "editor" ||
+    role === "seo-manager"
+  );
+};
+
 export const adminsOnly: Access = ({ req }) => {
   const role = req.user?.role;
   return role === "admin" || role === "super-admin";

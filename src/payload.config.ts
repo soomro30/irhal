@@ -19,6 +19,7 @@ import { Media } from "./collections/Media";
 import { Neighborhoods } from "./collections/Neighborhoods";
 import { UpdateLogs } from "./collections/UpdateLogs";
 import { Users } from "./collections/Users";
+import { SiteSettings } from "./globals/SiteSettings";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -61,6 +62,7 @@ export default buildConfig({
     AIJobs,
     UpdateLogs,
   ],
+  globals: [SiteSettings],
   db: postgresAdapter({
     pool: {
       connectionString: databaseUrl,

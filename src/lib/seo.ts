@@ -57,18 +57,18 @@ export const pageMetadata = ({
     description,
     ...(robots ? { robots } : {}),
     alternates: {
-      canonical: absoluteUrl(canonicalPath),
+      canonical: canonicalPath,
       languages: {
-        en: absoluteUrl(enPath),
-        ar: absoluteUrl(arPath),
-        "x-default": absoluteUrl(arPath),
+        en: enPath,
+        ar: arPath,
+        "x-default": arPath,
       },
     },
     openGraph: {
       title,
       description,
       type: "website",
-      url: absoluteUrl(canonicalPath),
+      url: canonicalPath,
     },
     twitter: {
       card: "summary_large_image",
