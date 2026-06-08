@@ -72,10 +72,37 @@ const targets: TargetMedia[] = [
       "https://upload.wikimedia.org/wikipedia/commons/8/8b/Hill_Park_02%2C_Karachi%2C_Pakistan.jpg",
     title: "Hill Park",
   },
+  {
+    alt: "Ferris wheel at Aladin Park, Karachi",
+    attribution: "Anwar Ahmed, CC BY-SA 3.0",
+    filename: "place-aladin-park-wikimedia.jpg",
+    kind: "place",
+    license: "creative-commons",
+    licenseLabel: "CC BY-SA 3.0",
+    pageUrl:
+      "https://commons.wikimedia.org/wiki/File:Alladin_Park_Karachi_-_panoramio_(5).jpg",
+    photographer: "Anwar Ahmed",
+    slug: "aladin-park-legacy-site",
+    sourceUrl:
+      "https://upload.wikimedia.org/wikipedia/commons/4/4e/Alladin_Park_Karachi_-_panoramio_%285%29.jpg",
+    title: "Aladin Park Legacy Site",
+  },
 ];
 
 if (!process.env.DATABASE_URL || !process.env.PAYLOAD_SECRET) {
   throw new Error("DATABASE_URL and PAYLOAD_SECRET are required.");
+}
+
+const requestedSlugs = new Set(process.argv.slice(2));
+const selectedTargets =
+  requestedSlugs.size > 0
+    ? targets.filter((target) => requestedSlugs.has(target.slug))
+    : targets;
+
+if (selectedTargets.length === 0) {
+  throw new Error(
+    `No requested media targets matched: ${Array.from(requestedSlugs).join(", ")}`,
+  );
 }
 
 const tmpDir = path.join(os.tmpdir(), "irhal-requested-karachi-media");
@@ -90,7 +117,7 @@ const db = new Client({
 await db.connect();
 
 try {
-  for (const target of targets) {
+  for (const target of selectedTargets) {
     const localPath = path.join(tmpDir, target.filename);
 
     await run("curl", [
