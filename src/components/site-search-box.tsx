@@ -39,17 +39,22 @@ export function SiteSearchBox({
   const wrapperRef = useRef<HTMLDivElement>(null);
   const searchPath = locale === "ar" ? "/ar/search" : "/search";
   const dir = locale === "ar" ? "rtl" : "ltr";
+  const trimmedQuery = query.trim();
 
   const endpoint = useMemo(() => {
     const params = new URLSearchParams({
       limit: "8",
       locale,
-      q: query,
+      q: trimmedQuery,
     });
     return `/api/search?${params.toString()}`;
-  }, [locale, query]);
+  }, [locale, trimmedQuery]);
 
   useEffect(() => {
+    if (!trimmedQuery) {
+      return;
+    }
+
     const controller = new AbortController();
     const timer = window.setTimeout(async () => {
       setIsLoading(true);
@@ -66,13 +71,13 @@ export function SiteSearchBox({
       } finally {
         if (!controller.signal.aborted) setIsLoading(false);
       }
-    }, query.trim() ? 180 : 0);
+    }, 180);
 
     return () => {
       controller.abort();
       window.clearTimeout(timer);
     };
-  }, [endpoint, query]);
+  }, [endpoint, trimmedQuery]);
 
   useEffect(() => {
     const onPointerDown = (event: PointerEvent) => {
@@ -90,14 +95,14 @@ export function SiteSearchBox({
   };
 
   const submitSearch = () => {
-    const trimmed = query.trim();
-    if (trimmed) {
-      router.push(`${searchPath}?q=${encodeURIComponent(trimmed)}`);
+    if (trimmedQuery) {
+      router.push(`${searchPath}?q=${encodeURIComponent(trimmedQuery)}`);
       setIsOpen(false);
       return;
     }
 
-    if (results[0]) goToResult(results[0]);
+    router.push(searchPath);
+    setIsOpen(false);
   };
 
   return (
@@ -112,7 +117,13 @@ export function SiteSearchBox({
             aria-label={placeholder}
             className="min-w-0 flex-1 bg-transparent text-sm font-bold text-ink outline-none placeholder:text-ink/55"
             onChange={(event) => {
-              setQuery(event.target.value);
+              const nextQuery = event.target.value;
+              setQuery(nextQuery);
+              if (!nextQuery.trim()) {
+                setResults(emptyResults);
+                setActiveIndex(0);
+                setIsLoading(false);
+              }
               setIsOpen(true);
             }}
             onFocus={() => setIsOpen(true)}
@@ -206,7 +217,7 @@ export function SiteSearchBox({
             </ul>
           ) : (
             <div className="p-5 text-sm font-bold text-ink/60">
-              {query.trim()
+              {trimmedQuery
                 ? locale === "ar"
                   ? "لا توجد نتائج مطابقة بعد."
                   : "No matching results yet."

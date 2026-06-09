@@ -90,7 +90,8 @@ export async function HomeContent({ locale = "en" }: { locale?: HomeLocale }) {
             alt=""
             className="object-cover"
             fill
-            priority
+            preload
+            quality={65}
             sizes="100vw"
             src={heroCity.heroImageUrl || fallbackCityImage}
           />

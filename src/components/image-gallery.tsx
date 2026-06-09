@@ -35,7 +35,7 @@ export function ImageGallery({
           alt={total > 1 ? `${alt} (${safeIndex + 1} of ${total})` : alt}
           className="object-cover"
           fill
-          priority
+          preload
           sizes="(min-width: 1024px) 60vw, 100vw"
           src={images[safeIndex]}
         />

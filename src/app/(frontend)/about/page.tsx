@@ -61,7 +61,7 @@ export default async function AboutPage() {
                   alt="Irhal mobile app preview"
                   className="mx-auto h-auto w-full max-w-[300px]"
                   height={337}
-                  priority
+                  loading="lazy"
                   src="/images/irhal_app.png"
                   width={367}
                 />

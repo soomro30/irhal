@@ -281,7 +281,7 @@ export async function NeighborhoodPageContent({
                 alt=""
                 className="object-cover"
                 fill
-                priority
+                preload
                 sizes="(min-width: 1024px) 50vw, 100vw"
                 src={heroImage}
               />

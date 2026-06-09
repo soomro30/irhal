@@ -123,10 +123,11 @@ export function SiteHeader({ cityItems, isArabic }: SiteHeaderProps) {
               <Image
                 alt="Irhal"
                 className="h-5 w-auto"
-                height={116}
-                priority
+                height={20}
+                loading="lazy"
                 src="/images/irhal-splash-logo.png"
-                width={447}
+                unoptimized
+                width={77}
               />
             </span>
           </Link>

@@ -79,7 +79,7 @@ export function DetailMediaGallery({
             alt={alt}
             className="object-cover transition duration-500 group-hover:scale-[1.02]"
             fill
-            priority
+            preload
             sizes="(min-width: 1024px) 780px, 100vw"
             src={safeImages[0]}
           />
@@ -100,7 +100,7 @@ export function DetailMediaGallery({
               alt={alt}
               className="object-cover transition duration-500 group-hover:scale-[1.02]"
               fill
-              priority
+              preload
               sizes="(min-width: 1024px) 560px, 100vw"
               src={safeImages[0]}
             />

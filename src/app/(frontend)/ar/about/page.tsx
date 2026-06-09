@@ -62,7 +62,7 @@ export default async function ArabicAboutPage() {
                   alt="معاينة تطبيق إرحل للهواتف الذكية"
                   className="mx-auto h-auto w-full max-w-[300px]"
                   height={337}
-                  priority
+                  loading="lazy"
                   src="/images/irhal_app.png"
                   width={367}
                 />
