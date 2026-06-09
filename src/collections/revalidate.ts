@@ -145,6 +145,36 @@ const pathsForDoc = (collection: string, doc: CMSDoc, citySlug?: string) => {
   return Array.from(paths);
 };
 
+const tagsForDoc = (collection: string, doc: CMSDoc, citySlug?: string) => {
+  const tags = new Set<string>(["irhal-city"]);
+
+  if (collection === "cities") tags.add("irhal-city-nav");
+  if (!citySlug) return Array.from(tags);
+
+  tags.add(`irhal-city:${citySlug}`);
+  tags.add(`irhal-city-sitemap:${citySlug}`);
+  tags.add(`irhal-city-search:${citySlug}`);
+
+  if (collection === "cities") tags.add(`irhal-city-shell:${citySlug}`);
+  if (collection === "neighborhoods") {
+    tags.add(`irhal-city-neighborhoods:${citySlug}`);
+  }
+  if (collection === "listings") tags.add(`irhal-city-listings:${citySlug}`);
+  if (collection === "itineraries") {
+    tags.add(`irhal-city-itineraries:${citySlug}`);
+  }
+  if (collection === "guide-sections") {
+    tags.add(`irhal-city-guide-sections:${citySlug}`);
+  }
+  if (collection === "guide-items") {
+    tags.add(`irhal-city-guide-items:${citySlug}`);
+    const kind = asString(doc.kind);
+    if (kind) tags.add(`irhal-city-guide-items:${citySlug}:${kind}`);
+  }
+
+  return Array.from(tags);
+};
+
 export const revalidatePublicCityContent = async ({
   collection,
   doc,
@@ -161,8 +191,9 @@ export const revalidatePublicCityContent = async ({
         ? undefined
         : await resolveCitySlug(collection, doc, req);
 
-    revalidateTag("irhal-city", { expire: 0 });
-    revalidateTag("irhal-city-nav", { expire: 0 });
+    for (const tag of tagsForDoc(collection, doc, citySlug)) {
+      revalidateTag(tag, { expire: 0 });
+    }
 
     for (const path of pathsForDoc(collection, doc, citySlug)) {
       revalidatePath(path);

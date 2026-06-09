@@ -39,6 +39,89 @@ const defaultCityCacheTtlSeconds =
 const cityCacheTtlSeconds = Number(
   process.env.IRHAL_CITY_CACHE_SECONDS ?? defaultCityCacheTtlSeconds,
 );
+const cachePayloadWarningBytes = Number(
+  process.env.IRHAL_CACHE_ITEM_WARNING_BYTES ?? 1_500_000,
+);
+const maxCityCacheCollectionLimit = Number(
+  process.env.IRHAL_CITY_CACHE_COLLECTION_LIMIT ?? 1000,
+);
+
+type CityCacheScope =
+  | "guide-items"
+  | "guide-sections"
+  | "itineraries"
+  | "listings"
+  | "neighborhoods"
+  | "shell";
+
+type CityShell = Omit<
+  CityGuide,
+  | "fullGuide"
+  | "guideArticleTranslations"
+  | "guideItemGalleries"
+  | "guideItemImages"
+  | "guideItemNeighborhoods"
+  | "guideItemOverrides"
+  | "guideItemTranslations"
+  | "guideItems"
+  | "itineraries"
+  | "listings"
+  | "neighborhoods"
+> & {
+  cityId?: number | string;
+  extractedAt: string;
+  structuredGuide?: CityGuideImport;
+};
+
+type GuideItemsCacheData = {
+  guideItemGalleries: Record<string, string[]>;
+  guideItemImages: Record<string, string>;
+  guideItemNeighborhoods: Record<string, string>;
+  guideItems: CityGuideItem[];
+  translations: Record<string, LocaleTranslations>;
+  overrides: NonNullable<CityGuide["guideItemOverrides"]>;
+};
+
+type GuideSectionsCacheData = {
+  fullGuide?: CityGuideImport;
+  translations: Record<string, LocaleTranslations>;
+};
+
+const cityCacheTags = (slug: string, scope?: CityCacheScope) => [
+  "irhal-city",
+  `irhal-city:${slug}`,
+  ...(scope ? [`irhal-city-${scope}:${slug}`] : []),
+];
+
+const cacheWithCityTags = <T>(
+  scope: CityCacheScope,
+  slug: string,
+  loader: () => Promise<T>,
+) =>
+  unstable_cache(loader, [`irhal-city-${scope}-v1`, slug], {
+    revalidate: cityCacheTtlSeconds,
+    tags: cityCacheTags(slug, scope),
+  })();
+
+const cachePayloadSize = (label: string, value: unknown) => {
+  if (cachePayloadWarningBytes <= 0) return;
+
+  try {
+    const bytes = Buffer.byteLength(JSON.stringify(value));
+    if (bytes > cachePayloadWarningBytes) {
+      console.warn(
+        `${label} cache payload is ${(bytes / 1_000_000).toFixed(2)} MB; split this cache entry before it reaches Vercel's 2 MB item limit.`,
+      );
+    }
+  } catch (error) {
+    console.warn(`${label} cache payload size check failed.`, error);
+  }
+};
+
+const withCachePayloadTelemetry = <T>(label: string, value: T): T => {
+  cachePayloadSize(label, value);
+  return value;
+};
 
 const isCMSConfigured = () =>
   Boolean(
@@ -208,36 +291,6 @@ const emptySections = {
   festivalsEvents: "",
   healthSafety: "",
   muslimTravel: "",
-};
-
-const emptyGuideImport = (doc: CMSDoc): CityGuideImport => {
-  const name = asString(doc.name);
-  const slug = asString(doc.slug);
-
-  return {
-    source: {
-      fileName: "payload",
-      extractedAt: asString(doc.updatedAt) || new Date(0).toISOString(),
-      formatVersion: "payload",
-    },
-    city: {
-      name,
-      slug,
-      country: relationshipName(doc.country),
-      region: asString(doc.region),
-      updatedLabel: asString(doc.lastVerifiedAt),
-    },
-    introBlocks: [],
-    sections: [],
-    tables: [],
-    coverage: {
-      sectionCount: 0,
-      tableCount: 0,
-      requiredSectionSlugs: [],
-      missingRequiredSectionSlugs: [],
-      tableRowCounts: {},
-    },
-  };
 };
 
 const isGuideParagraphBlock = (
@@ -766,7 +819,7 @@ const requestCachedLoadCityNavItems = cache(cachedLoadCityNavItems);
 export const getCityNavItems = async (): Promise<CityNavItem[]> =>
   requestCachedLoadCityNavItems();
 
-const loadCityBySlug = async (slug: string): Promise<CityGuide | undefined> => {
+const assertCmsConfigured = () => {
   if (!isCMSConfigured()) {
     if (isProduction) {
       throw new Error(
@@ -774,8 +827,66 @@ const loadCityBySlug = async (slug: string): Promise<CityGuide | undefined> => {
       );
     }
 
+    return false;
+  }
+
+  return true;
+};
+
+const emptyGuideImportFromShell = (shell: CityShell): CityGuideImport => ({
+  source: {
+    fileName: "payload",
+    extractedAt: shell.extractedAt || new Date(0).toISOString(),
+    formatVersion: "payload",
+  },
+  city: {
+    name: shell.name,
+    slug: shell.slug,
+    country: shell.country,
+    region: shell.region,
+    updatedLabel: shell.lastVerifiedAt,
+  },
+  introBlocks: [],
+  sections: [],
+  tables: [],
+  coverage: {
+    sectionCount: 0,
+    tableCount: 0,
+    requiredSectionSlugs: [],
+    missingRequiredSectionSlugs: [],
+    tableRowCounts: {},
+  },
+});
+
+const loadCityShellBySlug = async (slug: string): Promise<CityShell | undefined> => {
+  if (!assertCmsConfigured()) {
     const fallbackCity = getLocalCityBySlug(slug);
-    return fallbackCity ? { ...fallbackCity, contentSource: "local" } : undefined;
+    if (!fallbackCity) return undefined;
+
+    return {
+      contentSource: "local",
+      slug: fallbackCity.slug,
+      name: fallbackCity.name,
+      country: fallbackCity.country,
+      region: fallbackCity.region,
+      locale: fallbackCity.locale,
+      lede: fallbackCity.lede,
+      heroImageUrl: fallbackCity.heroImageUrl,
+      heroImageUrls: fallbackCity.heroImageUrls,
+      timezone: fallbackCity.timezone,
+      currency: fallbackCity.currency,
+      languages: fallbackCity.languages,
+      latitude: fallbackCity.latitude,
+      longitude: fallbackCity.longitude,
+      mapUrl: fallbackCity.mapUrl,
+      lastVerifiedAt: fallbackCity.lastVerifiedAt,
+      translations: fallbackCity.translations,
+      fastFacts: fallbackCity.fastFacts,
+      sections: fallbackCity.sections,
+      seo: fallbackCity.seo,
+      extractedAt: fallbackCity.lastVerifiedAt,
+      structuredGuide: fallbackCity.fullGuide,
+    };
   }
 
   try {
@@ -828,53 +939,278 @@ const loadCityBySlug = async (slug: string): Promise<CityGuide | undefined> => {
     const heroImageUrls = Array.from(
       new Set(cmsHeroImageUrls),
     );
-    const [
-      neighborhoodResult,
-      listingResult,
-      itineraryResult,
-      guideItemResult,
-      guideSectionResult,
-    ] =
-      await Promise.all([
-        payload.find({
-          collection: "neighborhoods" as never,
-          depth: 2,
-          limit: 300,
-          overrideAccess: true,
-          where: { city: { equals: cityId } },
-        }),
-        payload.find({
-          collection: "listings" as never,
-          depth: 2,
-          limit: 500,
-          overrideAccess: true,
-          where: { city: { equals: cityId } },
-        }),
-        payload.find({
-          collection: "itineraries" as never,
-          depth: 2,
-          limit: 100,
-          overrideAccess: true,
-          where: { city: { equals: cityId } },
-        }),
-        payload.find({
-          collection: "guide-items" as never,
-          depth: 0,
-          limit: 700,
-          overrideAccess: true,
-          sort: "id",
-          where: { city: { equals: cityId } },
-        }),
-        payload.find({
-          collection: "guide-sections" as never,
-          depth: 0,
-          limit: 100,
-          overrideAccess: true,
-          sort: "id",
-          where: { city: { equals: cityId } },
-        }),
-      ]);
 
+    const structuredSections = normalizeStructuredGuideImport(
+      cityDoc.structuredSections,
+    );
+
+    return withCachePayloadTelemetry(`city shell:${slug}`, {
+      contentSource: "payload",
+      cityId,
+      slug: asString(cityDoc.slug),
+      name: asString(cityDoc.name),
+      country: relationshipName(cityDoc.country),
+      region: asString(cityDoc.region),
+      locale: asString(cityDoc.locale, "en"),
+      lede: asString(cityDoc.lede),
+      heroImageUrl: cityHeroImageUrl || undefined,
+      heroImageUrls: heroImageUrls.length > 0 ? heroImageUrls : undefined,
+      timezone: asString(cityDoc.timezone),
+      currency: asString(cityDoc.currency),
+      languages: normalizeLanguages(cityDoc.languages),
+      latitude: asNumber(cityDoc.latitude),
+      longitude: asNumber(cityDoc.longitude),
+      mapUrl: asString(cityDoc.mapUrl),
+      lastVerifiedAt: asString(cityDoc.lastVerifiedAt),
+      translations: normalizeTranslations(cityDoc.translations),
+      fastFacts: asArray(cityDoc.fastFacts).map((fact) => {
+        const record = asRecord(fact);
+        return { label: asString(record.label), value: asString(record.value) };
+      }),
+      sections: emptySections,
+      seo: normalizeSeo(
+        cityDoc.seo,
+        asString(cityDoc.name),
+        asString(cityDoc.lede),
+      ),
+      extractedAt: asString(cityDoc.updatedAt) || new Date(0).toISOString(),
+      ...(structuredSections ? { structuredGuide: structuredSections } : {}),
+    } satisfies CityShell);
+  } catch (error) {
+    console.error(`Payload city shell source failed for ${slug}.`, error);
+    throw error;
+  }
+};
+
+const getCityShellBySlug = cache((slug: string) =>
+  cacheWithCityTags("shell", slug, () => loadCityShellBySlug(slug)),
+);
+
+const loadCityNeighborhoodsBySlug = async (
+  slug: string,
+): Promise<Neighborhood[]> => {
+  if (!assertCmsConfigured()) return getLocalCityBySlug(slug)?.neighborhoods ?? [];
+
+  const shell = await getCityShellBySlug(slug);
+  if (!shell?.cityId) return [];
+
+  try {
+    const payload = await getPayload({ config });
+    const result = await payload.find({
+      collection: "neighborhoods" as never,
+      depth: 2,
+      limit: maxCityCacheCollectionLimit,
+      overrideAccess: true,
+      where: { city: { equals: shell.cityId } },
+    });
+
+    return withCachePayloadTelemetry(
+      `city neighborhoods:${slug}`,
+      (result.docs as CMSDoc[]).map(normalizeNeighborhood),
+    );
+  } catch (error) {
+    console.error(`Payload city neighborhoods source failed for ${slug}.`, error);
+    throw error;
+  }
+};
+
+const getCityNeighborhoodsBySlug = cache((slug: string) =>
+  cacheWithCityTags("neighborhoods", slug, () =>
+    loadCityNeighborhoodsBySlug(slug),
+  ),
+);
+
+const loadCityListingsBySlug = async (slug: string): Promise<Listing[]> => {
+  if (!assertCmsConfigured()) return getLocalCityBySlug(slug)?.listings ?? [];
+
+  const shell = await getCityShellBySlug(slug);
+  if (!shell?.cityId) return [];
+
+  try {
+    const payload = await getPayload({ config });
+    const result = await payload.find({
+      collection: "listings" as never,
+      depth: 2,
+      limit: maxCityCacheCollectionLimit,
+      overrideAccess: true,
+      where: { city: { equals: shell.cityId } },
+    });
+
+    return withCachePayloadTelemetry(
+      `city listings:${slug}`,
+      (result.docs as CMSDoc[]).map(normalizeListing),
+    );
+  } catch (error) {
+    console.error(`Payload city listings source failed for ${slug}.`, error);
+    throw error;
+  }
+};
+
+const getCityListingsBySlug = cache((slug: string) =>
+  cacheWithCityTags("listings", slug, () => loadCityListingsBySlug(slug)),
+);
+
+const loadCityItinerariesBySlug = async (slug: string): Promise<Itinerary[]> => {
+  if (!assertCmsConfigured()) return getLocalCityBySlug(slug)?.itineraries ?? [];
+
+  const shell = await getCityShellBySlug(slug);
+  if (!shell?.cityId) return [];
+
+  try {
+    const payload = await getPayload({ config });
+    const result = await payload.find({
+      collection: "itineraries" as never,
+      depth: 2,
+      limit: maxCityCacheCollectionLimit,
+      overrideAccess: true,
+      where: { city: { equals: shell.cityId } },
+    });
+
+    return withCachePayloadTelemetry(
+      `city itineraries:${slug}`,
+      (result.docs as CMSDoc[]).map(normalizeItinerary),
+    );
+  } catch (error) {
+    console.error(`Payload city itineraries source failed for ${slug}.`, error);
+    throw error;
+  }
+};
+
+const getCityItinerariesBySlug = cache((slug: string) =>
+  cacheWithCityTags("itineraries", slug, () => loadCityItinerariesBySlug(slug)),
+);
+
+const loadCityGuideSectionsBySlug = async (
+  slug: string,
+): Promise<GuideSectionsCacheData> => {
+  if (!assertCmsConfigured()) {
+    const fallbackCity = getLocalCityBySlug(slug);
+    return {
+      fullGuide: fallbackCity?.fullGuide,
+      translations: fallbackCity?.guideArticleTranslations ?? {},
+    };
+  }
+
+  const shell = await getCityShellBySlug(slug);
+  if (!shell?.cityId) return { translations: {} };
+
+  try {
+    const payload = await getPayload({ config });
+    const result = await payload.find({
+      collection: "guide-sections" as never,
+      depth: 0,
+      limit: maxCityCacheCollectionLimit,
+      overrideAccess: true,
+      sort: "id",
+      where: { city: { equals: shell.cityId } },
+    });
+    const docs = result.docs as CMSDoc[];
+    const fallbackCity = getLocalCityBySlug(slug);
+    const cityDoc = {
+      id: shell.cityId,
+      name: shell.name,
+      slug: shell.slug,
+      country: shell.country,
+      region: shell.region,
+      lastVerifiedAt: shell.lastVerifiedAt,
+      updatedAt: shell.extractedAt,
+    };
+
+    return withCachePayloadTelemetry(`city guide sections:${slug}`, {
+      fullGuide: normalizeCmsGuideSections({
+        cityDoc,
+        docs,
+        fallbackGuide: fallbackCity?.fullGuide,
+      }),
+      translations: normalizeGuideArticleTranslations(docs),
+    });
+  } catch (error) {
+    console.error(`Payload city guide sections source failed for ${slug}.`, error);
+    throw error;
+  }
+};
+
+const getCityGuideSectionsBySlug = cache((slug: string) =>
+  cacheWithCityTags("guide-sections", slug, () =>
+    loadCityGuideSectionsBySlug(slug),
+  ),
+);
+
+const emptyGuideItemsCacheData = (): GuideItemsCacheData => ({
+  guideItemGalleries: {},
+  guideItemImages: {},
+  guideItemNeighborhoods: {},
+  guideItems: [],
+  translations: {},
+  overrides: {},
+});
+
+const mergeGuideItemsCacheData = (
+  parts: GuideItemsCacheData[],
+): GuideItemsCacheData =>
+  parts.reduce<GuideItemsCacheData>((merged, part) => ({
+    guideItemGalleries: {
+      ...merged.guideItemGalleries,
+      ...part.guideItemGalleries,
+    },
+    guideItemImages: { ...merged.guideItemImages, ...part.guideItemImages },
+    guideItemNeighborhoods: {
+      ...merged.guideItemNeighborhoods,
+      ...part.guideItemNeighborhoods,
+    },
+    guideItems: [...merged.guideItems, ...part.guideItems],
+    translations: { ...merged.translations, ...part.translations },
+    overrides: { ...merged.overrides, ...part.overrides },
+  }), emptyGuideItemsCacheData());
+
+const loadCityGuideItemsByKind = async (
+  slug: string,
+  kind: CityGuideItem["kind"],
+): Promise<GuideItemsCacheData> => {
+  if (!assertCmsConfigured()) {
+    const fallbackCity = getLocalCityBySlug(slug);
+    if (!fallbackCity) return emptyGuideItemsCacheData();
+
+    const guideItems = (fallbackCity.guideItems ?? []).filter(
+      (item) => item.kind === kind,
+    );
+    return {
+      guideItemGalleries: fallbackCity.guideItemGalleries ?? {},
+      guideItemImages: fallbackCity.guideItemImages ?? {},
+      guideItemNeighborhoods: fallbackCity.guideItemNeighborhoods ?? {},
+      guideItems,
+      translations: fallbackCity.guideItemTranslations ?? {},
+      overrides: fallbackCity.guideItemOverrides ?? {},
+    };
+  }
+
+  const shell = await getCityShellBySlug(slug);
+  if (!shell?.cityId) return emptyGuideItemsCacheData();
+
+  try {
+    const payload = await getPayload({ config });
+    const [guideItemResult, neighborhoodResult] = await Promise.all([
+      payload.find({
+        collection: "guide-items" as never,
+        depth: 0,
+        limit: maxCityCacheCollectionLimit,
+        overrideAccess: true,
+        sort: "id",
+        where: {
+          and: [
+            { city: { equals: shell.cityId } },
+            { kind: { equals: kind } },
+          ],
+        },
+      }),
+      payload.find({
+        collection: "neighborhoods" as never,
+        depth: 0,
+        limit: maxCityCacheCollectionLimit,
+        overrideAccess: true,
+        where: { city: { equals: shell.cityId } },
+      }),
+    ]);
     const guideItemDocs = guideItemResult.docs as CMSDoc[];
     const galleryImageIds = (doc: CMSDoc): (number | string)[] =>
       asArray(doc.gallery)
@@ -912,17 +1248,16 @@ const loadCityBySlug = async (slug: string): Promise<CityGuide | undefined> => {
     }
     const guideItemNeighborhoods: Record<string, string> = {};
     for (const doc of guideItemDocs) {
-      const slug = asString(doc.slug);
-      if (!slug) continue;
-      const kind = asString(doc.kind);
+      const itemSlug = asString(doc.slug);
+      if (!itemSlug) continue;
       const neighborhoodId = relationshipId(doc.neighborhood);
       const neighborhoodSlug =
         neighborhoodId != null
           ? neighborhoodSlugById.get(neighborhoodId)
           : undefined;
       if (neighborhoodSlug) {
-        guideItemNeighborhoods[slug] = neighborhoodSlug;
-        if (kind) guideItemNeighborhoods[`${kind}:${slug}`] = neighborhoodSlug;
+        guideItemNeighborhoods[itemSlug] = neighborhoodSlug;
+        guideItemNeighborhoods[`${kind}:${itemSlug}`] = neighborhoodSlug;
       }
       const primaryId = relationshipId(doc.image);
       const primaryUrl =
@@ -930,105 +1265,119 @@ const loadCityBySlug = async (slug: string): Promise<CityGuide | undefined> => {
       const galleryUrls = galleryImageIds(doc)
         .map((id) => mediaUrlById.get(id))
         .filter((url): url is string => Boolean(url));
-      // Full ordered set: primary first, then gallery (deduped).
       const allUrls = Array.from(
-        new Set([primaryUrl, ...galleryUrls].filter((url): url is string => Boolean(url))),
+        new Set(
+          [primaryUrl, ...galleryUrls].filter((url): url is string =>
+            Boolean(url),
+          ),
+        ),
       );
       if (primaryUrl) {
-        guideItemImages[slug] = primaryUrl;
-        if (kind) guideItemImages[`${kind}:${slug}`] = primaryUrl;
+        guideItemImages[itemSlug] = primaryUrl;
+        guideItemImages[`${kind}:${itemSlug}`] = primaryUrl;
       }
       if (allUrls.length > 0) {
-        guideItemGalleries[slug] = allUrls;
-        if (kind) guideItemGalleries[`${kind}:${slug}`] = allUrls;
+        guideItemGalleries[itemSlug] = allUrls;
+        guideItemGalleries[`${kind}:${itemSlug}`] = allUrls;
       }
     }
 
-    const fallbackCity = getLocalCityBySlug(asString(cityDoc.slug));
-    const structuredSections = normalizeStructuredGuideImport(
-      cityDoc.structuredSections,
-    );
-    const cmsGuideSections = normalizeCmsGuideSections({
-      cityDoc,
-      docs: guideSectionResult.docs as CMSDoc[],
-      fallbackGuide: fallbackCity?.fullGuide,
-    });
-    const cmsItineraries = (itineraryResult.docs as CMSDoc[]).map(
-      normalizeItinerary,
-    );
-
-    return {
-      contentSource: "payload",
-      slug: asString(cityDoc.slug),
-      name: asString(cityDoc.name),
-      country: relationshipName(cityDoc.country),
-      region: asString(cityDoc.region),
-      locale: asString(cityDoc.locale, "en"),
-      lede: asString(cityDoc.lede),
-      heroImageUrl: cityHeroImageUrl || undefined,
-      heroImageUrls: heroImageUrls.length > 0 ? heroImageUrls : undefined,
-      timezone: asString(cityDoc.timezone),
-      currency: asString(cityDoc.currency),
-      languages: normalizeLanguages(cityDoc.languages),
-      latitude: asNumber(cityDoc.latitude),
-      longitude: asNumber(cityDoc.longitude),
-      mapUrl: asString(cityDoc.mapUrl),
-      lastVerifiedAt: asString(cityDoc.lastVerifiedAt),
-      translations: normalizeTranslations(cityDoc.translations),
-      guideItemTranslations: normalizeGuideItemTranslations(
-        guideItemResult.docs as CMSDoc[],
-      ),
-      guideArticleTranslations: normalizeGuideArticleTranslations(
-        guideSectionResult.docs as CMSDoc[],
-      ),
-      guideItemOverrides: normalizeGuideItemOverrides(guideItemDocs),
-      guideItemImages,
+    return withCachePayloadTelemetry(`city guide items:${slug}:${kind}`, {
       guideItemGalleries,
+      guideItemImages,
       guideItemNeighborhoods,
       guideItems: normalizeGuideItems({
-        citySlug: asString(cityDoc.slug),
+        citySlug: slug,
         docs: guideItemDocs,
         guideItemGalleries,
         guideItemImages,
         guideItemNeighborhoods,
       }),
-      fastFacts: asArray(cityDoc.fastFacts).map((fact) => {
-        const record = asRecord(fact);
-        return { label: asString(record.label), value: asString(record.value) };
-      }),
-      sections: emptySections,
-      neighborhoods: (neighborhoodResult.docs as CMSDoc[]).map(
-        normalizeNeighborhood,
-      ),
-      listings: (listingResult.docs as CMSDoc[]).map(normalizeListing),
-      itineraries: mergeCmsItinerariesWithFallback(
-        cmsItineraries,
-        fallbackCity?.itineraries,
-      ),
-      seo: normalizeSeo(
-        cityDoc.seo,
-        asString(cityDoc.name),
-        asString(cityDoc.lede),
-      ),
-      fullGuide:
-        cmsGuideSections ?? structuredSections ?? emptyGuideImport(cityDoc),
-    } as CityGuide;
+      translations: normalizeGuideItemTranslations(guideItemDocs),
+      overrides: normalizeGuideItemOverrides(guideItemDocs),
+    });
   } catch (error) {
-    console.error(`Payload city source failed for ${slug}.`, error);
+    console.error(
+      `Payload city guide items source failed for ${slug}/${kind}.`,
+      error,
+    );
     throw error;
   }
 };
 
-const cachedLoadCityBySlug = unstable_cache(
-  loadCityBySlug,
-  ["irhal-city-by-slug-v5"],
-  {
-    revalidate: cityCacheTtlSeconds,
-    tags: ["irhal-city"],
-  },
+const guideItemKinds = Object.keys(
+  guideItemFallbackImageByKind,
+) as CityGuideItem["kind"][];
+
+const getCityGuideItemsByKind = cache(
+  (slug: string, kind: CityGuideItem["kind"]) =>
+    unstable_cache(
+      () => loadCityGuideItemsByKind(slug, kind),
+      ["irhal-city-guide-items-v1", slug, kind],
+      {
+        revalidate: cityCacheTtlSeconds,
+        tags: [
+          ...cityCacheTags(slug, "guide-items"),
+          `irhal-city-guide-items:${slug}:${kind}`,
+        ],
+      },
+    )(),
 );
 
-const requestCachedLoadCityBySlug = cache(cachedLoadCityBySlug);
+const getCityGuideItemsBySlug = cache(async (slug: string) =>
+  mergeGuideItemsCacheData(
+    await Promise.all(guideItemKinds.map((kind) => getCityGuideItemsByKind(slug, kind))),
+  ),
+);
+
+const loadCityBySlug = async (slug: string): Promise<CityGuide | undefined> => {
+  const normalizedSlug = slug.toLowerCase();
+  const shell = await getCityShellBySlug(normalizedSlug);
+  if (!shell) return undefined;
+
+  if (shell.contentSource === "local") {
+    const fallbackCity = getLocalCityBySlug(normalizedSlug);
+    return fallbackCity ? { ...fallbackCity, contentSource: "local" } : undefined;
+  }
+
+  const fallbackCity = getLocalCityBySlug(shell.slug);
+  const [
+    neighborhoods,
+    listings,
+    cmsItineraries,
+    guideSections,
+    guideItems,
+  ] = await Promise.all([
+    getCityNeighborhoodsBySlug(shell.slug),
+    getCityListingsBySlug(shell.slug),
+    getCityItinerariesBySlug(shell.slug),
+    getCityGuideSectionsBySlug(shell.slug),
+    getCityGuideItemsBySlug(shell.slug),
+  ]);
+
+  return {
+    ...shell,
+    neighborhoods,
+    listings,
+    itineraries: mergeCmsItinerariesWithFallback(
+      cmsItineraries,
+      fallbackCity?.itineraries,
+    ),
+    guideArticleTranslations: guideSections.translations,
+    guideItemTranslations: guideItems.translations,
+    guideItemOverrides: guideItems.overrides,
+    guideItemImages: guideItems.guideItemImages,
+    guideItemGalleries: guideItems.guideItemGalleries,
+    guideItemNeighborhoods: guideItems.guideItemNeighborhoods,
+    guideItems: guideItems.guideItems,
+    fullGuide:
+      guideSections.fullGuide ??
+      shell.structuredGuide ??
+      emptyGuideImportFromShell(shell),
+  } satisfies CityGuide;
+};
+
+const requestCachedLoadCityBySlug = cache(loadCityBySlug);
 
 export const getCityBySlug = async (
   slug: string,
