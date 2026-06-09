@@ -1,3 +1,5 @@
+import { unstable_cache } from "next/cache";
+
 import { getCityHeroImage, getGuideItemImage } from "@/lib/city-presentation";
 import type { CityGuide } from "@/lib/city-data";
 import { getCityBySlug, getCityNavItems } from "@/lib/city-source";
@@ -73,6 +75,7 @@ const searchCache = new Map<
 >();
 
 const searchCacheTtlMs = 60_000;
+const searchIndexRevalidateSeconds = 60 * 60;
 
 const sectionTitleByLocale: Record<SearchLocale, Record<string, string>> = {
   ar: {
@@ -384,11 +387,20 @@ const buildCityDocuments = async (locale: SearchLocale): Promise<SearchDocument[
   return documents;
 };
 
+const getCachedSearchDocuments = unstable_cache(
+  async (locale: SearchLocale) => buildCityDocuments(locale),
+  ["irhal-city-search-documents-v1"],
+  {
+    revalidate: searchIndexRevalidateSeconds,
+    tags: ["irhal-city", "irhal-city-search:documents"],
+  },
+);
+
 const getSearchDocuments = async (locale: SearchLocale) => {
   const cached = searchCache.get(locale);
   if (cached && cached.expiresAt > Date.now()) return cached.documents;
 
-  const documents = await buildCityDocuments(locale);
+  const documents = await getCachedSearchDocuments(locale);
   searchCache.set(locale, {
     documents,
     expiresAt: Date.now() + searchCacheTtlMs,
@@ -405,7 +417,14 @@ export const searchSite = async ({
   locale?: SearchLocale;
   query: string;
 }): Promise<SiteSearchResult[]> => {
-  const documents = await getSearchDocuments(locale);
+  let documents: SearchDocument[];
+  try {
+    documents = await getSearchDocuments(locale);
+  } catch (error) {
+    console.error("Search index build failed", error);
+    return [];
+  }
+
   const normalizedQuery = normalize(query);
 
   const rankedDocuments = documents

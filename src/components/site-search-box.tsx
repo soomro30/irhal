@@ -22,6 +22,9 @@ type SearchResponse = {
 };
 
 const emptyResults: SiteSearchResult[] = [];
+const minimumQueryLength = 2;
+const searchDebounceMs = 260;
+const searchTimeoutMs = 4_000;
 
 export function SiteSearchBox({
   className,
@@ -51,11 +54,12 @@ export function SiteSearchBox({
   }, [locale, trimmedQuery]);
 
   useEffect(() => {
-    if (!trimmedQuery) {
+    if (trimmedQuery.length < minimumQueryLength) {
       return;
     }
 
     const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), searchTimeoutMs);
     const timer = window.setTimeout(async () => {
       setIsLoading(true);
       try {
@@ -71,10 +75,11 @@ export function SiteSearchBox({
       } finally {
         if (!controller.signal.aborted) setIsLoading(false);
       }
-    }, 180);
+    }, searchDebounceMs);
 
     return () => {
       controller.abort();
+      window.clearTimeout(timeout);
       window.clearTimeout(timer);
     };
   }, [endpoint, trimmedQuery]);
@@ -119,7 +124,7 @@ export function SiteSearchBox({
             onChange={(event) => {
               const nextQuery = event.target.value;
               setQuery(nextQuery);
-              if (!nextQuery.trim()) {
+              if (nextQuery.trim().length < minimumQueryLength) {
                 setResults(emptyResults);
                 setActiveIndex(0);
                 setIsLoading(false);
@@ -217,10 +222,14 @@ export function SiteSearchBox({
             </ul>
           ) : (
             <div className="p-5 text-sm font-bold text-ink/60">
-              {trimmedQuery
+              {trimmedQuery.length >= minimumQueryLength
                 ? locale === "ar"
                   ? "لا توجد نتائج مطابقة بعد."
                   : "No matching results yet."
+                : trimmedQuery
+                  ? locale === "ar"
+                    ? "أكمل كتابة حرف آخر للبحث."
+                    : "Keep typing to search."
                 : locale === "ar"
                   ? "اكتب اسم مدينة أو مكان للبحث."
                   : "Type a city or place to search."}

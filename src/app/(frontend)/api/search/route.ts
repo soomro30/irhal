@@ -3,16 +3,54 @@ import { searchSite } from "@/lib/site-search";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const query = searchParams.get("q") ?? "";
+  const query = (searchParams.get("q") ?? "").trim();
   const localeParam = searchParams.get("locale");
   const locale: SearchLocale = localeParam === "ar" ? "ar" : "en";
   const limit = Math.min(Number(searchParams.get("limit") ?? 8) || 8, 30);
 
-  const results = await searchSite({ query, locale, limit });
+  if (query.length < 2) {
+    return Response.json(
+      {
+        query,
+        locale,
+        results: [],
+      },
+      {
+        headers: {
+          "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+        },
+      },
+    );
+  }
 
-  return Response.json({
-    query,
-    locale,
-    results,
-  });
+  try {
+    const results = await searchSite({ query, locale, limit });
+
+    return Response.json(
+      {
+        query,
+        locale,
+        results,
+      },
+      {
+        headers: {
+          "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+        },
+      },
+    );
+  } catch (error) {
+    console.error("Search API failed", error);
+    return Response.json(
+      {
+        query,
+        locale,
+        results: [],
+      },
+      {
+        headers: {
+          "Cache-Control": "no-store",
+        },
+      },
+    );
+  }
 }
