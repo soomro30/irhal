@@ -159,6 +159,16 @@ const mediaUrl = (value: unknown) => {
   return asString(media.url) || asString(hero.url) || asString(card.url);
 };
 
+const mediaCandidateUrl = (value: unknown) => {
+  const candidate = asRecord(value);
+  const url = asString(candidate.url);
+  const width = asNumber(candidate.width);
+  const height = asNumber(candidate.height);
+
+  if (!url || width < 640 || height < 360) return undefined;
+  return url;
+};
+
 const guideItemMediaUrl = (value: unknown) => {
   const media = asRecord(value);
   const usageStatus = asString(media.usageStatus);
@@ -166,7 +176,15 @@ const guideItemMediaUrl = (value: unknown) => {
     return undefined;
   }
 
-  return mediaUrl(media);
+  const sizes = asRecord(media.sizes);
+  const hero = asRecord(sizes.hero);
+  const card = asRecord(sizes.card);
+
+  return (
+    mediaCandidateUrl(hero) ||
+    mediaCandidateUrl(card) ||
+    mediaCandidateUrl(media)
+  );
 };
 
 const normalizeSeo = (
