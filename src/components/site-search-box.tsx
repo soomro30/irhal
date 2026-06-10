@@ -3,7 +3,8 @@
 import { LoaderCircle, MapPin, Search } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 import { Button } from "@/components/ui/button";
 import type { SearchLocale, SiteSearchResult } from "@/lib/site-search";
@@ -25,6 +26,10 @@ const emptyResults: SiteSearchResult[] = [];
 const minimumQueryLength = 2;
 const searchDebounceMs = 260;
 const searchTimeoutMs = 8_000;
+const resultsMaxHeightPx = 420;
+const resultsMinHeightPx = 180;
+const resultsOffsetPx = 10;
+const resultsViewportPaddingPx = 16;
 
 export function SiteSearchBox({
   className,
@@ -39,7 +44,14 @@ export function SiteSearchBox({
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [resultsRect, setResultsRect] = useState<{
+    left: number;
+    maxHeight: number;
+    top: number;
+    width: number;
+  } | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
   const searchPath = locale === "ar" ? "/ar/search" : "/search";
   const dir = locale === "ar" ? "rtl" : "ltr";
   const trimmedQuery = query.trim();
@@ -52,6 +64,38 @@ export function SiteSearchBox({
     });
     return `/api/search?${params.toString()}`;
   }, [locale, trimmedQuery]);
+
+  const updateResultsRect = useCallback(() => {
+    const wrapper = wrapperRef.current;
+    if (!wrapper) return;
+
+    const rect = wrapper.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const availableBelow = viewportHeight - rect.bottom - resultsOffsetPx - resultsViewportPaddingPx;
+    const availableAbove = rect.top - resultsOffsetPx - resultsViewportPaddingPx;
+    const opensBelow = availableBelow >= resultsMinHeightPx || availableBelow >= availableAbove;
+    const availableHeight = opensBelow ? availableBelow : availableAbove;
+    const maxHeight = Math.max(
+      resultsMinHeightPx,
+      Math.min(resultsMaxHeightPx, availableHeight),
+    );
+    const width = Math.min(rect.width, viewportWidth - resultsViewportPaddingPx * 2);
+    const left = Math.min(
+      Math.max(resultsViewportPaddingPx, rect.left),
+      viewportWidth - width - resultsViewportPaddingPx,
+    );
+    const top = opensBelow
+      ? rect.bottom + resultsOffsetPx
+      : Math.max(resultsViewportPaddingPx, rect.top - resultsOffsetPx - maxHeight);
+
+    setResultsRect({
+      left,
+      maxHeight,
+      top,
+      width,
+    });
+  }, []);
 
   useEffect(() => {
     if (trimmedQuery.length < minimumQueryLength) {
@@ -86,13 +130,30 @@ export function SiteSearchBox({
 
   useEffect(() => {
     const onPointerDown = (event: PointerEvent) => {
-      if (!wrapperRef.current?.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (
+        !wrapperRef.current?.contains(target) &&
+        !resultsRef.current?.contains(target)
+      ) {
         setIsOpen(false);
       }
     };
     window.addEventListener("pointerdown", onPointerDown);
     return () => window.removeEventListener("pointerdown", onPointerDown);
   }, []);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    updateResultsRect();
+    window.addEventListener("resize", updateResultsRect);
+    window.addEventListener("scroll", updateResultsRect, true);
+
+    return () => {
+      window.removeEventListener("resize", updateResultsRect);
+      window.removeEventListener("scroll", updateResultsRect, true);
+    };
+  }, [isOpen, updateResultsRect]);
 
   const goToResult = (result: SiteSearchResult) => {
     setIsOpen(false);
@@ -109,6 +170,87 @@ export function SiteSearchBox({
     router.push(searchPath);
     setIsOpen(false);
   };
+
+  const resultsPanel =
+    isOpen && resultsRect
+      ? createPortal(
+          <div
+            className="fixed z-[1000] overflow-hidden rounded-2xl border border-ink/10 bg-white text-ink shadow-2xl"
+            dir={dir}
+            id="site-search-results"
+            ref={resultsRef}
+            style={{
+              left: resultsRect.left,
+              maxHeight: resultsRect.maxHeight,
+              top: resultsRect.top,
+              width: resultsRect.width,
+            }}
+          >
+            {results.length > 0 ? (
+              <ul className="overflow-y-auto p-2" style={{ maxHeight: resultsRect.maxHeight }}>
+                {results.map((result, index) => (
+                  <li key={result.id}>
+                    <button
+                      className={cn(
+                        "flex w-full items-center gap-3 rounded-xl p-2 text-start transition",
+                        index === activeIndex ? "bg-paper-deep" : "hover:bg-paper-deep",
+                      )}
+                      onMouseEnter={() => setActiveIndex(index)}
+                      onMouseDown={(event) => event.preventDefault()}
+                      onClick={() => goToResult(result)}
+                      type="button"
+                    >
+                      <span className="relative grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-lg bg-paper-deep text-irhal-red">
+                        {result.image ? (
+                          <Image
+                            alt=""
+                            className="object-cover"
+                            fill
+                            sizes="48px"
+                            src={result.image}
+                          />
+                        ) : (
+                          <MapPin aria-hidden="true" className="h-5 w-5" />
+                        )}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-black text-travel-navy">
+                          {result.title}
+                        </span>
+                        <span className="mt-0.5 block truncate text-xs font-bold text-ink/55">
+                          {result.subtitle}
+                        </span>
+                      </span>
+                      <span className="shrink-0 rounded-full bg-irhal-red/10 px-2.5 py-1 text-[11px] font-black text-irhal-red">
+                        {result.label}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="p-5 text-sm font-bold text-ink/60">
+                {isLoading
+                  ? locale === "ar"
+                    ? "جار البحث..."
+                    : "Searching..."
+                  : trimmedQuery.length >= minimumQueryLength
+                    ? locale === "ar"
+                      ? "لا توجد نتائج مطابقة بعد."
+                      : "No matching results yet."
+                    : trimmedQuery
+                      ? locale === "ar"
+                        ? "أكمل كتابة حرف آخر للبحث."
+                        : "Keep typing to search."
+                      : locale === "ar"
+                        ? "اكتب اسم مدينة أو مكان للبحث."
+                        : "Type a city or place to search."}
+              </div>
+            )}
+          </div>,
+          document.body,
+        )
+      : null;
 
   return (
     <div className={cn("relative", className)} dir={dir} ref={wrapperRef}>
@@ -173,74 +315,7 @@ export function SiteSearchBox({
         </div>
       </div>
 
-      {isOpen ? (
-        <div
-          className="absolute left-0 right-0 top-[calc(100%+0.65rem)] z-30 overflow-hidden rounded-2xl border border-ink/10 bg-white text-ink shadow-2xl"
-          id="site-search-results"
-        >
-          {results.length > 0 ? (
-            <ul className="max-h-[420px] overflow-y-auto p-2">
-              {results.map((result, index) => (
-                <li key={result.id}>
-                  <button
-                    className={cn(
-                      "flex w-full items-center gap-3 rounded-xl p-2 text-start transition",
-                      index === activeIndex ? "bg-paper-deep" : "hover:bg-paper-deep",
-                    )}
-                    onMouseEnter={() => setActiveIndex(index)}
-                    onMouseDown={(event) => event.preventDefault()}
-                    onClick={() => goToResult(result)}
-                    type="button"
-                  >
-                    <span className="relative grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-lg bg-paper-deep text-irhal-red">
-                      {result.image ? (
-                        <Image
-                          alt=""
-                          className="object-cover"
-                          fill
-                          sizes="48px"
-                          src={result.image}
-                        />
-                      ) : (
-                        <MapPin aria-hidden="true" className="h-5 w-5" />
-                      )}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-black text-travel-navy">
-                        {result.title}
-                      </span>
-                      <span className="mt-0.5 block truncate text-xs font-bold text-ink/55">
-                        {result.subtitle}
-                      </span>
-                    </span>
-                    <span className="shrink-0 rounded-full bg-irhal-red/10 px-2.5 py-1 text-[11px] font-black text-irhal-red">
-                      {result.label}
-                    </span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <div className="p-5 text-sm font-bold text-ink/60">
-              {isLoading
-                ? locale === "ar"
-                  ? "جار البحث..."
-                  : "Searching..."
-                : trimmedQuery.length >= minimumQueryLength
-                ? locale === "ar"
-                  ? "لا توجد نتائج مطابقة بعد."
-                  : "No matching results yet."
-                : trimmedQuery
-                  ? locale === "ar"
-                    ? "أكمل كتابة حرف آخر للبحث."
-                    : "Keep typing to search."
-                : locale === "ar"
-                  ? "اكتب اسم مدينة أو مكان للبحث."
-                  : "Type a city or place to search."}
-            </div>
-          )}
-        </div>
-      ) : null}
+      {resultsPanel}
     </div>
   );
 }
