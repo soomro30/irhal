@@ -24,7 +24,7 @@ type SearchResponse = {
 const emptyResults: SiteSearchResult[] = [];
 const minimumQueryLength = 2;
 const searchDebounceMs = 260;
-const searchTimeoutMs = 4_000;
+const searchTimeoutMs = 8_000;
 
 export function SiteSearchBox({
   className,
@@ -222,7 +222,11 @@ export function SiteSearchBox({
             </ul>
           ) : (
             <div className="p-5 text-sm font-bold text-ink/60">
-              {trimmedQuery.length >= minimumQueryLength
+              {isLoading
+                ? locale === "ar"
+                  ? "جار البحث..."
+                  : "Searching..."
+                : trimmedQuery.length >= minimumQueryLength
                 ? locale === "ar"
                   ? "لا توجد نتائج مطابقة بعد."
                   : "No matching results yet."

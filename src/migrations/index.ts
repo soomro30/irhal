@@ -4,6 +4,7 @@ import * as migration_20260530_043000_city_hero_gallery from './20260530_043000_
 import * as migration_20260530_163000_guide_item_neighborhood_relationship from './20260530_163000_guide_item_neighborhood_relationship';
 import * as migration_20260601_101500_guide_item_editorial_address from './20260601_101500_guide_item_editorial_address';
 import * as migration_20260607_065408_site_settings_global from './20260607_065408_site_settings_global';
+import * as migration_20260610_181000_search_typeahead_indexes from './20260610_181000_search_typeahead_indexes';
 
 export const migrations = [
   {
@@ -35,5 +36,10 @@ export const migrations = [
     up: migration_20260607_065408_site_settings_global.up,
     down: migration_20260607_065408_site_settings_global.down,
     name: '20260607_065408_site_settings_global',
+  },
+  {
+    up: migration_20260610_181000_search_typeahead_indexes.up,
+    down: migration_20260610_181000_search_typeahead_indexes.down,
+    name: '20260610_181000_search_typeahead_indexes',
   },
 ];
