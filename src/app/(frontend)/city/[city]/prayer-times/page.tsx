@@ -18,6 +18,10 @@ type Props = {
   params: Promise<{ city: string }>;
 };
 
+export async function generateStaticParams() {
+  return [];
+}
+
 type PageLocale = "en" | "ar";
 
 const prayerName: Record<PageLocale, Record<PrayerKey, string>> = {

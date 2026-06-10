@@ -30,6 +30,10 @@ type Props = {
   params: Promise<{ city: string; section: string; article: string }>;
 };
 
+export async function generateStaticParams() {
+  return [];
+}
+
 type PageLocale = "en" | "ar";
 
 const sameText = (first: string, second: string) =>

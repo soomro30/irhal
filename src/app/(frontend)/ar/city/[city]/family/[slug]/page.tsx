@@ -3,6 +3,8 @@ import {
   generateFamilyMetadata,
 } from "@/app/(frontend)/city/[city]/family/[slug]/page";
 
+export { generateStaticParams } from "@/app/(frontend)/city/[city]/family/[slug]/page";
+
 type Props = {
   params: Promise<{ city: string; slug: string }>;
 };

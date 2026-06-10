@@ -3,6 +3,8 @@ import {
   generateGuideSectionMetadata,
 } from "@/app/(frontend)/city/[city]/section/[section]/page";
 
+export { generateStaticParams } from "@/app/(frontend)/city/[city]/section/[section]/page";
+
 type Props = {
   params: Promise<{ city: string; section: string }>;
   searchParams?: Promise<{ page?: string }>;

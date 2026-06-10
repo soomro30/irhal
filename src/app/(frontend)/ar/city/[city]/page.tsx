@@ -4,6 +4,8 @@ import { CityPageContent } from "@/app/(frontend)/city/[city]/page";
 import { getCityBySlug } from "@/lib/city-source";
 import { pageMetadata } from "@/lib/seo";
 
+export { generateStaticParams } from "@/app/(frontend)/city/[city]/page";
+
 type Props = {
   params: Promise<{ city: string }>;
 };

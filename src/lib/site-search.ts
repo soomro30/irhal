@@ -392,7 +392,7 @@ const getCachedSearchDocuments = unstable_cache(
   ["irhal-city-search-documents-v1"],
   {
     revalidate: searchIndexRevalidateSeconds,
-    tags: ["irhal-city", "irhal-city-search:documents"],
+    tags: ["irhal-city-search:documents"],
   },
 );
 

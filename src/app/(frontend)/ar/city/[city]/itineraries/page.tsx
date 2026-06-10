@@ -3,6 +3,8 @@ import {
   generateItinerariesMetadata,
 } from "@/app/(frontend)/city/[city]/itineraries/page";
 
+export { generateStaticParams } from "@/app/(frontend)/city/[city]/itineraries/page";
+
 type Props = {
   params: Promise<{ city: string }>;
 };

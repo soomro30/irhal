@@ -83,7 +83,13 @@ const resolveCitySlug = async (
 
 const pathsForDoc = (collection: string, doc: CMSDoc, citySlug?: string) => {
   const slug = asString(doc.slug);
-  const paths = new Set<string>(["/", "/en", "/ar"]);
+  const paths = new Set<string>();
+
+  if (collection === "cities" || collection === "countries") {
+    paths.add("/");
+    paths.add("/en");
+    paths.add("/ar");
+  }
 
   if (citySlug) {
     paths.add(`/city/${citySlug}`);
@@ -146,16 +152,22 @@ const pathsForDoc = (collection: string, doc: CMSDoc, citySlug?: string) => {
 };
 
 const tagsForDoc = (collection: string, doc: CMSDoc, citySlug?: string) => {
-  const tags = new Set<string>(["irhal-city"]);
+  const tags = new Set<string>();
 
   if (collection === "cities") tags.add("irhal-city-nav");
-  if (!citySlug) return Array.from(tags);
+  if (!citySlug) {
+    if (collection === "countries") tags.add("irhal-city-nav");
+    return Array.from(tags);
+  }
 
-  tags.add(`irhal-city:${citySlug}`);
   tags.add(`irhal-city-sitemap:${citySlug}`);
+  tags.add("irhal-city-search:documents");
   tags.add(`irhal-city-search:${citySlug}`);
 
-  if (collection === "cities") tags.add(`irhal-city-shell:${citySlug}`);
+  if (collection === "cities") {
+    tags.add(`irhal-city:${citySlug}`);
+    tags.add(`irhal-city-shell:${citySlug}`);
+  }
   if (collection === "neighborhoods") {
     tags.add(`irhal-city-neighborhoods:${citySlug}`);
   }

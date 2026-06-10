@@ -14,20 +14,12 @@ const isEnglishPublicPath = (pathname: string) =>
     (path) => pathname === path || pathname.startsWith(`${path}/`),
   );
 
-const withLocaleHeader = (request: NextRequest, locale: "en" | "ar") => {
-  const headers = new Headers(request.headers);
-  headers.set("x-irhal-locale", locale);
-  return headers;
-};
-
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const nestedLocaleMatch = pathname.match(/^\/(ar|en)\/(ar|en)(?=\/|$)/);
 
   if (pathname === "/admin" || pathname.startsWith("/admin/")) {
-    return NextResponse.next({
-      request: { headers: withLocaleHeader(request, "en") },
-    });
+    return NextResponse.next();
   }
 
   if (nestedLocaleMatch) {
@@ -51,24 +43,13 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(redirectUrl, 308);
   }
 
-  if (pathname.startsWith("/en/")) {
-    const rewriteUrl = request.nextUrl.clone();
-    rewriteUrl.pathname = pathname.replace(/^\/en/, "") || "/";
-    return NextResponse.rewrite(rewriteUrl, {
-      request: { headers: withLocaleHeader(request, "en") },
-    });
-  }
-
   if (isEnglishPublicPath(pathname)) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = `/ar${pathname}`;
     return NextResponse.redirect(redirectUrl, 308);
   }
 
-  const locale = pathname === "/en" ? "en" : "ar";
-  return NextResponse.next({
-    request: { headers: withLocaleHeader(request, locale) },
-  });
+  return NextResponse.next();
 }
 
 export const config = {

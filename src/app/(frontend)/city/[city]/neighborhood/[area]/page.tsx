@@ -47,6 +47,10 @@ type Props = {
   params: Promise<{ city: string; area: string }>;
 };
 
+export async function generateStaticParams() {
+  return [];
+}
+
 type PageLocale = "en" | "ar";
 
 const normalizeArea = (value: string) =>

@@ -34,11 +34,24 @@ export type CityNavItem = {
 };
 
 const isProduction = process.env.NODE_ENV === "production";
+const secondsFromEnv = (value: string | undefined, fallback: number) => {
+  const parsed = Number(value ?? fallback);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+};
 const defaultCityCacheTtlSeconds =
-  process.env.NODE_ENV === "development" ? 5 : 60 * 60;
-const cityCacheTtlSeconds = Number(
-  process.env.IRHAL_CITY_CACHE_SECONDS ?? defaultCityCacheTtlSeconds,
+  process.env.NODE_ENV === "development" ? 5 : 60 * 60 * 24;
+const configuredCityCacheTtlSeconds = secondsFromEnv(
+  process.env.IRHAL_CITY_CACHE_SECONDS,
+  defaultCityCacheTtlSeconds,
 );
+const minimumProductionCityCacheTtlSeconds = secondsFromEnv(
+  process.env.IRHAL_MIN_CITY_CACHE_SECONDS,
+  60 * 60 * 6,
+);
+const cityCacheTtlSeconds =
+  isProduction
+    ? Math.max(configuredCityCacheTtlSeconds, minimumProductionCityCacheTtlSeconds)
+    : configuredCityCacheTtlSeconds;
 const cachePayloadWarningBytes = Number(
   process.env.IRHAL_CACHE_ITEM_WARNING_BYTES ?? 1_500_000,
 );

@@ -52,6 +52,9 @@ const isCMSConfigured = () =>
       process.env.PAYLOAD_SECRET,
   );
 
+const siteSettingsCacheTtlSeconds =
+  process.env.NODE_ENV === "development" ? 5 : 60 * 60 * 24;
+
 const asRecord = (value: unknown): CMSDoc =>
   value && typeof value === "object" ? (value as CMSDoc) : {};
 
@@ -153,7 +156,7 @@ const cachedLoadSiteSettings = unstable_cache(
   loadSiteSettings,
   ["irhal-site-settings-v1"],
   {
-    revalidate: process.env.NODE_ENV === "development" ? 5 : 60 * 60,
+    revalidate: siteSettingsCacheTtlSeconds,
     tags: ["irhal-site-settings"],
   },
 );

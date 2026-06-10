@@ -61,6 +61,10 @@ type Props = {
   searchParams?: Promise<{ page?: string }>;
 };
 
+export async function generateStaticParams() {
+  return [];
+}
+
 type PageLocale = "en" | "ar";
 
 export async function generateGuideSectionMetadata(

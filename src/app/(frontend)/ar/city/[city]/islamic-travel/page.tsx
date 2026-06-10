@@ -3,6 +3,8 @@ import {
   generateIslamicTravelMetadata,
 } from "@/app/(frontend)/city/[city]/islamic-travel/page";
 
+export { generateStaticParams } from "@/app/(frontend)/city/[city]/islamic-travel/page";
+
 type Props = {
   params: Promise<{ city: string }>;
 };

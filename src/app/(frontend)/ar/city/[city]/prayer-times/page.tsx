@@ -3,6 +3,8 @@ import {
   PrayerTimesPageContent,
 } from "@/app/(frontend)/city/[city]/prayer-times/page";
 
+export { generateStaticParams } from "@/app/(frontend)/city/[city]/prayer-times/page";
+
 type Props = {
   params: Promise<{ city: string }>;
 };

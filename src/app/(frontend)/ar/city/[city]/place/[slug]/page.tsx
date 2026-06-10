@@ -3,6 +3,8 @@ import {
   generatePlaceMetadata,
 } from "@/app/(frontend)/city/[city]/place/[slug]/page";
 
+export { generateStaticParams } from "@/app/(frontend)/city/[city]/place/[slug]/page";
+
 type Props = {
   params: Promise<{ city: string; slug: string }>;
 };

@@ -3,6 +3,8 @@ import {
   ItineraryDetailPageContent,
 } from "@/app/(frontend)/city/[city]/itineraries/[itinerary]/page";
 
+export { generateStaticParams } from "@/app/(frontend)/city/[city]/itineraries/[itinerary]/page";
+
 type Props = {
   params: Promise<{ city: string; itinerary: string }>;
 };

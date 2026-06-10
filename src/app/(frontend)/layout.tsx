@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import { headers } from "next/headers";
 import {
   GoogleTagManagerNoScript,
   SiteAnalytics,
@@ -10,6 +9,8 @@ import { LocaleRouteSync } from "@/components/locale-document-sync";
 import { NavigationProgress } from "@/components/navigation-progress";
 import { getSiteSettings, organizationJsonLd } from "@/lib/site-settings";
 import "../globals.css";
+
+export const revalidate = 86400;
 
 const tripSans = localFont({
   preload: false,
@@ -153,14 +154,12 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const requestHeaders = await headers();
-  const locale = requestHeaders.get("x-irhal-locale") === "en" ? "en" : "ar";
   const settings = await getSiteSettings();
 
   return (
     <html
-      dir={locale === "ar" ? "rtl" : "ltr"}
-      lang={locale}
+      dir="rtl"
+      lang="ar"
       className={`${tripSans.variable} ${tripSansMono.variable} ${cairo.variable} ${notoSansArabic.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col" suppressHydrationWarning>

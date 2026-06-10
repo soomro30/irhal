@@ -11,6 +11,10 @@ type Props = {
   params: Promise<{ city: string; slug: string }>;
 };
 
+export async function generateStaticParams() {
+  return [];
+}
+
 type PageLocale = "en" | "ar";
 
 const findPlace = async (citySlug: string, slug: string) => {

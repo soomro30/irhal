@@ -3,6 +3,8 @@ import {
   generateNeighborhoodMetadata,
 } from "@/app/(frontend)/city/[city]/neighborhood/[area]/page";
 
+export { generateStaticParams } from "@/app/(frontend)/city/[city]/neighborhood/[area]/page";
+
 type Props = {
   params: Promise<{ city: string; area: string }>;
 };

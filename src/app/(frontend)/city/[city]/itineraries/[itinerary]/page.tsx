@@ -46,6 +46,10 @@ type Props = {
   params: Promise<{ city: string; itinerary: string }>;
 };
 
+export async function generateStaticParams() {
+  return [];
+}
+
 type PageLocale = "en" | "ar";
 
 const findItinerary = async ({ params }: Props) => {
