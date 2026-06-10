@@ -196,6 +196,10 @@ export const revalidatePublicCityContent = async ({
   doc: CMSDoc;
   req: PayloadRequest;
 }) => {
+  if (process.env.IRHAL_SKIP_PAYLOAD_HOOK_REVALIDATE === "true") {
+    return;
+  }
+
   try {
     const { revalidatePath, revalidateTag } = await import("next/cache");
     const citySlug =
