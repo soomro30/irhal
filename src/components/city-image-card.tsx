@@ -30,8 +30,13 @@ export function CityImageCard({
         alt=""
         className="object-cover transition duration-500 group-hover:scale-105"
         fill
-        sizes="(max-width: 1024px) 100vw, 340px"
-        src={city.heroImageUrl || fallbackCityImage}
+        quality={variant === "portrait" ? 82 : 75}
+        sizes={
+          variant === "portrait"
+            ? "(max-width: 1024px) 88vw, 440px"
+            : "(max-width: 1024px) 100vw, 340px"
+        }
+        src={city.cardImageUrl || city.heroImageUrl || fallbackCityImage}
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
       <div className={variant === "portrait" ? "absolute inset-x-0 bottom-0 p-4" : "absolute inset-x-0 bottom-0 p-5"}>

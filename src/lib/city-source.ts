@@ -27,6 +27,7 @@ type CMSDoc = Record<string, unknown> & {
 };
 
 export type CityNavItem = {
+  cardImageUrl?: string;
   country: string;
   heroImageUrl?: string;
   name: string;
@@ -111,7 +112,7 @@ const cacheWithCityTags = <T>(
   slug: string,
   loader: () => Promise<T>,
 ) =>
-  unstable_cache(loader, [`irhal-city-${scope}-v1`, slug], {
+  unstable_cache(loader, [`irhal-city-${scope}-v2`, slug], {
     revalidate: cityCacheTtlSeconds,
     tags: cityCacheTags(slug, scope),
   })();
@@ -247,12 +248,17 @@ const relationshipName = (value: unknown, fallback = "") => {
   return asString(record.name, fallback);
 };
 
-const mediaUrl = (value: unknown) => {
+const mediaUrl = (value: unknown, preferredSizes: string[] = ["hero", "card"]) => {
   const media = asRecord(value);
   const sizes = asRecord(media.sizes);
-  const hero = asRecord(sizes.hero);
-  const card = asRecord(sizes.card);
-  return asString(media.url) || asString(hero.url) || asString(card.url);
+
+  for (const sizeName of preferredSizes) {
+    const size = asRecord(sizes[sizeName]);
+    const url = asString(size.url);
+    if (url) return url;
+  }
+
+  return asString(media.url);
 };
 
 const mediaCandidateUrl = (value: unknown) => {
@@ -771,6 +777,7 @@ const normalizeGuideItems = ({
 
 const localCityNavItems = (): CityNavItem[] =>
   localCities.map((city) => ({
+    cardImageUrl: city.heroImageUrl,
     country: city.country,
     heroImageUrl: city.heroImageUrl,
     name: city.name,
@@ -803,8 +810,9 @@ const loadCityNavItems = async (): Promise<CityNavItem[]> => {
         const slug = asString(doc.slug);
 
         return {
+          cardImageUrl: mediaUrl(doc.heroImage, ["card", "hero"]) || undefined,
           country: relationshipName(doc.country),
-          heroImageUrl: mediaUrl(doc.heroImage) || undefined,
+          heroImageUrl: mediaUrl(doc.heroImage, ["hero", "card"]) || undefined,
           name: asString(doc.name),
           slug,
         };
@@ -820,7 +828,7 @@ const loadCityNavItems = async (): Promise<CityNavItem[]> => {
 
 const cachedLoadCityNavItems = unstable_cache(
   loadCityNavItems,
-  ["irhal-city-nav-v2"],
+  ["irhal-city-nav-v3"],
   {
     revalidate: cityCacheTtlSeconds,
     tags: ["irhal-city-nav", "irhal-city"],
@@ -923,10 +931,10 @@ const loadCityShellBySlug = async (slug: string): Promise<CityShell | undefined>
       asArray(cityDoc.heroGallery)
         .map((entry) => relationshipId(asRecord(entry).image))
         .filter((id): id is number | string => id != null);
-    const cityHeroImageUrl = mediaUrl(cityDoc.heroImage);
+    const cityHeroImageUrl = mediaUrl(cityDoc.heroImage, ["hero", "card"]);
     const cityHeroGalleryImageIds = cityHeroGalleryIds();
     const cityHeroGalleryUrls = asArray(cityDoc.heroGallery)
-      .map((entry) => mediaUrl(asRecord(entry).image))
+      .map((entry) => mediaUrl(asRecord(entry).image, ["hero", "card"]))
       .filter((url): url is string => Boolean(url));
     if (cityHeroGalleryImageIds.length > cityHeroGalleryUrls.length) {
       const mediaResult = await payload.find({
@@ -938,7 +946,7 @@ const loadCityShellBySlug = async (slug: string): Promise<CityShell | undefined>
       });
       const mediaUrlById = new Map<number | string, string>();
       for (const mediaDoc of mediaResult.docs as CMSDoc[]) {
-        const url = mediaUrl(mediaDoc);
+        const url = mediaUrl(mediaDoc, ["hero", "card"]);
         if (url) mediaUrlById.set(mediaDoc.id, url);
       }
       for (const imageId of cityHeroGalleryImageIds) {
