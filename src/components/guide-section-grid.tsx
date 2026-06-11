@@ -62,7 +62,7 @@ export function GuideSectionGrid({
               : "Focused sections for articles, directories, maps, and trip planning."}
           </p>
         </div>
-        <div className="mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-8 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
           {cards.map((card) => {
             const sectionCopy = getLocalizedGuideSectionCopy(
               city,
@@ -75,33 +75,27 @@ export function GuideSectionGrid({
                 : `${basePath}/section/${card.slug}`;
 
             return (
-            <Link
-              className="group block rounded-lg border border-ink/10 bg-white shadow-none hover:border-coastal/40"
-              href={href}
-              key={card.slug}
-            >
-              <div className="relative h-32 overflow-hidden rounded-t-lg bg-neutral-100">
-                <Image
-                  alt={`${sectionCopy.title} guide section for ${cityName}`}
-                  className="object-cover"
-                  fill
-                  sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
-                  src={sectionImage(card.slug)}
-                />
-              </div>
-              <div className="flex min-h-[188px] flex-col p-4">
-                <h3 className="text-base font-bold leading-6 text-travel-navy">
+              <Link className="group block" href={href} key={card.slug}>
+                <div className="relative aspect-[4/3] overflow-hidden bg-paper-deep">
+                  <Image
+                    alt={`${sectionCopy.title} guide section for ${cityName}`}
+                    className="object-cover transition duration-500 group-hover:scale-105"
+                    fill
+                    sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+                    src={sectionImage(card.slug)}
+                  />
+                </div>
+                <h3 className="mt-4 text-xl font-extrabold leading-snug text-travel-navy transition group-hover:text-irhal-red">
                   {sectionCopy.title}
                 </h3>
-                <p className="mt-1 line-clamp-2 text-sm leading-6 text-travel-navy/65">
+                <p className="mt-2 line-clamp-3 text-sm leading-6 text-ink/70">
                   {sectionCopy.summary}
                 </p>
-                <div className="mt-auto pt-5">
+                <div className="mt-4">
                   <DiscoverPill label={isArabic ? "اكتشف" : "Discover"} />
                 </div>
-              </div>
-            </Link>
-          );
+              </Link>
+            );
           })}
         </div>
       </div>

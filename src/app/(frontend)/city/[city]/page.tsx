@@ -1,39 +1,15 @@
-import {
-  BusFront,
-  CalendarDays,
-  CarFront,
-  DollarSign,
-  ExternalLink,
-  FerrisWheel,
-  Globe2,
-  Heart,
-  History,
-  Hotel,
-  Baby,
-  Languages,
-  MapPin,
-  MoonStar,
-  Route,
-  ShieldCheck,
-  ShoppingBag,
-  Thermometer,
-  TreePalm,
-  Utensils,
-  Users,
-  type LucideIcon,
-} from "lucide-react";
+import { CalendarDays, DollarSign, Languages } from "lucide-react";
 import type { Metadata } from "next";
-import Image from "next/image";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { JsonLd } from "@/components/json-ld";
 import { CityHeroCarousel } from "@/components/city-hero-carousel";
-import { DiscoverLink } from "@/components/discover-action";
+import {
+  CityExploreRail,
+  type CityExploreItem,
+} from "@/components/city-explore-rail";
 import { PageShell } from "@/components/page-shell";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { FeatureRail } from "@/components/feature-rail";
 import { GuideItemRail } from "@/components/guide-item-card";
 import { GuideSectionGrid } from "@/components/guide-section-grid";
 import { NeighborhoodCarousel } from "@/components/neighborhood-carousel";
@@ -72,17 +48,6 @@ export async function generateStaticParams() {
 }
 
 type PageLocale = "en" | "ar";
-
-type CityCategory = {
-  title: string;
-  href: string;
-  icon?: LucideIcon;
-  iconGroup?: "city-info" | "transport" | "halal" | "masjid";
-  tone: string;
-  count?: number;
-  countLabel?: string;
-  external?: boolean;
-};
 
 const primaryRailLimit = 8;
 const secondaryRailLimit = 6;
@@ -240,32 +205,32 @@ export async function CityPageContent({
     locale,
   );
   const heroImages = getCityHeroImages(city);
-  const cityCategories: CityCategory[] = [
+  const cityCategories: CityExploreItem[] = [
     {
       title: itinerarySectionCopy.title,
       href: `${cityBasePath}/itineraries`,
-      icon: Route,
+      iconKey: "route",
       tone: "bg-[#cc2f2f]",
       count: city.itineraries.length,
     },
     {
       title: isArabic ? "أماكن تستحق الزيارة" : "places to visit",
       href: `${cityBasePath}/section/places-to-visit`,
-      icon: TreePalm,
+      iconKey: "palm",
       tone: "bg-[#ff6b00]",
       count: places.length,
     },
     {
       title: isArabic ? "التاريخ" : "history",
       href: `${cityBasePath}/section/city-information`,
-      icon: History,
+      iconKey: "history",
       tone: "bg-[#f5a800]",
       count: contentCountForSection("city-information"),
     },
     {
       title: isArabic ? "بالقرب منك" : "nearby",
       href: city.mapUrl,
-      icon: MapPin,
+      iconKey: "pin",
       tone: "bg-[#ffdd00]",
       external: true,
       countLabel: isArabic ? "مباشر" : "live",
@@ -273,63 +238,63 @@ export async function CityPageContent({
     {
       title: isArabic ? "الفنادق" : "hotels",
       href: `${cityBasePath}/section/hotels`,
-      icon: Hotel,
+      iconKey: "hotel",
       tone: "bg-[#b8174f]",
       count: hotels.length,
     },
     {
       title: isArabic ? "المطاعم" : "restaurants",
       href: `${cityBasePath}/section/food-and-restaurants`,
-      icon: Utensils,
+      iconKey: "utensils",
       tone: "bg-irhal-magenta",
       count: restaurants.length,
     },
     {
       title: isArabic ? "التسوق" : "shopping",
       href: `${cityBasePath}/section/shopping`,
-      icon: ShoppingBag,
+      iconKey: "shopping",
       tone: "bg-[#ed5b96]",
       count: shopping.length,
     },
     {
       title: isArabic ? "معلومات المدينة" : "city info.",
       href: `${cityBasePath}/section/visitor-information`,
-      iconGroup: "city-info",
+      iconKey: "city-info",
       tone: "bg-[#204a91]",
       count: contentCountForSection("visitor-information"),
     },
     {
       title: isArabic ? "المواصلات" : "transport",
       href: `${cityBasePath}/section/transportation-and-getting-around`,
-      iconGroup: "transport",
+      iconKey: "transport",
       tone: "bg-[#0874c9]",
       count: contentCountForSection("transportation-and-getting-around"),
     },
     {
       title: isArabic ? "الفعاليات" : "festivals",
       href: `${cityBasePath}/section/festivals-and-annual-events`,
-      icon: FerrisWheel,
+      iconKey: "ferris",
       tone: "bg-[#25a9dd]",
       count: festivals.length,
     },
     {
       title: isArabic ? "مع الأطفال" : "with kids",
       href: `${cityBasePath}/section/children-in-tow`,
-      icon: Baby,
+      iconKey: "baby",
       tone: "bg-[#00a3a3]",
       count: familySpots.length,
     },
     {
       title: isArabic ? "المساجد" : "masjids",
       href: `${cityBasePath}/section/muslim-visitor-information`,
-      iconGroup: "masjid",
+      iconKey: "masjid",
       tone: "bg-[#00783c]",
       count: masjids.length,
     },
     {
       title: isArabic ? "مطاعم حلال" : "halal restaurants",
       href: `${cityBasePath}/section/food-and-restaurants`,
-      iconGroup: "halal",
+      iconKey: "halal",
       tone: "bg-[#35aa32]",
       count:
         restaurants.filter((item) =>
@@ -339,7 +304,7 @@ export async function CityPageContent({
     {
       title: isArabic ? "مواقيت الصلاة" : "prayer times",
       href: `${cityBasePath}/prayer-times`,
-      icon: MoonStar,
+      iconKey: "moon",
       tone: "bg-[#95c915]",
       countLabel: isArabic ? "اليوم" : "today",
     },
@@ -370,269 +335,102 @@ export async function CityPageContent({
     >
       <JsonLd data={jsonLd} />
       <main className={isArabic ? "font-arabic" : undefined} dir={dir}>
-        <section className="relative h-[520px] overflow-hidden bg-ink text-white md:h-[440px] xl:h-[460px]">
-          <CityHeroCarousel
-            alt={`${displayCityName} travel banner`}
-            dir={dir}
-            frameClassName="absolute inset-0 md:left-[30%] rtl:md:left-0 rtl:md:right-[30%]"
-            images={heroImages}
-            labels={{
-              next: isArabic ? "عرض الصورة التالية" : "Show next banner image",
-              previous: isArabic
-                ? "عرض الصورة السابقة"
-                : "Show previous banner image",
-              slide: isArabic ? "صورة البانر" : "Banner image",
-            }}
-            sizes="(min-width: 768px) 70vw, 100vw"
-          />
-          <div className="absolute inset-0 bg-ink/10 md:hidden" />
-          <div
-            className="absolute inset-y-0 left-0 hidden w-[43%] bg-[#3a3a3a] md:block rtl:left-auto rtl:right-0"
-            style={{
-              clipPath:
-                dir === "rtl"
-                  ? "ellipse(96% 118% at 100% 50%)"
-                  : "ellipse(96% 118% at 0% 50%)",
-            }}
-          />
-          <div className="relative mx-auto flex h-full max-w-7xl items-end px-5 py-6 md:items-center">
-            <div className="w-full rounded-lg bg-ink/78 p-5 backdrop-blur-sm md:w-[32%] md:max-w-[390px] md:rounded-none md:bg-transparent md:p-0 md:backdrop-blur-0">
-              <p className="text-sm font-black text-white">{displayCountry}</p>
-              <h1 className="mt-3 text-5xl font-black leading-none tracking-tight md:text-6xl">
+        <section className="border-b border-ink/10 bg-white">
+          <div className="bg-ink text-white">
+            <div className="mx-auto max-w-7xl px-6 pt-10 sm:px-8 lg:px-12 lg:pt-12">
+              <p className="text-xs font-black uppercase tracking-[0.28em] text-white/80">
+                {displayCountry}
+              </p>
+              <h1 className="mt-3 text-5xl font-black leading-[0.95] tracking-tight sm:text-6xl">
                 {displayCityName}
               </h1>
-              <p className="mt-4 line-clamp-6 max-w-sm text-sm leading-6 text-white/90 xl:line-clamp-7">
+              <p className="mt-4 max-w-5xl text-base leading-7 text-white/85">
                 {displayLede}
               </p>
-              <div className="mt-5 grid grid-cols-1 gap-3 border-t border-white/20 pt-4 sm:grid-cols-3 md:max-w-[520px]">
+              <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-white/15 pt-4">
                 {heroFacts.map((fact) => {
                   const Icon = fact.icon;
 
                   return (
-                    <div key={fact.label}>
-                      <p className="text-[11px] font-black uppercase tracking-wide text-white/85">
-                        {fact.label}
-                      </p>
-                      <p className="mt-2 flex items-start gap-2 text-xs font-bold italic leading-5 text-white">
-                        <Icon
-                          aria-hidden="true"
-                          className="mt-0.5 h-4 w-4 shrink-0 text-white/85"
-                        />
-                        <span>{fact.value}</span>
-                      </p>
+                    <div className="flex items-center gap-2.5" key={fact.label}>
+                      <Icon
+                        aria-hidden="true"
+                        className="h-5 w-5 shrink-0 text-white/65"
+                      />
+                      <div className="leading-tight">
+                        <p className="text-[10px] font-black uppercase tracking-[0.16em] text-white/60">
+                          {fact.label}
+                        </p>
+                        <p className="text-sm font-bold text-white">
+                          {fact.value}
+                        </p>
+                      </div>
                     </div>
                   );
                 })}
               </div>
-              <div className="mt-4 flex flex-wrap gap-3">
-                <Button asChild size="sm" variant="quiet">
-                  <Link href={`${cityBasePath}/itineraries`}>
-                    <Route aria-hidden="true" />
-                    {isArabic ? "خطط رحلتك" : "Plan"}
-                  </Link>
-                </Button>
-                <Button asChild size="sm" variant="quiet">
-                  <a href={city.mapUrl}>
-                    <MapPin aria-hidden="true" />
-                    {isArabic ? "الخريطة" : "Map"}
-                    <ExternalLink aria-hidden="true" />
-                  </a>
-                </Button>
+            </div>
+            <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12">
+              <div className="relative mt-8 h-[340px] w-full overflow-hidden rounded-xl lg:h-[460px]">
+                <CityHeroCarousel
+                  alt={`${displayCityName} travel banner`}
+                  dir={dir}
+                  frameClassName="absolute inset-0"
+                  images={heroImages}
+                  labels={{
+                    next: isArabic ? "عرض الصورة التالية" : "Show next banner image",
+                    previous: isArabic
+                      ? "عرض الصورة السابقة"
+                      : "Show previous banner image",
+                    slide: isArabic ? "صورة البانر" : "Banner image",
+                  }}
+                  sizes="(min-width: 1440px) 1392px, 100vw"
+                />
               </div>
             </div>
           </div>
-        </section>
 
-        <section className="border-b border-ink/10 bg-white py-8">
-          <div className="mx-auto max-w-7xl px-5">
-            <div className="flex flex-wrap items-end justify-between gap-4">
-              <div>
-                <p className="text-sm font-black uppercase tracking-[0.18em] text-irhal-red">
-                  {isArabic ? "دليل المدينة" : "City guide"}
-                </p>
-                <h2 className="mt-2 text-3xl font-black tracking-tight text-ink md:text-4xl">
-                  {isArabic ? `استكشف ${displayCityName}` : `Explore ${city.name}`}
-                </h2>
-              </div>
-              <p className="max-w-2xl text-sm leading-6 text-ink/65">
-                {isArabic
-                  ? "ابدأ من هنا للوصول بسرعة إلى المعالم، والمطاعم، والفنادق، والتسوق، والمواصلات، ونصائح السفر الإسلامي في المدينة."
-                  : "Start here for the city’s sights, food, hotels, shopping, transport, maps, and Muslim-friendly travel essentials."}
-              </p>
-            </div>
-            <div className="mt-6 flex gap-3 overflow-x-auto pb-2">
-              {cityCategories.map((card) => {
-                const Icon = card.icon;
-                const cardClassName = `group flex h-28 w-28 shrink-0 flex-col items-center justify-center border-0 p-3 text-center font-sans text-white shadow-sm transition hover:-translate-y-1 hover:shadow-[0_18px_48px_rgba(0,0,0,0.16)] ${card.tone}`;
-                const content = (
-                  <>
-                    {card.iconGroup === "city-info" ? (
-                      <span
-                        aria-hidden="true"
-                        className="grid h-10 w-14 grid-cols-3 place-items-center"
-                      >
-                        <DollarSign className="h-8 w-6 stroke-[1.8]" />
-                        <Thermometer className="h-9 w-6 stroke-[1.8]" />
-                        <Globe2 className="h-8 w-7 stroke-[1.8]" />
-                      </span>
-                    ) : card.iconGroup === "transport" ? (
-                      <span
-                        aria-hidden="true"
-                        className="flex h-10 items-end justify-center gap-1"
-                      >
-                        <CarFront className="h-7 w-7 fill-white stroke-[1.45]" />
-                        <BusFront className="h-10 w-9 fill-white stroke-[1.45]" />
-                      </span>
-                    ) : card.iconGroup === "halal" ? (
-                      <span
-                        aria-hidden="true"
-                        className="flex h-10 items-center justify-center text-[34px] font-black leading-none"
-                        lang="ar"
-                      >
-                        حلال
-                      </span>
-                    ) : card.iconGroup === "masjid" ? (
-                      <span
-                        aria-hidden="true"
-                        className="relative flex h-10 w-14 items-end justify-center"
-                      >
-                        <span className="absolute bottom-0 left-1.5 h-8 w-2 rounded-t-full bg-white" />
-                        <span className="absolute bottom-8 left-[11px] h-1.5 w-1.5 rounded-full bg-white" />
-                        <span className="absolute bottom-[37px] left-[13px] h-2 w-px bg-white" />
-                        <span className="absolute bottom-0 left-[22px] h-7 w-8 rounded-t-full bg-white" />
-                        <span className="absolute bottom-0 left-[19px] h-3 w-[38px] rounded-t-sm bg-white" />
-                        <span className="absolute bottom-8 left-10 h-1.5 w-1.5 rounded-full bg-white" />
-                      </span>
-                    ) : Icon ? (
-                      <Icon
-                        aria-hidden="true"
-                        className="h-10 w-10 stroke-[1.65]"
-                        strokeWidth={1.65}
-                      />
-                    ) : null}
-                    <span className="mt-1 text-[16px] font-normal lowercase leading-[1.08] tracking-normal">
-                      {card.title}
-                    </span>
-                    <Badge className="mt-1 rounded-full bg-black/60 px-2 py-0.5 text-[11px] font-bold leading-none text-white shadow-sm">
-                      {card.countLabel ?? card.count}
-                    </Badge>
-                  </>
-                );
-
-                if (card.external) {
-                  return (
-                    <a className="block shrink-0" href={card.href} key={card.title}>
-                      <Card className={cardClassName}>{content}</Card>
-                    </a>
-                  );
-                }
-
-                return (
-                  <Link
-                    className="block shrink-0"
-                    href={card.href}
-                    key={card.title}
-                  >
-                    <Card className={cardClassName}>{content}</Card>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
+          <CityExploreRail
+            dir={dir}
+            eyebrow={isArabic ? "دليل المدينة" : "City guide"}
+            items={cityCategories}
+            labels={{
+              next: isArabic ? "التالي" : "Next",
+              previous: isArabic ? "السابق" : "Previous",
+            }}
+            title={isArabic ? `استكشف ${displayCityName}` : `Explore ${city.name}`}
+          />
         </section>
 
         {displayItineraries.length > 0 ? (
-          <section
-            className="overflow-hidden border-t border-ink/10 bg-white py-14"
+          <FeatureRail
+            actionHref={`${cityBasePath}/itineraries`}
+            actionLabel={itineraryCopy.action}
             dir={dir}
-          >
-            <div className="mx-auto max-w-7xl px-5">
-              <div className="flex items-end justify-between gap-5">
-                <div>
-                  <h2 className="text-4xl font-black tracking-tight text-ink md:text-5xl">
-                    {itineraryCopy.title}
-                  </h2>
-                  <p className="mt-5 max-w-3xl text-lg leading-8 text-ink/65">
-                    {itineraryCopy.subtitle}
-                  </p>
-                </div>
-                <Button asChild className="hidden md:inline-flex" variant="outline">
-                  <Link href={`${cityBasePath}/itineraries`}>
-                    {itineraryCopy.action}
-                  </Link>
-                </Button>
-              </div>
-              <div className="mt-10 flex gap-8 overflow-x-auto pb-5">
-                {displayItineraries.map((itinerary, index) => {
-                  const href = `${cityBasePath}/itineraries/${itinerary.slug}`;
-                  const stopCount = itineraryStopCount(itinerary);
-
-                  return (
-                    <Card
-                      className="group flex h-full w-[282px] shrink-0 flex-col overflow-hidden rounded-lg border-ink/10 bg-white shadow-none"
-                      key={itinerary.slug}
-                    >
-                      <Link
-                        aria-label={`${itineraryCopy.open}: ${itinerary.title}`}
-                        className="relative block h-[174px] overflow-hidden bg-paper-deep"
-                        href={href}
-                      >
-                        <Image
-                          alt=""
-                          className="object-cover transition duration-500 group-hover:scale-105"
-                          fill
-                          loading={index < 4 ? "eager" : "lazy"}
-                          sizes="282px"
-                          src={itineraryCardImages[itinerary.slug]}
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-                        <Badge className="absolute left-3 top-3 rounded-md bg-[#16325c] px-2.5 py-1 text-xs font-bold leading-none text-white shadow-sm rtl:left-auto rtl:right-3">
-                          {itineraryCopy.badge}
-                        </Badge>
-                      </Link>
-                      <CardContent className="flex flex-1 flex-col p-4">
-                        <p className="text-sm font-bold leading-5 text-travel-navy/65">
-                          {displayCityName}
-                        </p>
-                        <h3 className="mt-1 line-clamp-2 text-lg font-bold leading-6 text-travel-navy">
-                          <Link className="hover:underline" href={href}>
-                            {itinerary.title}
-                          </Link>
-                        </h3>
-                        <div className="mt-2 flex flex-wrap gap-3 text-xs font-black uppercase text-ink/60">
-                          <span className="inline-flex items-center gap-1">
-                            <CalendarDays aria-hidden="true" className="h-4 w-4" />
-                            <span>
-                              {formatItineraryDuration(
-                                itinerary.durationDays,
-                                locale,
-                              )}
-                            </span>
-                          </span>
-                          <span className="inline-flex items-center gap-1">
-                            <Route aria-hidden="true" className="h-4 w-4" />
-                            <span>
-                              {formatItineraryStopCount(stopCount, locale)}
-                            </span>
-                          </span>
-                        </div>
-                        <p className="mt-2 line-clamp-4 text-sm leading-6 text-travel-navy/80">
-                          {itinerary.summary}
-                        </p>
-                        <div className="mt-auto flex flex-wrap items-center justify-between gap-3 pt-5">
-                          <DiscoverLink href={href} label={itineraryCopy.open} />
-                          <span className="ms-auto inline-flex items-center gap-1 text-xs font-bold text-ink/55">
-                            <Users aria-hidden="true" className="h-4 w-4" />
-                            {itinerary.audience}
-                          </span>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            </div>
-          </section>
+            items={displayItineraries.map((itinerary, index) => ({
+              key: itinerary.slug,
+              href: `${cityBasePath}/itineraries/${itinerary.slug}`,
+              image: itineraryCardImages[itinerary.slug],
+              imageAlt: itinerary.title,
+              eyebrow: `${formatItineraryDuration(
+                itinerary.durationDays,
+                locale,
+              )} · ${formatItineraryStopCount(
+                itineraryStopCount(itinerary),
+                locale,
+              )}`,
+              title: itinerary.title,
+              description: itinerary.summary,
+              discoverLabel: itineraryCopy.open,
+              eager: index < 4,
+            }))}
+            labels={{
+              previous: isArabic ? "السابق" : "Previous",
+              next: isArabic ? "التالي" : "Next",
+            }}
+            subtitle={itineraryCopy.subtitle}
+            title={itineraryCopy.title}
+          />
         ) : null}
 
         <GuideItemRail
@@ -755,96 +553,41 @@ export async function CityPageContent({
           }}
         />
 
-        <section className="border-t border-ink/10 bg-white py-14">
-          <div className="mx-auto max-w-7xl px-5">
-            <div className="flex flex-wrap items-end justify-between gap-4">
-              <div>
-                <p className="text-xs font-black uppercase tracking-[0.22em] text-irhal-red">
-                  {isArabic ? "مختارات من المدينة" : "City highlights"}
-                </p>
-                <h2 className="mt-2 text-3xl font-black tracking-tight text-ink">
-                  {isArabic ? "معالم بارزة في كراتشي" : `Signature sights in ${city.name}`}
-                </h2>
-              </div>
-              <Badge
-                className="rounded-full bg-coastal px-3 py-1 text-white"
-                variant="coastal"
-              >
-                {actionLabels.shuffled}
-              </Badge>
-            </div>
-            <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-              {famousSpots.map((place) => {
-                const placePath = `${localePrefix}${pathForGuideItem(city, place)}`;
-
-                return (
-                  <Card
-                    className="overflow-hidden rounded-lg border-ink/10 bg-white shadow-none"
-                    key={place.id}
-                  >
-                    <div className="relative h-[174px] overflow-hidden bg-neutral-100">
-                      <Link className="absolute inset-0" href={placePath}>
-                        <Image
-                          alt={place.imageAlt}
-                          className="object-cover"
-                          fill
-                          sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
-                          src={getGuideItemImage(place).image}
-                          style={{
-                            objectPosition:
-                              getGuideItemImage(place).objectPosition,
-                          }}
-                        />
-                      </Link>
-                      <Badge className="absolute left-3 top-3 rounded-md bg-[#16325c] px-2.5 py-1 text-xs font-bold leading-none text-white shadow-sm rtl:left-auto rtl:right-3">
-                        {actionLabels.famousBadge}
-                      </Badge>
-                      <Button
-                        aria-label={`${guideItemLabels.savePrefix} ${place.title}`}
-                        className="absolute right-3 top-3 h-9 w-9 rounded-full border-white bg-white/95 text-travel-navy shadow-sm hover:bg-white rtl:left-3 rtl:right-auto"
-                        size="icon"
-                        type="button"
-                        variant="outline"
-                      >
-                        <Heart aria-hidden="true" className="h-5 w-5" />
-                      </Button>
-                    </div>
-                    <CardContent className="flex min-h-[190px] flex-col p-4">
-                      <p className="text-sm font-bold leading-5 text-travel-navy/65">
-                        {displayCityName}
-                      </p>
-                      <h3 className="mt-1 line-clamp-2 text-lg font-bold leading-6 text-travel-navy">
-                        <Link className="hover:underline" href={placePath}>
-                          {place.title}
-                        </Link>
-                      </h3>
-                      {place.category && place.category !== place.title ? (
-                        <p className="mt-1.5 text-xs font-bold uppercase tracking-wide text-coastal">
-                          {place.category}
-                        </p>
-                      ) : null}
-                      <p className="mt-1.5 line-clamp-4 text-sm leading-6 text-travel-navy/80">
-                        {place.originalContent?.[0] ?? place.description}
-                      </p>
-                      <div className="mt-auto flex flex-wrap items-center justify-between gap-3 pt-5">
-                        <DiscoverLink href={placePath} label={actionLabels.details} />
-                        {place.geoStatus === "verified" ? (
-                          <div className="ms-auto inline-flex items-center gap-1.5 text-sm font-bold text-travel-navy">
-                            <ShieldCheck
-                              aria-hidden="true"
-                              className="h-4 w-4 text-coastal"
-                            />
-                            {guideItemLabels.verified}
-                          </div>
-                        ) : null}
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          </div>
-        </section>
+        <FeatureRail
+          actionHref={`${cityBasePath}/section/places-to-visit`}
+          actionLabel={actionLabels.all}
+          dir={dir}
+          items={famousSpots.map((place, index) => {
+            const visual = getGuideItemImage(place);
+            return {
+              key: place.id,
+              href: `${localePrefix}${pathForGuideItem(city, place)}`,
+              image: visual.image,
+              objectPosition: visual.objectPosition,
+              imageAlt: place.imageAlt,
+              eyebrow:
+                place.category && place.category !== place.title
+                  ? place.category
+                  : undefined,
+              title: place.title,
+              description: place.originalContent?.[0] ?? place.description,
+              discoverLabel: actionLabels.details,
+              eager: index < 4,
+            };
+          })}
+          labels={{
+            previous: isArabic ? "السابق" : "Previous",
+            next: isArabic ? "التالي" : "Next",
+          }}
+          subtitle={
+            isArabic
+              ? "مختارات تتغيّر يوميًا من أبرز معالم المدينة."
+              : "A daily-changing pick of the city’s standout sights."
+          }
+          title={
+            isArabic ? "معالم بارزة في كراتشي" : `Signature sights in ${city.name}`
+          }
+        />
 
         <GuideItemRail
           actionLabel={actionLabels.all}

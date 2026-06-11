@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 
-import { CityImageCard } from "@/components/city-image-card";
+import { FeatureRail, type FeatureCardData } from "@/components/feature-rail";
 import { PageShell } from "@/components/page-shell";
 import { SiteSearchBox } from "@/components/site-search-box";
 import { getCityNavItems, preloadCityBySlug, type CityNavItem } from "@/lib/city-source";
@@ -52,9 +52,18 @@ export async function HomeContent({ locale = "en" }: { locale?: HomeLocale }) {
     name: isArabic ? "كراتشي" : "Karachi",
     slug: "karachi",
   };
-  const cityCountLabel = isArabic
-    ? `${cityItems.length} ${cityItems.length === 1 ? "مدينة" : "مدن"}`
-    : `${cityItems.length} ${cityItems.length === 1 ? "city" : "cities"}`;
+  const destinationCards: FeatureCardData[] = featuredCities.map(
+    (city, index) => ({
+      key: city.slug,
+      href: `${prefix}/city/${city.slug}`,
+      image: city.cardImageUrl || city.heroImageUrl || fallbackCityImage,
+      imageAlt: city.name,
+      eyebrow: city.country,
+      title: city.name,
+      discoverLabel: isArabic ? "اكتشف" : "Discover",
+      eager: index < 4,
+    }),
+  );
 
   const t = isArabic
     ? {
@@ -134,35 +143,18 @@ export async function HomeContent({ locale = "en" }: { locale?: HomeLocale }) {
           </div>
         </section>
 
-        <section className="bg-white py-14 md:py-16">
-          <div className="mx-auto max-w-7xl px-5">
-            <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-              <div>
-                <p className="text-xs font-black uppercase tracking-[0.18em] text-irhal-red">
-                  {cityCountLabel}
-                </p>
-                <h2 className="mt-2 text-3xl font-black tracking-tight text-ink md:text-4xl">
-                  {t.pickHeading}
-                </h2>
-              </div>
-              <p className="max-w-xl text-sm leading-6 text-ink/65">
-                {t.pickIntro}
-              </p>
-            </div>
-
-            <div className="mt-7 flex gap-5 overflow-x-auto pb-3">
-              {featuredCities.map((city) => (
-                <div className="w-[190px] shrink-0 md:w-[220px]" key={city.slug}>
-                  <CityImageCard
-                    city={city}
-                    href={`${prefix}/city/${city.slug}`}
-                    variant="portrait"
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
+        <FeatureRail
+          actionHref={`${prefix}/search`}
+          actionLabel={isArabic ? "عرض الكل" : "View all"}
+          dir={isArabic ? "rtl" : "ltr"}
+          items={destinationCards}
+          labels={{
+            previous: isArabic ? "السابق" : "Previous",
+            next: isArabic ? "التالي" : "Next",
+          }}
+          subtitle={t.pickIntro}
+          title={isArabic ? "وجهات مختارة" : "Featured destinations"}
+        />
       </main>
     </PageShell>
   );

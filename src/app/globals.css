@@ -54,6 +54,9 @@
   --font-heading: var(--font-trip-sans);
   --font-mono: var(--font-geist-mono);
   --font-arabic: var(--font-noto-arabic);
+  /* Site shell width: widen the shared `max-w-7xl` container used across the
+     portal (28 files) to a fuller, Lonely-Planet-style enterprise width. */
+  --container-7xl: 90rem;
 }
 
 html {
@@ -81,6 +84,14 @@ h6 {
 
 .font-arabic :is(h1, h2, h3, h4, h5, h6) {
   font-family: var(--font-cairo), var(--font-trip-sans);
+}
+
+/* Headings rendered too cramped with the default tight tracking. Relax
+   `tracking-tight` site-wide to a gentle, Lonely-Planet-style spacing so display
+   headings read open and pleasant. (Unlayered rule intentionally overrides the
+   Tailwind utility used on most headings.) */
+.tracking-tight {
+  letter-spacing: 0.01em;
 }
 
 a,

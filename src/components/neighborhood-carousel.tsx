@@ -6,7 +6,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { DiscoverPill } from "@/components/discover-action";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 
 export type NeighborhoodCarouselItem = {
   description: string;
@@ -130,44 +129,38 @@ export function NeighborhoodCarousel({
         </div>
 
         <div
-          className="mt-7 flex snap-x gap-5 overflow-x-auto pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="mt-8 flex snap-x gap-6 overflow-x-auto pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           ref={scrollerRef}
         >
           {items.map((item, index) => (
-            <Card
-              className="w-[282px] shrink-0 snap-start overflow-hidden rounded-lg border-ink/10 bg-white shadow-none transition hover:border-coastal/40"
+            <Link
+              aria-label={
+                dir === "rtl"
+                  ? `${item.name} في ${cityName}`
+                  : `${item.name} area guide in ${cityName}`
+              }
+              className="group block w-[82%] shrink-0 snap-start sm:w-[calc((100%-1.5rem)/2)] lg:w-[calc((100%-3rem)/3)] xl:w-[calc((100%-4.5rem)/4)]"
+              href={item.href}
               key={item.slug}
             >
-              <Link
-                aria-label={
-                  dir === "rtl"
-                    ? `${item.name} في ${cityName}`
-                    : `${item.name} area guide in ${cityName}`
-                }
-                className="group block h-full"
-                href={item.href}
-              >
-                <div className="flex min-h-[226px] flex-col p-4">
-                  <p className="text-sm font-bold leading-5 text-travel-navy/65">
-                    {cityName}
-                  </p>
-                  <h3 className="mt-1 line-clamp-2 text-lg font-bold leading-6 text-travel-navy">
-                    {item.name}
-                  </h3>
-                  <p className="mt-1.5 text-xs font-bold uppercase tracking-wide text-coastal">
-                    {dir === "rtl"
-                      ? `دليل منطقة ${String(index + 1).padStart(2, "0")}`
-                      : `Area guide ${String(index + 1).padStart(2, "0")}`}
-                  </p>
-                  <p className="mt-1.5 line-clamp-4 text-sm leading-6 text-travel-navy/80">
-                    {item.description}
-                  </p>
-                  <div className="mt-auto pt-5">
-                    <DiscoverPill label={dir === "rtl" ? "اكتشف" : "Discover"} />
-                  </div>
-                </div>
-              </Link>
-            </Card>
+              <div className="relative flex aspect-[4/3] items-end overflow-hidden bg-gradient-to-br from-[#16325c] to-coastal p-4 text-white">
+                <span className="absolute top-3 text-6xl font-black leading-none text-white/15 ltr:right-4 rtl:left-4">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <p className="relative text-xs font-black uppercase tracking-[0.18em] text-white/85">
+                  {dir === "rtl" ? "دليل منطقة" : "Area guide"}
+                </p>
+              </div>
+              <h3 className="mt-4 line-clamp-2 text-xl font-extrabold leading-snug text-travel-navy transition group-hover:text-irhal-red">
+                {item.name}
+              </h3>
+              <p className="mt-2 line-clamp-3 text-sm leading-6 text-ink/70">
+                {item.description}
+              </p>
+              <div className="mt-4">
+                <DiscoverPill label={dir === "rtl" ? "اكتشف" : "Discover"} />
+              </div>
+            </Link>
           ))}
         </div>
       </div>

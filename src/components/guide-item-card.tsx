@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { DiscoverLink } from "@/components/discover-action";
+import { FeatureRail, type FeatureCardData } from "@/components/feature-rail";
 import type { CityGuide } from "@/lib/city-data";
 import { getGuideItemImage } from "@/lib/city-presentation";
 import type { GuideItem } from "@/lib/guide-items";
@@ -146,11 +147,10 @@ export function GuideItemCard({
 export function GuideItemRail({
   actionLabel = "Explore all",
   city,
-  cityName = city.name,
-  dir,
+  dir = "ltr",
   items,
   href,
-  labels,
+  labels = defaultGuideItemLabels,
   pathPrefix = "",
   subtitle,
   title,
@@ -166,37 +166,36 @@ export function GuideItemRail({
   subtitle: string;
   title: string;
 }) {
+  const navLabels =
+    dir === "rtl"
+      ? { previous: "السابق", next: "التالي" }
+      : { previous: "Previous", next: "Next" };
+
+  const cards: FeatureCardData[] = items.map((item, index) => {
+    const visual = getGuideItemImage(item);
+    return {
+      key: item.id,
+      href: `${pathPrefix}${pathForGuideItem(city, item)}`,
+      image: visual.image,
+      imageAlt: item.imageAlt,
+      objectPosition: visual.objectPosition,
+      eyebrow: item.eyebrow,
+      title: item.title,
+      discoverLabel: labels.discover,
+      eager: index < 4,
+    };
+  });
+
   return (
-    <section className="overflow-hidden border-t border-ink/10 bg-white py-14" dir={dir}>
-      <div className="mx-auto max-w-7xl px-5">
-        <div className="flex items-end justify-between gap-5">
-          <div>
-            <h2 className="text-4xl font-black tracking-tight text-ink md:text-5xl">
-              {title}
-            </h2>
-            <p className="mt-5 max-w-3xl text-lg leading-8 text-ink/65">
-              {subtitle}
-            </p>
-          </div>
-          <Button asChild className="hidden md:inline-flex" variant="outline">
-            <Link href={href}>{actionLabel}</Link>
-          </Button>
-        </div>
-        <div className="mt-10 flex gap-8 overflow-x-auto pb-5">
-          {items.map((item) => (
-            <GuideItemCard
-              city={city}
-              cityName={cityName}
-              item={item}
-              key={item.id}
-              labels={labels}
-              layout="rail"
-              pathPrefix={pathPrefix}
-            />
-          ))}
-        </div>
-      </div>
-    </section>
+    <FeatureRail
+      actionHref={href}
+      actionLabel={actionLabel}
+      dir={dir}
+      items={cards}
+      labels={navLabels}
+      subtitle={subtitle}
+      title={title}
+    />
   );
 }
 
