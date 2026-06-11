@@ -18,6 +18,7 @@
     "generate:types": "cross-env NODE_OPTIONS=--no-deprecation payload generate:types",
     "seed:karachi-guide": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/seed-karachi-guide.ts",
     "seed:karachi-guide:reset": "cross-env IRHAL_ALLOW_DESTRUCTIVE_SEED=true NODE_OPTIONS=--no-deprecation tsx scripts/seed-karachi-guide.ts",
+    "audit:london-irhal-places": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/audit-london-irhal-places.ts",
     "import:london-legacy": "cross-env IRHAL_SKIP_PAYLOAD_HOOK_REVALIDATE=true NODE_OPTIONS=--no-deprecation tsx scripts/import-london-irhal-legacy.ts",
     "import:london-info-transport": "cross-env IRHAL_SKIP_PAYLOAD_HOOK_REVALIDATE=true NODE_OPTIONS=--no-deprecation tsx scripts/import-london-info-transport.ts",
     "seed:london-guide": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/seed-london-guide.ts",

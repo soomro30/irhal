@@ -700,17 +700,10 @@ async function main() {
     hero: true,
   });
   if (heroMediaId) {
-    const existingGallery = Array.isArray(city.heroGallery)
-      ? (city.heroGallery as Array<{ image?: unknown }>)
-      : [];
-    const galleryIds = new Set(
-      existingGallery.map((entry) => relationshipId(entry.image)).filter(Boolean),
-    );
-    galleryIds.add(heroMediaId);
     await payload.update({
       collection: "cities" as never,
       data: {
-        heroGallery: Array.from(galleryIds).map((image) => ({ image })),
+        heroGallery: [],
         heroImage: heroMediaId,
         workflowStatus: "published",
       } as never,
