@@ -370,7 +370,7 @@ export async function CityPageContent({
     >
       <JsonLd data={jsonLd} />
       <main className={isArabic ? "font-arabic" : undefined} dir={dir}>
-        <section className="relative min-h-[520px] overflow-hidden bg-ink text-white md:min-h-[390px]">
+        <section className="relative h-[520px] overflow-hidden bg-ink text-white md:h-[440px] xl:h-[460px]">
           <CityHeroCarousel
             alt={`${displayCityName} travel banner`}
             dir={dir}
@@ -385,16 +385,16 @@ export async function CityPageContent({
           />
           <div className="absolute inset-0 bg-ink/10 md:hidden" />
           <div className="absolute inset-y-0 left-0 hidden w-[43%] rounded-r-[999px] bg-[#3a3a3a] md:block rtl:left-auto rtl:right-0 rtl:rounded-l-[999px] rtl:rounded-r-none" />
-          <div className="relative mx-auto flex min-h-[520px] max-w-7xl items-end px-5 py-8 md:min-h-[390px] md:items-center">
+          <div className="relative mx-auto flex h-full max-w-7xl items-end px-5 py-6 md:items-center">
             <div className="w-full rounded-lg bg-ink/78 p-5 backdrop-blur-sm md:w-[32%] md:max-w-[390px] md:rounded-none md:bg-transparent md:p-0 md:backdrop-blur-0">
               <p className="text-sm font-black text-white">{displayCountry}</p>
-              <h1 className="mt-3 text-6xl font-black leading-none tracking-tight md:text-7xl">
+              <h1 className="mt-3 text-5xl font-black leading-none tracking-tight md:text-6xl">
                 {displayCityName}
               </h1>
-              <p className="mt-5 max-w-sm text-base leading-7 text-white/90">
+              <p className="mt-4 line-clamp-6 max-w-sm text-sm leading-6 text-white/90 xl:line-clamp-7">
                 {displayLede}
               </p>
-              <div className="mt-7 grid grid-cols-1 gap-4 border-t border-white/20 pt-5 sm:grid-cols-3 md:max-w-[520px]">
+              <div className="mt-5 grid grid-cols-1 gap-3 border-t border-white/20 pt-4 sm:grid-cols-3 md:max-w-[520px]">
                 {heroFacts.map((fact) => {
                   const Icon = fact.icon;
 
@@ -403,7 +403,7 @@ export async function CityPageContent({
                       <p className="text-[11px] font-black uppercase tracking-wide text-white/85">
                         {fact.label}
                       </p>
-                      <p className="mt-2 flex items-start gap-2 text-sm font-bold italic leading-5 text-white">
+                      <p className="mt-2 flex items-start gap-2 text-xs font-bold italic leading-5 text-white">
                         <Icon
                           aria-hidden="true"
                           className="mt-0.5 h-4 w-4 shrink-0 text-white/85"
@@ -414,7 +414,7 @@ export async function CityPageContent({
                   );
                 })}
               </div>
-              <div className="mt-6 flex flex-wrap gap-3">
+              <div className="mt-4 flex flex-wrap gap-3">
                 <Button asChild size="sm" variant="quiet">
                   <Link href={`${cityBasePath}/itineraries`}>
                     <Route aria-hidden="true" />
