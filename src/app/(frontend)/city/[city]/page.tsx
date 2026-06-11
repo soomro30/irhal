@@ -374,6 +374,7 @@ export async function CityPageContent({
           <CityHeroCarousel
             alt={`${displayCityName} travel banner`}
             dir={dir}
+            frameClassName="absolute inset-0 md:left-[30%] rtl:md:left-0 rtl:md:right-[30%]"
             images={heroImages}
             labels={{
               next: isArabic ? "عرض الصورة التالية" : "Show next banner image",
@@ -382,6 +383,7 @@ export async function CityPageContent({
                 : "Show previous banner image",
               slide: isArabic ? "صورة البانر" : "Banner image",
             }}
+            sizes="(min-width: 768px) 70vw, 100vw"
           />
           <div className="absolute inset-0 bg-ink/10 md:hidden" />
           <div className="absolute inset-y-0 left-0 hidden w-[43%] rounded-r-[999px] bg-[#3a3a3a] md:block rtl:left-auto rtl:right-0 rtl:rounded-l-[999px] rtl:rounded-r-none" />

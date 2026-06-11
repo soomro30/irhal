@@ -14,14 +14,18 @@ type CityHeroCarouselProps = {
   images: string[];
   alt: string;
   dir?: "ltr" | "rtl";
+  frameClassName?: string;
   labels: CityHeroCarouselLabels;
+  sizes?: string;
 };
 
 export function CityHeroCarousel({
   images,
   alt,
   dir = "ltr",
+  frameClassName = "absolute inset-0",
   labels,
+  sizes = "100vw",
 }: CityHeroCarouselProps) {
   const safeImages = images.filter(Boolean);
   const total = safeImages.length;
@@ -39,14 +43,14 @@ export function CityHeroCarousel({
   const NextIcon = dir === "rtl" ? ChevronLeft : ChevronRight;
 
   return (
-    <>
+    <div className={frameClassName}>
       <Image
         alt={hasMultiple ? `${alt} (${safeIndex + 1} of ${total})` : alt}
         className="object-cover object-center"
         fetchPriority={safeIndex === 0 ? "high" : "auto"}
         fill
         loading={safeIndex === 0 ? "eager" : "lazy"}
-        sizes="100vw"
+        sizes={sizes}
         src={currentImage}
         style={{
           objectFit: "cover",
@@ -97,6 +101,6 @@ export function CityHeroCarousel({
           </button>
         </div>
       ) : null}
-    </>
+    </div>
   );
 }
