@@ -251,14 +251,16 @@ const relationshipName = (value: unknown, fallback = "") => {
 const mediaUrl = (value: unknown, preferredSizes: string[] = ["hero", "card"]) => {
   const media = asRecord(value);
   const sizes = asRecord(media.sizes);
+  const originalUrl = asString(media.url);
 
   for (const sizeName of preferredSizes) {
+    if (sizeName === "original" && originalUrl) return originalUrl;
     const size = asRecord(sizes[sizeName]);
     const url = asString(size.url);
     if (url) return url;
   }
 
-  return asString(media.url);
+  return originalUrl;
 };
 
 const mediaCandidateUrl = (value: unknown) => {
@@ -931,10 +933,16 @@ const loadCityShellBySlug = async (slug: string): Promise<CityShell | undefined>
       asArray(cityDoc.heroGallery)
         .map((entry) => relationshipId(asRecord(entry).image))
         .filter((id): id is number | string => id != null);
-    const cityHeroImageUrl = mediaUrl(cityDoc.heroImage, ["hero", "card"]);
+    const cityHeroImageUrl = mediaUrl(cityDoc.heroImage, [
+      "original",
+      "hero",
+      "card",
+    ]);
     const cityHeroGalleryImageIds = cityHeroGalleryIds();
     const cityHeroGalleryUrls = asArray(cityDoc.heroGallery)
-      .map((entry) => mediaUrl(asRecord(entry).image, ["hero", "card"]))
+      .map((entry) =>
+        mediaUrl(asRecord(entry).image, ["original", "hero", "card"]),
+      )
       .filter((url): url is string => Boolean(url));
     if (cityHeroGalleryImageIds.length > cityHeroGalleryUrls.length) {
       const mediaResult = await payload.find({
