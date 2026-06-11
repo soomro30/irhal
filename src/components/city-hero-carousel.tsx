@@ -48,7 +48,11 @@ export function CityHeroCarousel({
         loading={safeIndex === 0 ? "eager" : "lazy"}
         sizes="100vw"
         src={currentImage}
-        style={{ transform: dir === "rtl" ? "scaleX(-1)" : undefined }}
+        style={{
+          objectFit: "cover",
+          objectPosition: "center center",
+          transform: dir === "rtl" ? "scaleX(-1)" : undefined,
+        }}
       />
 
       {hasMultiple ? (

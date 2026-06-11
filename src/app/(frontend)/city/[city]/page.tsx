@@ -54,6 +54,7 @@ import {
 import {
   getGuideArticlesForSection,
   getGuideItemsByKind,
+  getGuideItemsForSection,
   getLocalizedGuideSectionCopy,
   itineraryGuideSectionSlug,
   localizeGuideItem,
@@ -230,6 +231,9 @@ export async function CityPageContent({
   });
   const articleCountForSection = (sectionSlug: string) =>
     getGuideArticlesForSection(city, sectionSlug).length;
+  const contentCountForSection = (sectionSlug: string) =>
+    getGuideItemsForSection(city, sectionSlug).length ||
+    articleCountForSection(sectionSlug);
   const itinerarySectionCopy = getLocalizedGuideSectionCopy(
     city,
     itineraryGuideSectionSlug,
@@ -256,7 +260,7 @@ export async function CityPageContent({
       href: `${cityBasePath}/section/city-information`,
       icon: History,
       tone: "bg-[#f5a800]",
-      count: articleCountForSection("city-information"),
+      count: contentCountForSection("city-information"),
     },
     {
       title: isArabic ? "بالقرب منك" : "nearby",
@@ -292,14 +296,14 @@ export async function CityPageContent({
       href: `${cityBasePath}/section/visitor-information`,
       iconGroup: "city-info",
       tone: "bg-[#204a91]",
-      count: articleCountForSection("visitor-information"),
+      count: contentCountForSection("visitor-information"),
     },
     {
       title: isArabic ? "المواصلات" : "transport",
       href: `${cityBasePath}/section/transportation-and-getting-around`,
       iconGroup: "transport",
       tone: "bg-[#0874c9]",
-      count: articleCountForSection("transportation-and-getting-around"),
+      count: contentCountForSection("transportation-and-getting-around"),
     },
     {
       title: isArabic ? "الفعاليات" : "festivals",
