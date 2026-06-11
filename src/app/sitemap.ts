@@ -113,7 +113,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       const sectionItemCount = getGuideItemsForSection(city, section.slug).length;
       const totalSectionPages = Math.ceil(sectionItemCount / SECTION_PAGE_SIZE);
       for (let page = 2; page <= totalSectionPages; page += 1) {
-        addLocalizedEntries(entries, seen, settings.siteUrl, `${sectionPath}?page=${page}`, {
+        addLocalizedEntries(entries, seen, settings.siteUrl, `${sectionPath}/p/${page}`, {
           changeFrequency: "monthly",
           lastModified,
           priority: 0.65,

@@ -57,8 +57,7 @@ const buildPageList = (current: number, total: number): (number | "ellipsis")[] 
 };
 
 type Props = {
-  params: Promise<{ city: string; section: string }>;
-  searchParams?: Promise<{ page?: string }>;
+  params: Promise<{ city: string; section: string; page?: string }>;
 };
 
 export async function generateStaticParams() {
@@ -68,11 +67,10 @@ export async function generateStaticParams() {
 type PageLocale = "en" | "ar";
 
 export async function generateGuideSectionMetadata(
-  { params, searchParams }: Props,
+  { params }: Props,
   locale: PageLocale = "en",
 ): Promise<Metadata> {
-  const { city: citySlug, section: sectionSlug } = await params;
-  const resolvedSearchParams = (await searchParams) ?? {};
+  const { city: citySlug, page, section: sectionSlug } = await params;
   const city = await getCityBySlug(citySlug);
   const guideSection = city ? getGuideSection(city, sectionSlug) : undefined;
   if (!city || !guideSection || !isPublicGuideSection(sectionSlug)) return {};
@@ -83,8 +81,8 @@ export async function generateGuideSectionMetadata(
   const description = sectionCopy.summary;
   const totalItems = getGuideItemsForSection(city, sectionSlug).length;
   const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
-  const currentPage = clampPage(resolvedSearchParams.page, totalPages);
-  const pageSuffix = currentPage > 1 ? `?page=${currentPage}` : "";
+  const currentPage = clampPage(page, totalPages);
+  const pageSuffix = currentPage > 1 ? `/p/${currentPage}` : "";
 
   return pageMetadata({
     title: `${sectionTitle} | ${cityName}`,
@@ -100,10 +98,8 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 export async function CityGuideSectionPageContent({
   locale = "en",
   params,
-  searchParams,
 }: Props & { locale?: PageLocale }) {
-  const { city: citySlug, section: sectionSlug } = await params;
-  const resolvedSearchParams = (await searchParams) ?? {};
+  const { city: citySlug, page, section: sectionSlug } = await params;
   const city = await getCityBySlug(citySlug);
   const guideSection = city ? getGuideSection(city, sectionSlug) : undefined;
   if (!city || !guideSection || !isPublicGuideSection(sectionSlug)) notFound();
@@ -157,7 +153,7 @@ export async function CityGuideSectionPageContent({
 
   const totalItems = localizedItems.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
-  const currentPage = clampPage(resolvedSearchParams.page, totalPages);
+  const currentPage = clampPage(page, totalPages);
   const pageStartIndex = (currentPage - 1) * PAGE_SIZE;
   const pageItems = localizedItems.slice(
     pageStartIndex,
@@ -166,7 +162,7 @@ export async function CityGuideSectionPageContent({
   const pageList = buildPageList(currentPage, totalPages);
   const sectionPath = `${cityBasePath}/section/${sectionSlug}`;
   const pageHref = (page: number) =>
-    page <= 1 ? sectionPath : `${sectionPath}?page=${page}`;
+    page <= 1 ? sectionPath : `${sectionPath}/p/${page}`;
   const sectionCopy = getLocalizedGuideSectionCopy(city, sectionSlug, locale);
   const sectionTitle = sectionCopy.title;
   const sectionSummary = sectionCopy.summary;
