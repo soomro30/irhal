@@ -386,7 +386,15 @@ export async function CityPageContent({
             sizes="(min-width: 768px) 70vw, 100vw"
           />
           <div className="absolute inset-0 bg-ink/10 md:hidden" />
-          <div className="absolute inset-y-0 left-0 hidden w-[43%] rounded-r-[999px] bg-[#3a3a3a] md:block rtl:left-auto rtl:right-0 rtl:rounded-l-[999px] rtl:rounded-r-none" />
+          <div
+            className="absolute inset-y-0 left-0 hidden w-[43%] bg-[#3a3a3a] md:block rtl:left-auto rtl:right-0"
+            style={{
+              clipPath:
+                dir === "rtl"
+                  ? "ellipse(96% 118% at 100% 50%)"
+                  : "ellipse(96% 118% at 0% 50%)",
+            }}
+          />
           <div className="relative mx-auto flex h-full max-w-7xl items-end px-5 py-6 md:items-center">
             <div className="w-full rounded-lg bg-ink/78 p-5 backdrop-blur-sm md:w-[32%] md:max-w-[390px] md:rounded-none md:bg-transparent md:p-0 md:backdrop-blur-0">
               <p className="text-sm font-black text-white">{displayCountry}</p>
