@@ -850,12 +850,13 @@ const loadCityNavItems = async (): Promise<CityNavItem[]> => {
     const items = (cityResult.docs as CMSDoc[])
       .map((doc) => {
         const slug = asString(doc.slug);
+        const heroImageUrl =
+          mediaUrl(doc.heroImage, ["original", "hero", "card"]) || undefined;
 
         return {
           cardImageUrl: mediaUrl(doc.heroImage, ["card", "hero"]) || undefined,
           country: relationshipName(doc.country),
-          heroImageUrl:
-            mediaUrl(doc.heroImage, ["original", "hero", "card"]) || undefined,
+          heroImageUrl,
           name: asString(doc.name),
           slug,
           translations: normalizeTranslations(doc.translations),
@@ -872,7 +873,7 @@ const loadCityNavItems = async (): Promise<CityNavItem[]> => {
 
 const cachedLoadCityNavItems = unstable_cache(
   loadCityNavItems,
-  ["irhal-city-nav-v5"],
+  ["irhal-city-nav-v7"],
   {
     revalidate: cityCacheTtlSeconds,
     tags: ["irhal-city-nav", "irhal-city"],

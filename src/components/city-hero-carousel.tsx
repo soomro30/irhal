@@ -44,14 +44,14 @@ export function CityHeroCarousel({
   const safeIndex = total > 0 ? Math.min(index, total - 1) : 0;
   const hasMultiple = total > 1;
   const currentImage = safeImages[safeIndex];
+  const imageTransform =
+    mirrorForRtl && dir === "rtl" ? "scaleX(-1)" : undefined;
 
   const go = (delta: number) =>
     setIndex((current) => (current + delta + total) % total);
 
   const PreviousIcon = dir === "rtl" ? ChevronRight : ChevronLeft;
   const NextIcon = dir === "rtl" ? ChevronLeft : ChevronRight;
-  const imageTransform =
-    mirrorForRtl && dir === "rtl" ? "scaleX(-1)" : undefined;
 
   useEffect(() => {
     if (!autoAdvanceMs || autoAdvanceMs <= 0 || !hasMultiple || isPaused) {
@@ -79,37 +79,59 @@ export function CityHeroCarousel({
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-      {backdropClassName ? (
-        <Image
-          alt=""
-          aria-hidden="true"
-          className={backdropClassName}
-          fill
-          quality={90}
-          sizes={sizes}
-          src={currentImage}
-          style={{
-            objectFit: "cover",
-            objectPosition: "center center",
-            transform: imageTransform,
-          }}
-        />
-      ) : null}
-      <Image
-        alt={hasMultiple ? `${alt} (${safeIndex + 1} of ${total})` : alt}
-        className={imageClassName}
-        fetchPriority={safeIndex === 0 ? "high" : "auto"}
-        fill
-        loading={safeIndex === 0 ? "eager" : "lazy"}
-        quality={90}
-        sizes={sizes}
-        src={currentImage}
-        style={{
-          objectFit,
-          objectPosition: "center center",
-          transform: imageTransform,
-        }}
-      />
+      {safeImages.map((image, imageIndex) => {
+        const isActive = imageIndex === safeIndex;
+        const layerClassName = isActive
+          ? "opacity-100"
+          : "opacity-0";
+
+        return (
+          <div
+            aria-hidden={!isActive}
+            className={`pointer-events-none absolute inset-0 transition-opacity duration-1000 ease-in-out ${layerClassName}`}
+            key={`${image}-${imageIndex}`}
+          >
+            {backdropClassName ? (
+              <Image
+                alt=""
+                aria-hidden="true"
+                className={backdropClassName}
+                fill
+                quality={90}
+                sizes={sizes}
+                src={image}
+                style={{
+                  objectFit: "cover",
+                  objectPosition: "center center",
+                  transform: imageTransform,
+                }}
+              />
+            ) : null}
+            <Image
+              alt={
+                isActive
+                  ? hasMultiple
+                    ? `${alt} (${safeIndex + 1} of ${total})`
+                    : alt
+                  : ""
+              }
+              aria-hidden={!isActive}
+              className={imageClassName}
+              fetchPriority={imageIndex === 0 ? "high" : "auto"}
+              fill
+              loading={imageIndex <= 1 ? "eager" : "lazy"}
+              quality={90}
+              sizes={sizes}
+              src={image}
+              style={{
+                objectFit,
+                objectPosition: "center center",
+                transform: imageTransform,
+              }}
+            />
+          </div>
+        );
+      })}
 
       {hasMultiple ? (
         <div className="absolute right-5 top-5 z-10 flex items-center gap-2 rounded-full border border-white/25 bg-black/45 px-2 py-1 text-white shadow-sm backdrop-blur-md md:bottom-5 md:top-auto rtl:left-5 rtl:right-auto">

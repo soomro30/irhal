@@ -145,9 +145,10 @@ export async function HomeContent({ locale = "en" }: { locale?: HomeLocale }) {
           <CityHeroCarousel
             alt={isArabic ? "صور وجهات إرحل" : "Irhal city guide hero images"}
             autoAdvanceMs={6000}
+            backdropClassName="object-cover object-center opacity-55 blur-xl scale-105"
             dir={isArabic ? "rtl" : "ltr"}
             frameClassName="absolute inset-0 bg-ink"
-            imageClassName="object-cover object-center"
+            imageClassName="object-contain object-center"
             images={carouselImages}
             labels={{
               next: isArabic ? "عرض المدينة التالية" : "Show next city image",
@@ -157,11 +158,11 @@ export async function HomeContent({ locale = "en" }: { locale?: HomeLocale }) {
               slide: isArabic ? "صورة مدينة" : "City image",
             }}
             mirrorForRtl={false}
-            objectFit="cover"
+            objectFit="contain"
             sizes="100vw"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-black/5 to-transparent rtl:bg-gradient-to-l" />
-          <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/25 to-transparent" />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/45 via-black/10 to-transparent rtl:bg-gradient-to-l" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/25 to-transparent" />
 
           <div className="relative mx-auto flex h-full max-w-7xl flex-col justify-center px-5 pb-12 pt-6 md:pb-16 md:pt-8">
             <div className="max-w-3xl">
