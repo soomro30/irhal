@@ -1,16 +1,16 @@
-import { Heart, MapPin, ShieldCheck } from "lucide-react";
+import { Heart, ShieldCheck } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { DiscoverLink } from "@/components/discover-action";
+import { DiscoverLink, MapActionLink } from "@/components/discover-action";
 import { FeatureRail, type FeatureCardData } from "@/components/feature-rail";
 import type { CityGuide } from "@/lib/city-data";
 import { getGuideItemImage, hasGuideItemMedia } from "@/lib/city-presentation";
 import type { GuideItem } from "@/lib/guide-items";
-import { pathForGuideItem } from "@/lib/guide-items";
+import { guideItemGoogleMapsUrl, pathForGuideItem } from "@/lib/guide-items";
 import { cn } from "@/lib/utils";
 
 type GuideItemLabels = {
@@ -26,6 +26,11 @@ const defaultGuideItemLabels: GuideItemLabels = {
   savePrefix: "Save",
   verified: "Verified",
 };
+
+const guideItemMapLabel = (label: string, title: string) =>
+  label === defaultGuideItemLabels.map
+    ? `Open in Google Maps: ${title}`
+    : `${label}: ${title}`;
 
 export type GuideCardSortMode =
   | "media"
@@ -240,6 +245,8 @@ export function GuideItemCard({
   const itemPath = `${pathPrefix}${pathForGuideItem(city, item)}`;
   const visual = getGuideItemImage(item);
   const metaTags = guideItemMetaTags(item, locale);
+  const mapHref = guideItemGoogleMapsUrl(item, cityName);
+  const mapLabel = guideItemMapLabel(labels.map, item.title);
 
   return (
     <Card
@@ -320,15 +327,7 @@ export function GuideItemCard({
                 {labels.verified}
               </div>
             ) : null}
-            {item.mapUrl ? (
-              <a
-                className="inline-flex items-center gap-1 text-sm font-bold text-coastal hover:text-travel-navy"
-                href={item.mapUrl}
-              >
-                <MapPin aria-hidden="true" className="h-4 w-4" />
-                {labels.map}
-              </a>
-            ) : null}
+            {mapHref ? <MapActionLink href={mapHref} label={mapLabel} /> : null}
           </div>
         </div>
       </CardContent>
@@ -377,6 +376,7 @@ export function GuideItemRail({
 
   const cards: FeatureCardData[] = visibleItems.map((item, index) => {
     const visual = getGuideItemImage(item);
+    const mapHref = guideItemGoogleMapsUrl(item, city.name);
     return {
       key: item.id,
       href: `${pathPrefix}${pathForGuideItem(city, item)}`,
@@ -388,6 +388,8 @@ export function GuideItemRail({
       description: guideItemCardDescription(item),
       discoverLabel: labels.discover,
       eager: index < 4,
+      mapHref,
+      mapLabel: guideItemMapLabel(labels.map, item.title),
     };
   });
 

@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { DiscoverPill } from "@/components/discover-action";
+import { DiscoverLink, MapActionLink } from "@/components/discover-action";
 import { cn } from "@/lib/utils";
 
 export type FeatureCardData = {
@@ -19,6 +19,8 @@ export type FeatureCardData = {
   description?: string;
   discoverLabel: string;
   eager?: boolean;
+  mapHref?: string;
+  mapLabel?: string;
 };
 
 type RailLabels = {
@@ -36,9 +38,18 @@ export function FeatureCard({
   className?: string;
 }) {
   return (
-    <Link className={cn("group block h-full", className)} href={card.href}>
-      <article className="flex h-full flex-col overflow-hidden rounded-xl border border-ink/10 bg-white transition duration-300 group-hover:border-ink/25 group-hover:shadow-[0_18px_45px_rgba(17,17,17,0.10)]">
-        <div className="relative aspect-[4/3] w-full overflow-hidden bg-paper-deep">
+    <article
+      className={cn(
+        "group flex h-full flex-col overflow-hidden rounded-xl border border-ink/10 bg-white transition duration-300 hover:border-ink/25 hover:shadow-[0_18px_45px_rgba(17,17,17,0.10)]",
+        className,
+      )}
+    >
+      <div className="relative aspect-[4/3] w-full overflow-hidden bg-paper-deep">
+        <Link
+          aria-label={card.title}
+          className="absolute inset-0"
+          href={card.href}
+        >
           <Image
             alt={card.imageAlt}
             className="object-cover transition duration-500 group-hover:scale-105"
@@ -49,33 +60,40 @@ export function FeatureCard({
             src={card.image}
             style={{ objectPosition: card.objectPosition ?? "center" }}
           />
-          {card.eyebrow ? (
-            <span className="absolute left-3 top-3 max-w-[70%] truncate rounded-md bg-ink/85 px-2.5 py-1 text-[11px] font-black uppercase tracking-[0.12em] text-white shadow-sm backdrop-blur-sm rtl:left-auto rtl:right-3">
-              {card.eyebrow}
-            </span>
-          ) : null}
-          <span
-            aria-hidden="true"
-            className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-white/95 text-ink shadow-sm transition group-hover:text-irhal-red rtl:left-3 rtl:right-auto"
-          >
-            <Heart className="h-[18px] w-[18px]" />
+        </Link>
+        {card.eyebrow ? (
+          <span className="absolute left-3 top-3 max-w-[70%] truncate rounded-md bg-ink/85 px-2.5 py-1 text-[11px] font-black uppercase tracking-[0.12em] text-white shadow-sm backdrop-blur-sm rtl:left-auto rtl:right-3">
+            {card.eyebrow}
           </span>
-        </div>
-        <div className="flex flex-1 flex-col px-3.5 py-3">
-          <h3 className="line-clamp-2 text-[15px] font-bold leading-snug tracking-[0.005em] text-ink transition group-hover:text-irhal-red">
-            {card.title}
-          </h3>
-          {card.description ? (
-            <p className="mt-1.5 line-clamp-3 text-[13px] leading-[1.45] text-ink/85">
-              {card.description}
-            </p>
+        ) : null}
+        <span
+          aria-hidden="true"
+          className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-white/95 text-ink shadow-sm transition group-hover:text-irhal-red rtl:left-3 rtl:right-auto"
+        >
+          <Heart className="h-[18px] w-[18px]" />
+        </span>
+      </div>
+      <div className="flex flex-1 flex-col px-3.5 py-3">
+        <h3 className="line-clamp-2 text-[15px] font-bold leading-snug tracking-[0.005em] text-ink transition group-hover:text-irhal-red">
+          <Link href={card.href}>{card.title}</Link>
+        </h3>
+        {card.description ? (
+          <p className="mt-1.5 line-clamp-3 text-[13px] leading-[1.45] text-ink/85">
+            {card.description}
+          </p>
+        ) : null}
+        <div className="mt-auto flex items-center justify-between gap-2 pt-3">
+          <DiscoverLink href={card.href} label={card.discoverLabel} />
+          {card.mapHref ? (
+            <MapActionLink
+              className="ms-auto"
+              href={card.mapHref}
+              label={card.mapLabel ?? "Open in Google Maps"}
+            />
           ) : null}
-          <div className="mt-auto pt-3">
-            <DiscoverPill label={card.discoverLabel} />
-          </div>
         </div>
-      </article>
-    </Link>
+      </div>
+    </article>
   );
 }
 

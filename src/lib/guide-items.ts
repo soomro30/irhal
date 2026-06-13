@@ -53,6 +53,9 @@ export type GuideItem = {
   description: string;
   budget?: string;
   mapUrl?: string;
+  latitude?: number;
+  longitude?: number;
+  providerPlaceId?: string;
   imageUrl: string;
   imageAlt: string;
   translations?: Record<string, Record<string, unknown>>;
@@ -472,6 +475,65 @@ const canonicalArticleByGuideItemSlug: Record<
     articleSlug: "when-to-go",
     sectionSlug: "visitor-information",
   },
+};
+
+const googleMapsSearchUrl = (query: string, placeId?: string) => {
+  const params = new URLSearchParams({ api: "1", query });
+  if (placeId) params.set("query_place_id", placeId);
+  return `https://www.google.com/maps/search/?${params.toString()}`;
+};
+
+const isFiniteCoordinate = (value: unknown): value is number =>
+  typeof value === "number" && Number.isFinite(value);
+
+export const guideItemGoogleMapsUrl = (
+  item: GuideItem,
+  cityName?: string,
+): string | undefined => {
+  const coordinates =
+    isFiniteCoordinate(item.latitude) && isFiniteCoordinate(item.longitude)
+      ? `${item.latitude},${item.longitude}`
+      : undefined;
+
+  const detailCandidates = [
+    item.details.address,
+    item.details.location,
+    item.details.legacy_irhal_source_address,
+    item.details.legacy_irhal_source_location,
+    item.details.where,
+  ];
+  const primaryLocation =
+    item.originalLocation ??
+    detailCandidates.find(
+      (part): part is string => typeof part === "string" && Boolean(part.trim()),
+    );
+  const seen: string[] = [];
+  const queryParts = [
+    item.title,
+    primaryLocation,
+    item.area,
+    cityName,
+    coordinates,
+  ]
+    .map((part) => (typeof part === "string" ? part.trim() : ""))
+    .filter((part) => {
+      if (!part) return false;
+      const key = part.toLowerCase().replace(/\s+/g, " ");
+      if (
+        seen.some(
+          (existing) =>
+            existing === key || existing.includes(key) || key.includes(existing),
+        )
+      ) {
+        return false;
+      }
+      seen.push(key);
+      return true;
+    })
+    .join(", ");
+
+  if (queryParts) return googleMapsSearchUrl(queryParts, item.providerPlaceId);
+  return item.mapUrl;
 };
 
 export const canonicalArticlePathForGuideItem = (

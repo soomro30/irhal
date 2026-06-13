@@ -187,6 +187,9 @@ export type CityGuideItem = {
   description: string;
   budget?: string;
   mapUrl?: string;
+  latitude?: number;
+  longitude?: number;
+  providerPlaceId?: string;
   imageUrl: string;
   imageAlt: string;
   translations?: Record<string, Record<string, unknown>>;
@@ -229,7 +232,10 @@ export type CityGuide = {
       description?: string;
       geoStatus?: "provider-enrichment-required" | "verified";
       imageAlt?: string;
+      latitude?: number;
+      longitude?: number;
       mapUrl?: string;
+      providerPlaceId?: string;
       originalContent?: string[];
       title?: string;
     }

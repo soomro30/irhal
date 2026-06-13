@@ -770,6 +770,9 @@ const normalizeGuideItems = ({
         asString(doc.address) ||
         details.legacy_irhal_source_address ||
         details.legacy_irhal_source_location;
+      const latitude = asNumber(doc.latitude, Number.NaN);
+      const longitude = asNumber(doc.longitude, Number.NaN);
+      const providerPlaceId = asString(doc.providerPlaceId);
 
       const item: CityGuideItem = {
         id: String(doc.id),
@@ -786,6 +789,9 @@ const normalizeGuideItems = ({
         description: asString(doc.summary, `${title} in ${area || citySlug}.`),
         ...(asString(doc.budget) ? { budget: asString(doc.budget) } : {}),
         ...(asString(doc.mapUrl) ? { mapUrl: asString(doc.mapUrl) } : {}),
+        ...(Number.isFinite(latitude) ? { latitude } : {}),
+        ...(Number.isFinite(longitude) ? { longitude } : {}),
+        ...(providerPlaceId ? { providerPlaceId } : {}),
         imageUrl: primaryImage ?? guideItemFallbackImageByKind[kindValue],
         imageAlt: asString(doc.imageAlt, `${title} ${kindValue} in ${citySlug}`),
         ...(Object.keys(translations).length > 0 ? { translations } : {}),
@@ -1378,7 +1384,7 @@ const getCityGuideItemsByKind = cache(
   (slug: string, kind: CityGuideItem["kind"]) =>
     unstable_cache(
       () => loadCityGuideItemsByKind(slug, kind),
-      ["irhal-city-guide-items-v1", slug, kind],
+      ["irhal-city-guide-items-v3", slug, kind],
       {
         revalidate: cityCacheTtlSeconds,
         tags: [
