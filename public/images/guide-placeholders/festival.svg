@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 620" role="img" aria-label="Festival placeholder image">
+  <rect width="900" height="620" fill="#f5e7cf"/>
+  <path d="M0 405c115-52 185-58 290-18 96 37 181 48 292-15 94-53 189-54 318 8v240H0z" fill="#0f766e"/>
+  <circle cx="700" cy="150" r="74" fill="#f59e0b"/>
+  <path d="M120 160l75 55 88-55 75 55 88-55 75 55 88-55 75 55 88-55" fill="none" stroke="#20262b" stroke-width="18" stroke-linecap="round"/>
+  <g fill="#20262b"><rect x="180" y="270" width="42" height="135"/><rect x="345" y="245" width="42" height="160"/><rect x="510" y="285" width="42" height="120"/></g>
+  <g fill="#f8fafc"><circle cx="201" cy="250" r="35"/><circle cx="366" cy="225" r="35"/><circle cx="531" cy="265" r="35"/></g>
+  <text x="52" y="82" font-family="Arial, sans-serif" font-size="38" font-weight="700" fill="#20262b">Festivals</text>
+</svg>

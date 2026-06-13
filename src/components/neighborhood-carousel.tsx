@@ -1,6 +1,7 @@
 "use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -11,7 +12,10 @@ export type NeighborhoodCarouselItem = {
   description: string;
   external: boolean;
   href: string;
+  image?: string;
+  imageAlt?: string;
   name: string;
+  objectPosition?: string;
   slug: string;
 };
 
@@ -143,7 +147,22 @@ export function NeighborhoodCarousel({
               href={item.href}
               key={item.slug}
             >
-              <div className="relative flex aspect-[4/3] items-end overflow-hidden bg-gradient-to-br from-[#16325c] to-coastal p-4 text-white">
+              <div className="relative flex aspect-[4/3] items-end overflow-hidden rounded-lg bg-gradient-to-br from-[#16325c] to-coastal p-4 text-white shadow-sm transition duration-300 group-hover:shadow-[0_14px_38px_rgba(17,17,17,0.10)]">
+                {item.image ? (
+                  <>
+                    <Image
+                      alt={item.imageAlt ?? ""}
+                      className="object-cover transition duration-500 group-hover:scale-[1.03]"
+                      fill
+                      sizes="(min-width: 1280px) 720px, (min-width: 768px) 60vw, 100vw"
+                      src={item.image}
+                      style={{
+                        objectPosition: item.objectPosition ?? "center",
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/72 via-black/18 to-black/5" />
+                  </>
+                ) : null}
                 <span className="absolute top-3 text-6xl font-black leading-none text-white/15 ltr:right-4 rtl:left-4">
                   {String(index + 1).padStart(2, "0")}
                 </span>

@@ -1015,15 +1015,26 @@ const getSearchDocuments = async (locale: SearchLocale) => {
 };
 
 export const searchSite = async ({
+  citySlug,
   limit = 8,
   locale = "en",
   query,
 }: {
+  citySlug?: string;
   limit?: number;
   locale?: SearchLocale;
   query: string;
 }): Promise<SiteSearchResult[]> => {
   const normalizedQuery = normalize(query);
+  const normalizedCitySlug = citySlug?.trim().toLowerCase();
+  const cityScopedDocuments = (documents: SearchDocument[]) =>
+    normalizedCitySlug
+      ? documents.filter(
+          (document) =>
+            document.id.includes(`:${normalizedCitySlug}`) ||
+            document.href.includes(`/city/${normalizedCitySlug}`),
+        )
+      : documents;
 
   if (isCMSConfigured() && normalizedQuery.length >= 2) {
     try {
@@ -1032,7 +1043,7 @@ export const searchSite = async ({
         normalizedQuery,
         limit,
       );
-      const rankedSqlDocuments = sqlDocuments
+      const rankedSqlDocuments = cityScopedDocuments(sqlDocuments)
         .map((document) => ({
           ...document,
           score: documentScore(document, normalizedQuery),
@@ -1051,7 +1062,7 @@ export const searchSite = async ({
         normalizedQuery,
         limit,
       );
-      const rankedIndexedDocuments = indexedDocuments
+      const rankedIndexedDocuments = cityScopedDocuments(indexedDocuments)
         .map((document) => ({
           ...document,
           score: documentScore(document, normalizedQuery),
@@ -1076,7 +1087,7 @@ export const searchSite = async ({
     return [];
   }
 
-  const rankedDocuments = documents
+  const rankedDocuments = cityScopedDocuments(documents)
     .map((document) => ({
       ...document,
       score: documentScore(document, normalizedQuery),

@@ -21,6 +21,7 @@ import {
   cities as localCities,
   getCityBySlug as getLocalCityBySlug,
 } from "./city-data";
+import { guidePlaceholderImageByKind } from "./image-placeholders";
 
 type CMSDoc = Record<string, unknown> & {
   id: number | string;
@@ -32,6 +33,7 @@ export type CityNavItem = {
   heroImageUrl?: string;
   name: string;
   slug: string;
+  translations?: LocaleTranslations;
 };
 
 const isProduction = process.env.NODE_ENV === "production";
@@ -195,16 +197,7 @@ const mergeGuideItemArabicFields = (
     : translations;
 };
 
-const guideItemFallbackImageByKind: Record<CityGuideItem["kind"], string> = {
-  family: "/images/karachi-guide/family.svg",
-  festival: "/images/karachi-guide/festival.svg",
-  hotel: "/images/karachi-guide/hotel.svg",
-  masjid: "/images/karachi-guide/masjid.svg",
-  place: "/images/karachi-guide/place.svg",
-  restaurant: "/images/karachi-guide/restaurant.svg",
-  shopping: "/images/karachi-guide/shopping.svg",
-  tour: "/images/karachi-guide/tour.svg",
-};
+const guideItemFallbackImageByKind = guidePlaceholderImageByKind;
 
 const isGuideItemKind = (value: string): value is CityGuideItem["kind"] =>
   value in guideItemFallbackImageByKind;
@@ -276,7 +269,7 @@ const mediaCandidateUrl = (value: unknown) => {
 const guideItemMediaUrl = (value: unknown) => {
   const media = asRecord(value);
   const usageStatus = asString(media.usageStatus);
-  if (usageStatus === "needs-replacement" || usageStatus === "archived") {
+  if (usageStatus !== "approved") {
     return undefined;
   }
 
@@ -371,6 +364,9 @@ const normalizeGuideSectionBlocks = (doc: CMSDoc): GuideBlock[] => {
       ...(title
         ? [
             {
+              articleSlug: asString(article.slug),
+              imageAlt: asString(article.imageAlt),
+              imageUrl: asString(article.imageUrl),
               type: "paragraph" as const,
               style: "Heading 2",
               text: title,
@@ -558,18 +554,55 @@ const normalizeItinerary = (doc: CMSDoc): Itinerary => ({
   durationDays: asNumber(doc.durationDays, 1),
   audience: asString(doc.audience, "first-time"),
   summary: asString(doc.summary),
+  intro: asString(doc.intro) || undefined,
+  planning: (() => {
+    const planning = asRecord(doc.planning);
+    const meals = asRecord(planning.meals);
+    const value = {
+      meals: {
+        breakfast: asString(meals.breakfast) || undefined,
+        dinner: asString(meals.dinner) || undefined,
+        lunch: asString(meals.lunch) || undefined,
+      },
+      stay: asString(planning.stay) || undefined,
+      transport: asString(planning.transport) || undefined,
+    };
+    const hasMeals = Object.values(value.meals).some(Boolean);
+    const hasPlanning = Boolean(value.stay || value.transport || hasMeals);
+
+    return hasPlanning
+      ? {
+          ...(hasMeals ? { meals: value.meals } : {}),
+          ...(value.stay ? { stay: value.stay } : {}),
+          ...(value.transport ? { transport: value.transport } : {}),
+        }
+      : undefined;
+  })(),
   translations: normalizeTranslations(doc.translations),
   days: asArray(doc.days).map((item) => {
     const day = asRecord(item);
+    const relationshipStops = asArray(day.stops)
+      .map((stop) => {
+        if (typeof stop === "string") return stop;
+        return asString(asRecord(stop).slug);
+      })
+      .filter(Boolean);
+    const slugStops = asString(day.stopSlugs)
+      .split(/[\n,]+/)
+      .map((stop) => stop.trim())
+      .filter(Boolean);
+
     return {
+      breakfast: asString(day.breakfast) || undefined,
       dayNumber: asNumber(day.dayNumber, 1),
+      description: asString(day.description) || undefined,
+      dinner: asString(day.dinner) || undefined,
+      lunch: asString(day.lunch) || undefined,
+      pacing: asString(day.pacing) || undefined,
       theme: asString(day.theme),
-      stops: asArray(day.stops)
-        .map((stop) => {
-          if (typeof stop === "string") return stop;
-          return asString(asRecord(stop).slug);
-        })
-        .filter(Boolean),
+      start: asString(day.start) || undefined,
+      stops: relationshipStops.length > 0 ? relationshipStops : slugStops,
+      transport: asString(day.transport) || undefined,
       routeNotes: asString(day.routeNotes),
     };
   }),
@@ -784,6 +817,7 @@ const localCityNavItems = (): CityNavItem[] =>
     heroImageUrl: city.heroImageUrl,
     name: city.name,
     slug: city.slug,
+    translations: city.translations,
   }));
 
 const loadCityNavItems = async (): Promise<CityNavItem[]> => {
@@ -814,9 +848,11 @@ const loadCityNavItems = async (): Promise<CityNavItem[]> => {
         return {
           cardImageUrl: mediaUrl(doc.heroImage, ["card", "hero"]) || undefined,
           country: relationshipName(doc.country),
-          heroImageUrl: mediaUrl(doc.heroImage, ["hero", "card"]) || undefined,
+          heroImageUrl:
+            mediaUrl(doc.heroImage, ["original", "hero", "card"]) || undefined,
           name: asString(doc.name),
           slug,
+          translations: normalizeTranslations(doc.translations),
         };
       })
       .filter((item) => item.name && item.slug);
@@ -830,7 +866,7 @@ const loadCityNavItems = async (): Promise<CityNavItem[]> => {
 
 const cachedLoadCityNavItems = unstable_cache(
   loadCityNavItems,
-  ["irhal-city-nav-v3"],
+  ["irhal-city-nav-v5"],
   {
     revalidate: cityCacheTtlSeconds,
     tags: ["irhal-city-nav", "irhal-city"],
@@ -954,7 +990,7 @@ const loadCityShellBySlug = async (slug: string): Promise<CityShell | undefined>
       });
       const mediaUrlById = new Map<number | string, string>();
       for (const mediaDoc of mediaResult.docs as CMSDoc[]) {
-        const url = mediaUrl(mediaDoc, ["hero", "card"]);
+        const url = mediaUrl(mediaDoc, ["original", "hero", "card"]);
         if (url) mediaUrlById.set(mediaDoc.id, url);
       }
       for (const imageId of cityHeroGalleryImageIds) {

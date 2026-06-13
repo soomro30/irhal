@@ -3,8 +3,9 @@ import Link from "next/link";
 
 import { DiscoverPill } from "@/components/discover-action";
 import type { CityNavItem } from "@/lib/city-source";
+import { genericGuidePlaceholderImage } from "@/lib/image-placeholders";
 
-const fallbackCityImage = "/images/karachi-guide/place.svg";
+const fallbackCityImage = genericGuidePlaceholderImage;
 
 export function CityImageCard({
   city,
@@ -21,8 +22,8 @@ export function CityImageCard({
     <Link
       className={
         variant === "portrait"
-          ? "group relative block aspect-[3/4] overflow-hidden rounded-xl bg-ink text-white shadow-sm ring-1 ring-ink/10 transition hover:-translate-y-0.5 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-irhal-red"
-          : "group relative block aspect-[4/3] overflow-hidden rounded-2xl bg-ink text-white shadow-sm ring-1 ring-ink/10 transition hover:-translate-y-0.5 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-irhal-red"
+          ? "group relative block aspect-[3/4] overflow-hidden rounded-lg bg-ink text-white shadow-sm ring-1 ring-ink/10 transition hover:-translate-y-0.5 hover:shadow-[0_14px_38px_rgba(17,17,17,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-irhal-red"
+          : "group relative block aspect-[4/3] overflow-hidden rounded-lg bg-ink text-white shadow-sm ring-1 ring-ink/10 transition hover:-translate-y-0.5 hover:shadow-[0_14px_38px_rgba(17,17,17,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-irhal-red"
       }
       href={href}
     >
@@ -30,11 +31,11 @@ export function CityImageCard({
         alt=""
         className="object-cover transition duration-500 group-hover:scale-105"
         fill
-        quality={variant === "portrait" ? 82 : 75}
+        quality={90}
         sizes={
           variant === "portrait"
-            ? "(max-width: 1024px) 88vw, 440px"
-            : "(max-width: 1024px) 100vw, 340px"
+            ? "(max-width: 1024px) 100vw, 960px"
+            : "(max-width: 1024px) 100vw, 960px"
         }
         src={city.cardImageUrl || city.heroImageUrl || fallbackCityImage}
       />

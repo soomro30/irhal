@@ -5,6 +5,9 @@ import * as migration_20260530_163000_guide_item_neighborhood_relationship from 
 import * as migration_20260601_101500_guide_item_editorial_address from './20260601_101500_guide_item_editorial_address';
 import * as migration_20260607_065408_site_settings_global from './20260607_065408_site_settings_global';
 import * as migration_20260610_181000_search_typeahead_indexes from './20260610_181000_search_typeahead_indexes';
+import * as migration_20260611_115000_site_settings_guide_card_sort from './20260611_115000_site_settings_guide_card_sort';
+import * as migration_20260612_060000_itinerary_day_stop_slugs from './20260612_060000_itinerary_day_stop_slugs';
+import * as migration_20260612_080000_itinerary_planning_details from './20260612_080000_itinerary_planning_details';
 
 export const migrations = [
   {
@@ -41,5 +44,20 @@ export const migrations = [
     up: migration_20260610_181000_search_typeahead_indexes.up,
     down: migration_20260610_181000_search_typeahead_indexes.down,
     name: '20260610_181000_search_typeahead_indexes',
+  },
+  {
+    up: migration_20260611_115000_site_settings_guide_card_sort.up,
+    down: migration_20260611_115000_site_settings_guide_card_sort.down,
+    name: '20260611_115000_site_settings_guide_card_sort',
+  },
+  {
+    up: migration_20260612_060000_itinerary_day_stop_slugs.up,
+    down: migration_20260612_060000_itinerary_day_stop_slugs.down,
+    name: '20260612_060000_itinerary_day_stop_slugs',
+  },
+  {
+    up: migration_20260612_080000_itinerary_planning_details.up,
+    down: migration_20260612_080000_itinerary_planning_details.down,
+    name: '20260612_080000_itinerary_planning_details',
   },
 ];

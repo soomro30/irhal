@@ -104,7 +104,10 @@ export function PracticalCityInfo({
   const isArabic = locale === "ar";
   const localePrefix = isArabic ? "/ar" : "/en";
   const cityBasePath = `${localePrefix}/city/${city.slug}`;
-  const cityName = isArabic && city.slug === "karachi" ? "كراتشي" : city.name;
+  const cityTranslation = city.translations?.[locale] ?? {};
+  const cityName =
+    (typeof cityTranslation.name === "string" && cityTranslation.name) ||
+    (isArabic && city.slug === "karachi" ? "كراتشي" : city.name);
   const fastFacts = tableByPurpose(city, "fast_facts");
   const climate = tableByPurpose(city, "climate");
   const emergency = tableByPurpose(city, "emergency_numbers");
@@ -116,16 +119,43 @@ export function PracticalCityInfo({
   const emergencyItems = emergencySummary(emergency);
   const holidayItems = holidaySummary(holidays);
   const languageValue = fastFact(fastFacts, "Languages");
-  const currencyValue = fastFact(fastFacts, "Currency") ?? city.currency;
+  const translatedCurrency =
+    typeof cityTranslation.currency === "string"
+      ? cityTranslation.currency
+      : city.currency === "GBP"
+        ? "الجنيه الإسترليني"
+        : city.currency === "PKR"
+          ? "روبية باكستانية"
+          : city.currency;
+  const translatedLanguages =
+    typeof cityTranslation.languages === "string"
+      ? cityTranslation.languages
+      : city.slug === "karachi"
+        ? "الأردية والإنجليزية"
+        : city.languages
+            .map((language) =>
+              language === "English"
+                ? "الإنجليزية"
+                : language === "Arabic"
+                  ? "العربية"
+                  : language,
+            )
+            .join("، ");
+  const translatedTimezone =
+    city.timezone === "Europe/London"
+      ? "توقيت لندن"
+      : city.timezone === "Asia/Karachi"
+        ? "توقيت كراتشي"
+        : city.timezone;
+  const currencyValue = isArabic
+    ? translatedCurrency
+    : fastFact(fastFacts, "Currency") ?? city.currency;
   const arabicClimatePrimary =
     "تعد الأشهر من نوفمبر إلى فبراير الأنسب للزيارة، خصوصًا للأنشطة الخارجية والمطاعم والمشي على الواجهة البحرية.";
   const arabicClimateSecondary =
     "يوليو: حرارة ورطوبة مرتفعة؛ قد تؤثر أمطار الموسم على الحركة داخل المدينة.";
   const arabicExchangeText =
     "استخدم مصدر صرف معتمد قبل إعداد الميزانية أو نشر الأسعار، فأسعار الصرف قابلة للتغير.";
-  const arabicLanguageValue =
-    "الأردية هي اللغة الأكثر استخدامًا، وتنتشر الإنجليزية في الفنادق والمطاعم والمناطق التجارية، مع حضور لغات محلية أخرى.";
-
   const cards: PracticalInfoCard[] = [
     {
       title: isArabic ? "الطقس وأفضل وقت للزيارة" : "Weather and When To Go",
@@ -184,11 +214,11 @@ export function PracticalCityInfo({
     {
       title: isArabic ? "اللغة والعملة" : "Language and Currency",
       icon: "language",
-      badge: city.currency,
+      badge: isArabic ? translatedCurrency : city.currency,
       body:
-        isArabic ? arabicLanguageValue : languageValue ??
+        isArabic ? translatedLanguages : languageValue ??
         `${city.languages.join(", ")} are represented in this guide.`,
-      detail: isArabic ? `المنطقة الزمنية: ${city.timezone}` : `Time zone: ${city.timezone}`,
+      detail: isArabic ? `المنطقة الزمنية: ${translatedTimezone}` : `Time zone: ${city.timezone}`,
       href: `${cityBasePath}/section/visitor-information`,
     },
   ];

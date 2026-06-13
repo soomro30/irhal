@@ -1,12 +1,12 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #1E2D4B;
+  --background: #fafafa;
+  --foreground: #111111;
   --travel-navy: #1a2b49;
   --paper: #ffffff;
-  --paper-deep: #f2f4f5;
-  --ink: #1E2D4B;
+  --paper-deep: #f3f4f2;
+  --ink: #111111;
   --coastal: #006d77;
   --saffron: #f4b942;
   --date: #7b3f2a;
@@ -54,6 +54,12 @@
   --font-heading: var(--font-trip-sans);
   --font-mono: var(--font-geist-mono);
   --font-arabic: var(--font-noto-arabic);
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1rem;
+  --radius-3xl: 1rem;
   /* Site shell width: widen the shared `max-w-7xl` container used across the
      portal (28 files) to a fuller, Lonely-Planet-style enterprise width. */
   --container-7xl: 90rem;

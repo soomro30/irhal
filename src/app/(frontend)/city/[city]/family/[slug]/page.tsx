@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import { GuideItemDetail } from "@/components/guide-item-detail";
 import { getCityBySlug } from "@/lib/city-source";
@@ -23,7 +23,21 @@ export async function generateFamilyMetadata(
   const { city: citySlug, slug } = await params;
   const city = await getCityBySlug(citySlug);
   const item = city ? getGuideItem(city, "family", slug) : undefined;
-  if (!city || !item) return {};
+  const canonicalPlace = city ? getGuideItem(city, "place", slug) : undefined;
+  if (!city) return {};
+
+  if (!item && canonicalPlace) {
+    const displayItem = localizeGuideItem(canonicalPlace, locale);
+    const cityName = localizedCityName(city, locale);
+
+    return pageMetadata({
+      title: `${displayItem.title} | ${cityName}`,
+      description: displayItem.description,
+      path: `${locale === "ar" ? "/ar" : "/en"}/city/${city.slug}/place/${canonicalPlace.slug}`,
+    });
+  }
+
+  if (!item) return {};
 
   const displayItem = localizeGuideItem(item, locale);
   const cityName = localizedCityName(city, locale);
@@ -46,7 +60,15 @@ export async function FamilyPageContent({
   const { city: citySlug, slug } = await params;
   const city = await getCityBySlug(citySlug);
   const item = city ? getGuideItem(city, "family", slug) : undefined;
-  if (!city || !item) notFound();
+  if (!city) notFound();
+  if (!item) {
+    const canonicalPlace = getGuideItem(city, "place", slug);
+    if (canonicalPlace) {
+      const pathPrefix = locale === "ar" ? "/ar" : "/en";
+      redirect(`${pathPrefix}/city/${city.slug}/place/${canonicalPlace.slug}`);
+    }
+    notFound();
+  }
 
   return (
     <GuideItemDetail

@@ -36,7 +36,8 @@ export function ImageGallery({
           className="object-cover"
           fill
           preload
-          sizes="(min-width: 1024px) 60vw, 100vw"
+          quality={90}
+          sizes="(min-width: 1024px) 960px, 100vw"
           src={images[safeIndex]}
         />
       </div>

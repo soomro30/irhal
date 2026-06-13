@@ -25,18 +25,26 @@ const staticConnectLinks = {
   ],
 } satisfies Record<"ar" | "en", FooterLink[]>;
 
+const arabicCityNames: Record<string, string> = {
+  karachi: "كراتشي",
+  london: "لندن",
+};
+
 const cityLinkLabel = (
   city: CityNavItem,
   suffix: string,
   isArabic: boolean,
 ) => {
   if (!isArabic) return `${city.name} ${suffix}`;
-  if (city.slug === "karachi") {
-    if (suffix === "Travel Guide") return "دليل كراتشي";
-    if (suffix === "Shopping") return "تسوق كراتشي";
-    if (suffix === "Hotels") return "فنادق كراتشي";
-  }
-  return `${suffix} ${city.name}`;
+  const translatedName = city.translations?.ar?.name;
+  const cityName =
+    typeof translatedName === "string" && translatedName
+      ? translatedName
+      : arabicCityNames[city.slug] ?? city.name;
+  if (suffix === "Travel Guide") return `دليل ${cityName}`;
+  if (suffix === "Shopping") return `تسوق ${cityName}`;
+  if (suffix === "Hotels") return `فنادق ${cityName}`;
+  return `${suffix} ${cityName}`;
 };
 
 const cityLinks = (

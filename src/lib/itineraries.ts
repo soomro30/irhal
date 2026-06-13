@@ -11,6 +11,7 @@ import {
   type GuideItem,
   type GuideItemKind,
 } from "./guide-items";
+import { genericGuidePlaceholderImage } from "./image-placeholders";
 
 type PageLocale = "en" | "ar";
 
@@ -21,12 +22,15 @@ export type ResolvedItineraryStop = {
   eyebrow: string;
   href?: string;
   imageAlt: string;
+  primaryImageUrl?: string;
   imageUrl: string;
   mapUrl?: string;
 };
 
-const placeholderImage = "/images/karachi-guide/place.svg";
+const placeholderImage = genericGuidePlaceholderImage;
 const isPlaceholderImage = (imageUrl: string) => imageUrl.endsWith(".svg");
+const isUsableContentImage = (imageUrl: string | undefined): imageUrl is string =>
+  typeof imageUrl === "string" && !isPlaceholderImage(imageUrl);
 
 const arabicTextPattern = /[\u0600-\u06ff]/;
 
@@ -194,6 +198,7 @@ const stopFromGuideItem = ({
     eyebrow: displayItem.eyebrow,
     href: `${locale === "ar" ? "/ar" : "/en"}${guideItemPath(city, item)}`,
     imageAlt: displayItem.imageAlt,
+    primaryImageUrl: item.cmsImageUrl,
     imageUrl: getGuideItemImage(item).image,
     mapUrl: item.mapUrl,
   };
@@ -214,6 +219,7 @@ const stopFromListing = ({
   eyebrow: listing.listingType,
   href: `${locale === "ar" ? "/ar" : "/en"}${pathForListing(city, listing)}`,
   imageAlt: `${listing.name} in ${city.name}`,
+  primaryImageUrl: city.heroImageUrl,
   imageUrl: city.heroImageUrl || placeholderImage,
   mapUrl: listing.mapUrl,
 });
@@ -281,6 +287,7 @@ export const itineraryHeroImage = ({
   );
 
   return (
+    stops.map((stop) => stop.primaryImageUrl).find(isUsableContentImage) ||
     stops.find((stop) => !isPlaceholderImage(stop.imageUrl))?.imageUrl ||
     city.heroImageUrl ||
     stops[0]?.imageUrl ||
@@ -304,6 +311,13 @@ export const itineraryCardImageMap = ({
     const stops = resolveItineraryStops({ city, itinerary, locale }).flatMap(
       (day) => day.stops,
     );
+    const primaryCandidates = Array.from(
+      new Set(
+        stops
+          .map((stop) => stop.primaryImageUrl)
+          .filter(isUsableContentImage),
+      ),
+    );
     const candidates = Array.from(
       new Set(
         stops
@@ -312,6 +326,8 @@ export const itineraryCardImageMap = ({
       ),
     );
     const selected =
+      primaryCandidates.find((imageUrl) => !usedImages.has(imageUrl)) ??
+      primaryCandidates[0] ??
       candidates.find((imageUrl) => !usedImages.has(imageUrl)) ??
       candidates[0] ??
       city.heroImageUrl ??

@@ -1,13 +1,19 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import Image from "next/image";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { DiscoverPill } from "@/components/discover-action";
-import { GuideItemGrid, GuideItemRail } from "@/components/guide-item-card";
+import {
+  GuideItemGrid,
+  GuideItemRail,
+  sortGuideItemsForCards,
+} from "@/components/guide-item-card";
 import { JsonLd } from "@/components/json-ld";
 import { PageShell } from "@/components/page-shell";
 import { SectionSidebar } from "@/components/section-sidebar";
+import { sectionImage } from "@/components/guide-section-grid";
 import { Card, CardContent } from "@/components/ui/card";
 import { getGuideSection } from "@/lib/city-data";
 import { getGuideItemImage } from "@/lib/city-presentation";
@@ -18,6 +24,7 @@ import {
   getGuideItemsForSection,
   getLocalizedGuideSectionCopy,
   guideKindOrder,
+  hasArabicGuideItemCopy,
   isPublicGuideSection,
   kindPlural,
   kindSingular,
@@ -28,6 +35,7 @@ import {
   type GuideItemKind,
 } from "@/lib/guide-items";
 import { breadcrumbJsonLd, localizedCityName, pageMetadata } from "@/lib/seo";
+import { getSiteSettings } from "@/lib/site-settings";
 
 const PAGE_SIZE = 24;
 
@@ -38,7 +46,10 @@ const clampPage = (raw: string | undefined, totalPages: number) => {
 };
 
 // Compact, accessible page list with ellipses (e.g. 1 … 4 5 6 … 12).
-const buildPageList = (current: number, total: number): (number | "ellipsis")[] => {
+const buildPageList = (
+  current: number,
+  total: number,
+): (number | "ellipsis")[] => {
   if (total <= 7) {
     return Array.from({ length: total }, (_, index) => index + 1);
   }
@@ -104,19 +115,32 @@ export async function CityGuideSectionPageContent({
   const guideSection = city ? getGuideSection(city, sectionSlug) : undefined;
   if (!city || !guideSection || !isPublicGuideSection(sectionSlug)) notFound();
 
+  const siteSettings = await getSiteSettings();
+  const guideCardSortMode = siteSettings.guideCardSortMode;
   const items = getGuideItemsForSection(city, sectionSlug);
-  const localizedItems = items.map((item) => localizeGuideItem(item, locale));
+  const sortedItems = sortGuideItemsForCards(items, guideCardSortMode);
+  const localizedItems = sortedItems.map((item) =>
+    localizeGuideItem(item, locale),
+  );
   const isArabic = locale === "ar";
   const articles = getGuideArticlesForSection(city, sectionSlug);
   const localizedArticles = articles.map((article) =>
     localizeGuideArticle(article, locale),
+  );
+  const articleTitleKeys = new Set(
+    localizedItems.map((item) => item.title.trim().toLowerCase()),
+  );
+  const supplementalArticles = localizedArticles.filter(
+    (article) => !articleTitleKeys.has(article.title.trim().toLowerCase()),
   );
   const localePrefix = isArabic ? "/ar" : "/en";
 
   const allItems = getGuideItems(city);
   const currentKind = items[0]?.kind;
   const itemsByKind = (kind: GuideItemKind) =>
-    allItems.filter((item) => item.kind === kind);
+    allItems
+      .filter((item) => item.kind === kind)
+      .filter((item) => !isArabic || hasArabicGuideItemCopy(item));
   const relatedKinds = guideKindOrder.filter(
     (kind) => kind !== currentKind && itemsByKind(kind).length > 0,
   );
@@ -125,7 +149,9 @@ export async function CityGuideSectionPageContent({
     `${localePrefix}${pathForGuideItem(city, item)}`;
 
   const sidebarRelatedItems = relatedKinds
-    .flatMap((kind) => itemsByKind(kind).slice(0, 2))
+    .flatMap((kind) =>
+      sortGuideItemsForCards(itemsByKind(kind), guideCardSortMode).slice(0, 2),
+    )
     .slice(0, 6)
     .map((item) => {
       const localized = localizeGuideItem(item, locale);
@@ -138,11 +164,14 @@ export async function CityGuideSectionPageContent({
     });
 
   const relatedRails = relatedKinds.slice(0, 3).map((kind) => {
-    const kindItems = itemsByKind(kind);
+    const kindItems = sortGuideItemsForCards(
+      itemsByKind(kind),
+      guideCardSortMode,
+    );
     return {
       kind,
       href: `${localePrefix}/city/${city.slug}/section/${kindItems[0].sectionSlug}`,
-      items: kindItems.slice(0, 10).map((item) => localizeGuideItem(item, locale)),
+      items: kindItems.map((item) => localizeGuideItem(item, locale)),
     };
   });
   const cityName =
@@ -167,8 +196,18 @@ export async function CityGuideSectionPageContent({
   const sectionTitle = sectionCopy.title;
   const sectionSummary = sectionCopy.summary;
   const itemLabels = isArabic
-    ? { discover: "اكتشف", map: "الخريطة", savePrefix: "حفظ", verified: "تم التحقق" }
-    : { discover: "Discover", map: "Map", savePrefix: "Save", verified: "Verified" };
+    ? {
+        discover: "اكتشف",
+        map: "الخريطة",
+        savePrefix: "حفظ",
+        verified: "تم التحقق",
+      }
+    : {
+        discover: "Discover",
+        map: "Map",
+        savePrefix: "Save",
+        verified: "Verified",
+      };
   const copy = isArabic
     ? {
         badge: "قسم دليل المدينة",
@@ -177,6 +216,7 @@ export async function CityGuideSectionPageContent({
         itemsIntro:
           "تصفّح الأبرز أدناه، ثم افتح أي مكان للاطلاع على الخريطة وملاحظات المنطقة والتفاصيل العملية.",
         keepExploring: `اكتشف المزيد في ${cityName}`,
+        moreArticles: `المزيد من ${sectionTitle}`,
         nextPage: "التالي",
         prevPage: "السابق",
         railSubtitle: `واصل استكشاف ${cityName} وأضف المزيد من المحطات إلى خطتك.`,
@@ -189,6 +229,7 @@ export async function CityGuideSectionPageContent({
         itemsIntro:
           "Browse the highlights below, then open any place for maps, area notes, and practical details.",
         keepExploring: `Keep exploring ${cityName}`,
+        moreArticles: `More ${sectionTitle}`,
         nextPage: "Next",
         prevPage: "Previous",
         railSubtitle: `Keep exploring ${cityName} and add more stops to your plan.`,
@@ -220,14 +261,17 @@ export async function CityGuideSectionPageContent({
       locale={locale}
     >
       <JsonLd
-        data={breadcrumbJsonLd([
-          { name: "Home", path: "/" },
-          { name: city.name, path: cityBasePath },
-          {
-            name: sectionTitle,
-            path: `${cityBasePath}/section/${guideSection.slug}`,
-          },
-        ], locale)}
+        data={breadcrumbJsonLd(
+          [
+            { name: "Home", path: "/" },
+            { name: city.name, path: cityBasePath },
+            {
+              name: sectionTitle,
+              path: `${cityBasePath}/section/${guideSection.slug}`,
+            },
+          ],
+          locale,
+        )}
       />
       <main dir={isArabic ? "rtl" : "ltr"}>
         <section className="border-b border-ink/10 bg-white">
@@ -274,7 +318,10 @@ export async function CityGuideSectionPageContent({
                         cityName={cityName}
                         items={pageItems}
                         labels={itemLabels}
+                        locale={locale}
                         pathPrefix={localePrefix}
+                        preserveOrder
+                        sortMode={guideCardSortMode}
                       />
                     </div>
 
@@ -354,24 +401,97 @@ export async function CityGuideSectionPageContent({
                         )}
                       </nav>
                     ) : null}
+
+                    {supplementalArticles.length > 0 ? (
+                      <div className="mt-10">
+                        <p className="text-xs font-black uppercase tracking-[0.22em] text-irhal-red">
+                          {copy.moreArticles}
+                        </p>
+                        <div className="mt-4 grid gap-5 sm:grid-cols-2">
+                          {supplementalArticles.map((article) => (
+                            <Link
+                              className="group block h-full"
+                              href={`${cityBasePath}/section/${sectionSlug}/${article.slug}`}
+                              key={article.slug}
+                            >
+                              <Card className="flex h-full flex-col rounded-lg border-ink/10 bg-white shadow-none transition group-hover:border-irhal-red/35">
+                                <div className="relative mx-4 mt-4 h-[174px] overflow-hidden rounded-lg bg-paper-deep shadow-sm transition duration-300 group-hover:shadow-[0_14px_38px_rgba(17,17,17,0.10)]">
+                                  <Image
+                                    alt={
+                                      article.imageAlt ??
+                                      `${article.title} guide for ${cityName}`
+                                    }
+                                    className="object-cover transition duration-500 group-hover:scale-105"
+                                    fill
+                                    quality={90}
+                                    sizes="(min-width: 1280px) 760px, (min-width: 640px) 72vw, 100vw"
+                                    src={
+                                      article.imageUrl ||
+                                      sectionImage(sectionSlug)
+                                    }
+                                  />
+                                  <span className="absolute left-3 top-3 max-w-[80%] truncate rounded-md bg-[#16325c] px-2.5 py-1 text-xs font-bold leading-none text-white rtl:left-auto rtl:right-3">
+                                    {sectionTitle}
+                                  </span>
+                                </div>
+                                <CardContent className="flex flex-1 flex-col p-4">
+                                  <h3 className="line-clamp-2 text-lg font-bold leading-6 text-travel-navy transition group-hover:text-irhal-red">
+                                    {article.title}
+                                  </h3>
+                                  <p className="mt-2 line-clamp-2 text-sm leading-6 text-travel-navy/80">
+                                    {article.summary}
+                                  </p>
+                                  <div className="mt-auto pt-5">
+                                    <DiscoverPill
+                                      label={isArabic ? "اكتشف" : "Discover"}
+                                    />
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
                   </section>
                 ) : localizedArticles.length > 0 ? (
                   <section className="grid gap-5 sm:grid-cols-2">
                     {localizedArticles.map((article) => (
                       <Link
+                        className="group block h-full"
                         href={`${cityBasePath}/section/${sectionSlug}/${article.slug}`}
                         key={article.slug}
                       >
-                        <Card className="h-full bg-white transition hover:-translate-y-0.5 hover:border-coastal/40">
-                          <CardContent className="flex h-full flex-col p-6">
-                            <h3 className="text-xl font-black leading-tight text-ink">
+                        <Card className="flex h-full flex-col rounded-lg border-ink/10 bg-white shadow-none transition group-hover:border-irhal-red/35">
+                          <div className="relative mx-4 mt-4 h-[174px] overflow-hidden rounded-lg bg-paper-deep shadow-sm transition duration-300 group-hover:shadow-[0_14px_38px_rgba(17,17,17,0.10)]">
+                            <Image
+                              alt={
+                                article.imageAlt ??
+                                `${article.title} guide for ${cityName}`
+                              }
+                              className="object-cover transition duration-500 group-hover:scale-105"
+                              fill
+                              quality={90}
+                              sizes="(min-width: 1280px) 760px, (min-width: 640px) 72vw, 100vw"
+                              src={
+                                article.imageUrl || sectionImage(sectionSlug)
+                              }
+                            />
+                            <span className="absolute left-3 top-3 max-w-[80%] truncate rounded-md bg-[#16325c] px-2.5 py-1 text-xs font-bold leading-none text-white rtl:left-auto rtl:right-3">
+                              {sectionTitle}
+                            </span>
+                          </div>
+                          <CardContent className="flex flex-1 flex-col p-4">
+                            <h3 className="line-clamp-2 text-lg font-bold leading-6 text-travel-navy transition group-hover:text-irhal-red">
                               {article.title}
                             </h3>
-                            <p className="mt-4 line-clamp-4 text-base leading-7 text-ink/70">
+                            <p className="mt-2 line-clamp-2 text-sm leading-6 text-travel-navy/80">
                               {article.summary}
                             </p>
-                            <div className="mt-auto pt-6">
-                              <DiscoverPill label={isArabic ? "اكتشف" : "Discover"} />
+                            <div className="mt-auto pt-5">
+                              <DiscoverPill
+                                label={isArabic ? "اكتشف" : "Discover"}
+                              />
                             </div>
                           </CardContent>
                         </Card>
@@ -411,7 +531,10 @@ export async function CityGuideSectionPageContent({
                 items={rail.items}
                 key={rail.kind}
                 labels={itemLabels}
+                limit={10}
                 pathPrefix={localePrefix}
+                preserveOrder
+                sortMode={guideCardSortMode}
                 subtitle={copy.railSubtitle}
                 title={railTitle(rail.kind)}
               />

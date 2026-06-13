@@ -107,6 +107,7 @@ export async function ItineraryDetailPageContent({
     stops: day.stops,
   }));
   const stopCount = itineraryStopCount(itinerary);
+  const heroImageUrl = itineraryHeroImage({ city, itinerary, locale });
   const copy = {
     allItineraries: isArabic ? "كل المسارات" : "All itineraries",
     audience: isArabic ? "نوع الرحلة" : "Audience",
@@ -213,14 +214,24 @@ export async function ItineraryDetailPageContent({
           <div className="absolute inset-0 print:hidden">
             <Image
               alt=""
-              className="object-cover"
+              aria-hidden="true"
+              className="scale-105 object-cover opacity-55 blur-sm"
+              fill
+              quality={75}
+              sizes="100vw"
+              src={heroImageUrl}
+            />
+            <Image
+              alt=""
+              className="object-contain object-center"
               fetchPriority="high"
               fill
               loading="eager"
+              quality={90}
               sizes="100vw"
-              src={itineraryHeroImage({ city, itinerary, locale })}
+              src={heroImageUrl}
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/45 to-black/20 rtl:bg-gradient-to-l" />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/45 to-black/30 rtl:bg-gradient-to-l" />
           </div>
           <div className="relative mx-auto max-w-7xl px-5 py-12 md:py-16 print:py-6">
             <div className="max-w-3xl">
@@ -387,7 +398,8 @@ export async function ItineraryDetailPageContent({
                               alt={stop.imageAlt}
                               className="object-cover"
                               fill
-                              sizes="(max-width: 640px) 100vw, 150px"
+                              quality={90}
+                              sizes="(max-width: 640px) 100vw, 640px"
                               src={stop.imageUrl}
                             />
                           </div>

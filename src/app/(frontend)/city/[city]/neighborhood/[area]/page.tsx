@@ -11,7 +11,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { DiscoverLink } from "@/components/discover-action";
-import { GuideItemGrid } from "@/components/guide-item-card";
+import {
+  GuideItemGrid,
+  sortGuideItemsForCards,
+} from "@/components/guide-item-card";
 import { JsonLd } from "@/components/json-ld";
 import { MapPanel } from "@/components/map-panel";
 import { PageShell } from "@/components/page-shell";
@@ -42,6 +45,7 @@ import {
   neighborhoodJsonLd,
   pageMetadata,
 } from "@/lib/seo";
+import { getSiteSettings } from "@/lib/site-settings";
 
 type Props = {
   params: Promise<{ city: string; area: string }>;
@@ -73,10 +77,90 @@ const itemMatchesNeighborhood = (
   const name = normalizeArea(neighborhood.name);
   const slug = normalizeArea(neighborhood.slug);
 
-  return Boolean(area) && (area.includes(name) || area.includes(slug) || name.includes(area));
+  return (
+    Boolean(area) &&
+    (area.includes(name) || area.includes(slug) || name.includes(area))
+  );
 };
 
 const sectionIdForKind = (kind: GuideItemKind) => `neighborhood-${kind}`;
+
+const arabicNumberFormatter = new Intl.NumberFormat("ar-u-nu-arab");
+
+const arabicBestForLabel: Record<string, string> = {
+  "Halal dining discovery": "استكشاف المطاعم الحلال",
+  "Masjid and prayer-room discovery": "استكشاف المساجد ومرافق الصلاة",
+};
+
+const arabicClusterLabel: Record<string, string> = {
+  airport: "مطار",
+  business: "أعمال",
+  family: "عائلي",
+  food: "مطاعم",
+  historic: "تراثي",
+  mixed: "متنوع",
+  religious: "ديني",
+  shopping: "تسوق",
+  waterfront: "واجهة مائية",
+};
+
+const arabicDistrictLabel: Record<string, string> = {
+  "airport and malir": "المطار وملير",
+  "central london": "وسط لندن",
+  "east london": "شرق لندن",
+  "north london": "شمال لندن",
+  "south london": "جنوب لندن",
+  "west london": "غرب لندن",
+};
+
+const arabicZoneLabel: Record<string, string> = {
+  airport: "المطار",
+  central: "وسط المدينة",
+  east: "شرق المدينة",
+  north: "شمال المدينة",
+  south: "جنوب المدينة",
+  suburban: "الضواحي",
+  west: "غرب المدينة",
+};
+
+const arabicListingTypeLabel: Record<string, string> = {
+  hotel: "فندق",
+  "islamic-landmark": "معلم إسلامي",
+  masjid: "مسجد",
+  place: "مكان",
+  "prayer-area": "مصلى",
+  restaurant: "مطعم",
+  shopping: "تسوق",
+  tour: "جولة",
+};
+
+const arabicLiveMapQueryLabel: Record<string, string> = {
+  "Halal restaurants": "المطاعم الحلال",
+  "Masjids and prayer rooms": "المساجد ومرافق الصلاة",
+  "Masjids nearby": "المساجد القريبة",
+  "Places nearby": "الأماكن القريبة",
+  "Restaurants nearby": "المطاعم القريبة",
+};
+
+const normalizedLabelKey = (value: string) => value.trim().toLowerCase();
+
+const localizedMappedLabel = (
+  value: string,
+  labels: Record<string, string>,
+  fallback: string,
+) => labels[normalizedLabelKey(value)] ?? fallback;
+
+const lowerKeyed = (labels: Record<string, string>) =>
+  Object.fromEntries(
+    Object.entries(labels).map(([key, value]) => [normalizedLabelKey(key), value]),
+  );
+
+const bestForArabic = lowerKeyed(arabicBestForLabel);
+const districtArabic = lowerKeyed(arabicDistrictLabel);
+const liveMapQueryArabic = lowerKeyed(arabicLiveMapQueryLabel);
+
+const formatDisplayCount = (value: number, locale: PageLocale) =>
+  locale === "ar" ? arabicNumberFormatter.format(value) : String(value);
 
 export async function generateNeighborhoodMetadata(
   { params }: Props,
@@ -95,7 +179,8 @@ export async function generateNeighborhoodMetadata(
       : undefined;
   const cityName = localizedCityName(city, locale);
   const neighborhoodName = localizedHighlight?.name ?? neighborhood.name;
-  const description = localizedHighlight?.description ?? neighborhood.operatingGuide;
+  const description =
+    localizedHighlight?.description ?? neighborhood.operatingGuide;
 
   return pageMetadata({
     title:
@@ -120,6 +205,8 @@ export async function NeighborhoodPageContent({
   const neighborhood = city ? getNeighborhood(city, area) : undefined;
   if (!city || !neighborhood) notFound();
 
+  const siteSettings = await getSiteSettings();
+  const guideCardSortMode = siteSettings.guideCardSortMode;
   const isArabic = locale === "ar";
   const localePrefix = isArabic ? "/ar" : "/en";
   const cityName =
@@ -142,9 +229,10 @@ export async function NeighborhoodPageContent({
   );
   const itemGroups = guideKindOrder
     .map((kind) => {
-      const items = neighborhoodItems
-        .filter((item) => item.kind === kind)
-        .map((item) => localizeGuideItem(item, locale));
+      const items = sortGuideItemsForCards(
+        neighborhoodItems.filter((item) => item.kind === kind),
+        guideCardSortMode,
+      ).map((item) => localizeGuideItem(item, locale));
       return { kind, items };
     })
     .filter((group) => group.items.length > 0);
@@ -190,7 +278,8 @@ export async function NeighborhoodPageContent({
         map: "Map",
         mappedListings: "Mapped places",
         neighborhoodContents: "In this neighborhood",
-        noGuideItems: "No guide items have been connected to this neighborhood yet.",
+        noGuideItems:
+          "No guide items have been connected to this neighborhood yet.",
         noListings: "No mapped places have been added for this area yet.",
         openAreaMap: "Open area map",
         openMap: "Map",
@@ -204,6 +293,38 @@ export async function NeighborhoodPageContent({
         verified: "Verified",
         viewDetails: "View details",
       };
+  const localizedBestFor = isArabic
+    ? neighborhood.bestFor.map((item) =>
+        localizedMappedLabel(
+          item,
+          bestForArabic,
+          "تصنيف هذه المنطقة غير مكتمل في نظام إدارة المحتوى.",
+        ),
+      )
+    : neighborhood.bestFor;
+  const displayDistrict = isArabic
+    ? localizedMappedLabel(
+        neighborhood.district,
+        districtArabic,
+        "الحي الإداري غير مكتمل في نظام إدارة المحتوى.",
+      )
+    : neighborhood.district;
+  const displayCluster = isArabic
+    ? [
+        arabicZoneLabel[neighborhood.zone] ?? neighborhood.zone,
+        arabicClusterLabel[neighborhood.clusterType] ?? neighborhood.clusterType,
+      ].join(" · ")
+    : `${neighborhood.zone} · ${neighborhood.clusterType}`;
+  const displayLiveMapQueries = neighborhood.liveMapQueries.map((query) => ({
+    ...query,
+    label: isArabic
+      ? localizedMappedLabel(
+          query.label,
+          liveMapQueryArabic,
+          "محدد خريطة مباشر",
+        )
+      : query.label,
+  }));
 
   return (
     <PageShell
@@ -222,10 +343,10 @@ export async function NeighborhoodPageContent({
           neighborhoodJsonLd(city, neighborhood, locale),
           breadcrumbJsonLd(
             [
-              { name: "Home", path: "/" },
-              { name: city.name, path: cityBasePath },
+              { name: isArabic ? "الرئيسية" : "Home", path: "/" },
+              { name: cityName, path: cityBasePath },
               {
-                name: neighborhood.name,
+                name: neighborhoodName,
                 path: `${cityBasePath}/neighborhood/${neighborhood.slug}`,
               },
             ],
@@ -245,7 +366,10 @@ export async function NeighborhoodPageContent({
                 {neighborhoodDescription}
               </p>
               <div className="mt-7 flex flex-wrap gap-3">
-                <Button asChild className="bg-irhal-red text-white hover:bg-ink">
+                <Button
+                  asChild
+                  className="bg-irhal-red text-white hover:bg-ink"
+                >
                   <a href={neighborhood.mapUrl}>
                     <MapPin aria-hidden="true" />
                     {labels.openAreaMap}
@@ -262,11 +386,8 @@ export async function NeighborhoodPageContent({
               <div className="mt-8 grid gap-3 sm:grid-cols-3">
                 {[
                   [labels.city, cityName],
-                  [labels.district, neighborhood.district],
-                  [
-                    labels.cluster,
-                    `${neighborhood.zone} · ${neighborhood.clusterType}`,
-                  ],
+                  [labels.district, displayDistrict],
+                  [labels.cluster, displayCluster],
                 ].map(([label, value]) => (
                   <div
                     className="border-s-2 border-coastal bg-paper-deep px-4 py-3"
@@ -286,7 +407,8 @@ export async function NeighborhoodPageContent({
                 className="object-cover"
                 fill
                 preload
-                sizes="(min-width: 1024px) 50vw, 100vw"
+                quality={90}
+                sizes="(min-width: 1024px) 900px, 100vw"
                 src={heroImage}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
@@ -304,7 +426,7 @@ export async function NeighborhoodPageContent({
 
         <section className="mx-auto grid max-w-7xl gap-8 px-5 py-10 lg:grid-cols-[minmax(0,1fr)_380px] lg:py-14">
           <div className="min-w-0">
-            {neighborhood.bestFor.length > 0 ? (
+            {localizedBestFor.length > 0 ? (
               <Card className="border-ink/10 shadow-none">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-2">
@@ -317,7 +439,7 @@ export async function NeighborhoodPageContent({
                     </h2>
                   </div>
                   <div className="mt-4 flex flex-wrap gap-2">
-                    {neighborhood.bestFor.map((item) => (
+                    {localizedBestFor.map((item) => (
                       <Badge key={item} variant="secondary">
                         {item}
                       </Badge>
@@ -347,7 +469,9 @@ export async function NeighborhoodPageContent({
                   className="rounded-lg border border-ink/10 bg-paper-deep p-4 transition hover:border-irhal-red/35 hover:bg-white hover:shadow-sm"
                   href="#mapped-listings"
                 >
-                  <p className="text-3xl font-black text-ink">{listings.length}</p>
+                  <p className="text-3xl font-black text-ink">
+                    {formatDisplayCount(listings.length, locale)}
+                  </p>
                   <p className="mt-1 text-sm font-black text-ink/65">
                     {labels.totalListings}
                   </p>
@@ -359,7 +483,7 @@ export async function NeighborhoodPageContent({
                     key={group.kind}
                   >
                     <p className="text-3xl font-black text-ink">
-                      {group.items.length}
+                      {formatDisplayCount(group.items.length, locale)}
                     </p>
                     <p className="mt-1 text-sm font-black text-ink/65">
                       {kindPlural[group.kind][locale]}
@@ -386,7 +510,11 @@ export async function NeighborhoodPageContent({
                         <CardContent className="p-5">
                           <div className="flex items-start justify-between gap-4">
                             <Badge variant="secondary">
-                              {listing.listingType}
+                              {isArabic
+                                ? arabicListingTypeLabel[
+                                    listing.listingType
+                                  ] ?? listing.listingType
+                                : listing.listingType}
                             </Badge>
                             <a
                               aria-label={`${labels.openMap}: ${listing.name}`}
@@ -439,7 +567,8 @@ export async function NeighborhoodPageContent({
                     <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
                       <div>
                         <p className="text-xs font-black uppercase tracking-[0.18em] text-irhal-red">
-                          {group.items.length} {kindPlural[group.kind][locale]}
+                          {formatDisplayCount(group.items.length, locale)}{" "}
+                          {kindPlural[group.kind][locale]}
                         </p>
                         <h2 className="mt-2 text-3xl font-black tracking-tight text-ink md:text-4xl">
                           {kindPlural[group.kind][locale]} · {neighborhoodName}
@@ -457,7 +586,10 @@ export async function NeighborhoodPageContent({
                           savePrefix: labels.savePrefix,
                           verified: labels.verified,
                         }}
+                        locale={locale}
                         pathPrefix={localePrefix}
+                        preserveOrder
+                        sortMode={guideCardSortMode}
                       />
                     </div>
                   </section>
@@ -476,6 +608,9 @@ export async function NeighborhoodPageContent({
             <Card className="overflow-hidden border-ink/10 shadow-none">
               <CardContent className="p-0">
                 <MapPanel
+                  layerLabel={
+                    isArabic ? "طبقة خريطة إرحال" : "Irhal map layer"
+                  }
                   markers={[
                     {
                       label: neighborhoodName,
@@ -509,7 +644,7 @@ export async function NeighborhoodPageContent({
                     href="#mapped-listings"
                   >
                     {labels.mappedListings}
-                    <span>{listings.length}</span>
+                    <span>{formatDisplayCount(listings.length, locale)}</span>
                   </a>
                   {itemGroups.map((group) => (
                     <a
@@ -518,7 +653,9 @@ export async function NeighborhoodPageContent({
                       key={group.kind}
                     >
                       {kindPlural[group.kind][locale]}
-                      <span>{group.items.length}</span>
+                      <span>
+                        {formatDisplayCount(group.items.length, locale)}
+                      </span>
                     </a>
                   ))}
                 </div>
@@ -527,13 +664,11 @@ export async function NeighborhoodPageContent({
 
             <Card className="border-ink/10 shadow-none">
               <CardHeader>
-                <CardTitle className="text-lg">
-                  {labels.liveLocators}
-                </CardTitle>
+                <CardTitle className="text-lg">{labels.liveLocators}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid gap-3">
-                  {neighborhood.liveMapQueries.map((query) => (
+                  {displayLiveMapQueries.map((query) => (
                     <a
                       className="flex items-center justify-between gap-3 rounded-md border border-ink/10 p-3 text-sm font-bold text-ink/75 transition hover:border-irhal-red/40 hover:text-irhal-red"
                       href={query.providerUrl}

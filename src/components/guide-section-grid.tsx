@@ -8,23 +8,29 @@ import {
   itineraryGuideSectionSlug,
   publicSectionCards,
 } from "@/lib/guide-items";
+import {
+  genericGuidePlaceholderImage,
+  guidePlaceholderImageByKind,
+} from "@/lib/image-placeholders";
 
 const imageBySection: Record<string, string> = {
-  "festivals-and-annual-events": "/images/karachi-guide/festival.svg",
-  "transportation-and-getting-around": "/images/karachi-guide/tour.svg",
-  "neighborhood-operating-guide": "/images/karachi-guide/place.svg",
-  hotels: "/images/karachi-guide/hotel.svg",
-  "places-to-visit": "/images/karachi-guide/place.svg",
-  shopping: "/images/karachi-guide/shopping.svg",
-  "food-and-restaurants": "/images/karachi-guide/restaurant.svg",
-  "organized-tours": "/images/karachi-guide/tour.svg",
-  "children-in-tow": "/images/karachi-guide/family.svg",
-  "muslim-visitor-information": "/images/karachi-guide/masjid.svg",
-  "city-in-a-day-and-longer-itineraries": "/images/karachi-guide/tour.svg",
+  "festivals-and-annual-events": guidePlaceholderImageByKind.festival,
+  "transportation-and-getting-around": "/images/karachi-guide/transport.svg",
+  "visitor-information": "/images/karachi-guide/visitor-info.svg",
+  "city-information": "/images/karachi-guide/city-info.svg",
+  "neighborhood-operating-guide": guidePlaceholderImageByKind.place,
+  hotels: guidePlaceholderImageByKind.hotel,
+  "places-to-visit": guidePlaceholderImageByKind.place,
+  shopping: guidePlaceholderImageByKind.shopping,
+  "food-and-restaurants": guidePlaceholderImageByKind.restaurant,
+  "organized-tours": guidePlaceholderImageByKind.tour,
+  "children-in-tow": guidePlaceholderImageByKind.family,
+  "muslim-visitor-information": guidePlaceholderImageByKind.masjid,
+  "city-in-a-day-and-longer-itineraries": guidePlaceholderImageByKind.tour,
 };
 
 export const sectionImage = (slug: string) =>
-  imageBySection[slug] ?? "/images/karachi-guide/place.svg";
+  imageBySection[slug] ?? genericGuidePlaceholderImage;
 
 export function GuideSectionGrid({
   city,
@@ -76,12 +82,13 @@ export function GuideSectionGrid({
 
             return (
               <Link className="group block" href={href} key={card.slug}>
-                <div className="relative aspect-[4/3] overflow-hidden bg-paper-deep">
+                <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-paper-deep shadow-sm transition duration-300 group-hover:shadow-[0_14px_38px_rgba(17,17,17,0.10)]">
                   <Image
                     alt={`${sectionCopy.title} guide section for ${cityName}`}
                     className="object-cover transition duration-500 group-hover:scale-105"
                     fill
-                    sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+                    quality={90}
+                    sizes="(min-width: 1280px) 760px, (min-width: 640px) 72vw, 100vw"
                     src={sectionImage(card.slug)}
                   />
                 </div>

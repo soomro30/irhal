@@ -1,17 +1,44 @@
 import { Globe2 } from "lucide-react";
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 
+import { CityHeroCarousel } from "@/components/city-hero-carousel";
 import { FeatureRail, type FeatureCardData } from "@/components/feature-rail";
 import { PageShell } from "@/components/page-shell";
 import { SiteSearchBox } from "@/components/site-search-box";
 import { getCityNavItems, preloadCityBySlug, type CityNavItem } from "@/lib/city-source";
+import { genericGuidePlaceholderImage } from "@/lib/image-placeholders";
 import { pageMetadata } from "@/lib/seo";
 
 type HomeLocale = "en" | "ar";
 
-const fallbackCityImage = "/images/karachi-guide/place.svg";
+const fallbackCityImage = genericGuidePlaceholderImage;
+
+const seededNumber = (value: string) =>
+  [...value].reduce(
+    (hash, character) => (hash * 31 + character.charCodeAt(0)) >>> 0,
+    2166136261,
+  );
+
+const rotateHeroCities = (cities: CityNavItem[]) => {
+  if (cities.length <= 1) return cities;
+
+  const daySeed = new Date().toISOString().slice(0, 10);
+  const startIndex = seededNumber(`homepage-hero-${daySeed}`) % cities.length;
+  const rotated = [...cities.slice(startIndex), ...cities.slice(0, startIndex)];
+
+  if (rotated[0]?.slug === "karachi") {
+    const nonKarachiIndex = rotated.findIndex((city) => city.slug !== "karachi");
+    if (nonKarachiIndex > 0) {
+      return [
+        ...rotated.slice(nonKarachiIndex),
+        ...rotated.slice(0, nonKarachiIndex),
+      ];
+    }
+  }
+
+  return rotated;
+};
 
 export function homeMetadata(locale: HomeLocale): Metadata {
   const isArabic = locale === "ar";
@@ -31,6 +58,22 @@ export const metadata = homeMetadata("ar");
 const localizedCity = (city: CityNavItem, locale: HomeLocale): CityNavItem => {
   if (locale !== "ar") return city;
 
+  const arabic = city.translations?.ar;
+  const translatedName =
+    typeof arabic?.name === "string" && arabic.name ? arabic.name : undefined;
+  const translatedCountry =
+    typeof arabic?.countryName === "string" && arabic.countryName
+      ? arabic.countryName
+      : undefined;
+
+  if (translatedName || translatedCountry) {
+    return {
+      ...city,
+      country: translatedCountry ?? city.country,
+      name: translatedName ?? city.name,
+    };
+  }
+
   if (city.slug === "karachi") {
     return { ...city, country: "باكستان", name: "كراتشي" };
   }
@@ -46,12 +89,16 @@ export async function HomeContent({ locale = "en" }: { locale?: HomeLocale }) {
     localizedCity(city, locale),
   );
   const featuredCities = cityItems.slice(0, 5);
-  const heroCity = featuredCities[0] ?? {
-    country: isArabic ? "باكستان" : "Pakistan",
-    heroImageUrl: fallbackCityImage,
-    name: isArabic ? "كراتشي" : "Karachi",
-    slug: "karachi",
-  };
+  const heroCities = rotateHeroCities(cityItems);
+  const heroImages = Array.from(
+    new Set(
+      heroCities
+        .map((city) => city.heroImageUrl)
+        .filter((image): image is string => Boolean(image)),
+    ),
+  );
+  const carouselImages =
+    heroImages.length > 0 ? heroImages : [fallbackCityImage];
   const destinationCards: FeatureCardData[] = featuredCities.map(
     (city, index) => ({
       key: city.slug,
@@ -95,14 +142,23 @@ export async function HomeContent({ locale = "en" }: { locale?: HomeLocale }) {
     <PageShell locale={locale}>
       <main dir={isArabic ? "rtl" : "ltr"}>
         <section className="relative h-[58svh] min-h-[430px] max-h-[620px] overflow-hidden bg-ink text-white">
-          <Image
-            alt=""
-            className="object-cover"
-            fill
-            preload
-            quality={65}
+          <CityHeroCarousel
+            alt={isArabic ? "صور وجهات إرحل" : "Irhal city guide hero images"}
+            autoAdvanceMs={6000}
+            dir={isArabic ? "rtl" : "ltr"}
+            frameClassName="absolute inset-0 bg-ink"
+            imageClassName="object-cover object-center"
+            images={carouselImages}
+            labels={{
+              next: isArabic ? "عرض المدينة التالية" : "Show next city image",
+              previous: isArabic
+                ? "عرض المدينة السابقة"
+                : "Show previous city image",
+              slide: isArabic ? "صورة مدينة" : "City image",
+            }}
+            mirrorForRtl={false}
+            objectFit="cover"
             sizes="100vw"
-            src={heroCity.heroImageUrl || fallbackCityImage}
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-black/5 to-transparent rtl:bg-gradient-to-l" />
           <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/25 to-transparent" />

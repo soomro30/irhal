@@ -772,6 +772,19 @@ export interface Itinerary {
   audience: 'first-time' | 'family' | 'muslim-traveler' | 'business' | 'budget' | 'luxury';
   summary: string;
   /**
+   * Longer route introduction shown on the itinerary detail hero.
+   */
+  intro?: string | null;
+  planning?: {
+    stay?: string | null;
+    transport?: string | null;
+    meals?: {
+      breakfast?: string | null;
+      lunch?: string | null;
+      dinner?: string | null;
+    };
+  };
+  /**
    * Arabic editor copy. Example: {"ar":{"title":"...","summary":"...","overview":["Paragraph 1","Paragraph 2"],"area":"...","category":"...","address":"..."}}
    */
   translations?:
@@ -786,7 +799,18 @@ export interface Itinerary {
   days: {
     dayNumber: number;
     theme: string;
+    description?: string | null;
+    start?: string | null;
+    transport?: string | null;
+    breakfast?: string | null;
+    lunch?: string | null;
+    dinner?: string | null;
+    pacing?: string | null;
     stops?: (number | Listing)[] | null;
+    /**
+     * Optional newline-separated guide-item/listing stop slugs, with kind prefixes when useful, e.g. place:westminster-abbey.
+     */
+    stopSlugs?: string | null;
     routeNotes?: string | null;
     id?: string | null;
   }[];
@@ -1503,13 +1527,35 @@ export interface ItinerariesSelect<T extends boolean = true> {
   durationDays?: T;
   audience?: T;
   summary?: T;
+  intro?: T;
+  planning?:
+    | T
+    | {
+        stay?: T;
+        transport?: T;
+        meals?:
+          | T
+          | {
+              breakfast?: T;
+              lunch?: T;
+              dinner?: T;
+            };
+      };
   translations?: T;
   days?:
     | T
     | {
         dayNumber?: T;
         theme?: T;
+        description?: T;
+        start?: T;
+        transport?: T;
+        breakfast?: T;
+        lunch?: T;
+        dinner?: T;
+        pacing?: T;
         stops?: T;
+        stopSlugs?: T;
         routeNotes?: T;
         id?: T;
       };
@@ -1654,6 +1700,10 @@ export interface SiteSetting {
    * Public GTM container ID, for example GTM-XXXXXXX.
    */
   googleTagManagerId?: string | null;
+  /**
+   * Default ordering for public guide cards and rails. Media first gives photo-backed records priority for a more polished public page.
+   */
+  guideCardSortMode: 'media' | 'more-description' | 'recent-update' | 'name';
   organizationName?: string | null;
   organizationUrl?: string | null;
   organizationLogo?: (number | null) | Media;
@@ -1687,6 +1737,7 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   cookieConsentRequired?: T;
   ga4MeasurementId?: T;
   googleTagManagerId?: T;
+  guideCardSortMode?: T;
   organizationName?: T;
   organizationUrl?: T;
   organizationLogo?: T;

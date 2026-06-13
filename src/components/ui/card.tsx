@@ -11,7 +11,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
     <div
       ref={ref}
       className={cn(
-        "rounded-lg border border-ink/10 bg-white text-ink shadow-[0_18px_60px_rgba(17,24,39,0.08)]",
+        "rounded-lg border border-ink/10 bg-white text-ink shadow-[0_8px_30px_rgba(17,17,17,0.06)]",
         size === "sm" && "text-sm",
         className,
       )}

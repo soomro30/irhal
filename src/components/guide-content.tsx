@@ -8,13 +8,44 @@ const keyForHeader = (header: string) =>
     .replace(/[^a-z0-9]+/g, "_")
     .replace(/^_+|_+$/g, "");
 
+const headerValueKeys: Record<string, string> = {
+  "Average high": "average_high",
+  "Average low": "average_low",
+  "Average rainfall": "average_rainfall",
+  Borough: "borough",
+  Date: "date",
+  Detail: "detail",
+  "Halal restaurants live map": "halal_restaurants_live_map",
+  Holiday: "holiday",
+  Item: "item",
+  "Masjids and prayer rooms live map": "masjids_and_prayer_rooms_live_map",
+  Month: "month",
+  "المطاعم الحلال - خريطة حيّة": "halal_restaurants_live_map",
+  "المساجد ومرافق الصلاة - خريطة حيّة": "masjids_and_prayer_rooms_live_map",
+  "متوسط الأمطار": "average_rainfall",
+  "متوسط الحرارة الصغرى": "average_low",
+  "متوسط الحرارة العظمى": "average_high",
+  "البلدية / الحي": "borough",
+  "التاريخ": "date",
+  "التفصيل": "detail",
+  "الشهر": "month",
+  "العطلة": "holiday",
+  "المعلومة": "item",
+};
+
+const valueKeyForHeader = (header: string) =>
+  headerValueKeys[header] ?? keyForHeader(header);
+
 const arabicHeaders: Record<string, string> = {
   "Current guide value": "القيمة الحالية في الدليل",
   "Date / basis": "التاريخ / الأساس",
   "Editorial note": "ملاحظة تحريرية",
   Fact: "المعلومة",
+  Borough: "البلدية / الحي",
+  "Halal restaurants live map": "المطاعم الحلال - خريطة حيّة",
   Holiday: "العطلة",
   Month: "الشهر",
+  "Masjids and prayer rooms live map": "المساجد ومرافق الصلاة - خريطة حيّة",
   Note: "ملاحظة",
   "Number / contact": "الرقم / جهة الاتصال",
   Service: "الخدمة",
@@ -170,7 +201,7 @@ function renderLinkedValue(
   header: string,
   locale: Locale,
 ) {
-  const key = keyForHeader(header);
+  const key = valueKeyForHeader(header);
   const row = table.rows[rowIndex];
   const value = row.values[key] || "";
   const links = row.links[key];

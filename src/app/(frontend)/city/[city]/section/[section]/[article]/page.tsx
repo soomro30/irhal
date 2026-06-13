@@ -1,11 +1,15 @@
 import { Compass, MapPin, Route } from "lucide-react";
+import Image from "next/image";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { GuideContent } from "@/components/guide-content";
 import { DiscoverPill } from "@/components/discover-action";
-import { GuideItemRail } from "@/components/guide-item-card";
+import {
+  GuideItemRail,
+  sortGuideItemsForCards,
+} from "@/components/guide-item-card";
 import { JsonLd } from "@/components/json-ld";
 import { PageShell } from "@/components/page-shell";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +22,7 @@ import {
   getGuideItems,
   getLocalizedGuideSectionCopy,
   guideKindOrder,
+  hasArabicGuideItemCopy,
   isPublicGuideSection,
   kindPlural,
   localizeGuideArticle,
@@ -25,6 +30,7 @@ import {
   type GuideItem,
 } from "@/lib/guide-items";
 import { breadcrumbJsonLd, pageMetadata } from "@/lib/seo";
+import { getSiteSettings } from "@/lib/site-settings";
 
 type Props = {
   params: Promise<{ city: string; section: string; article: string }>;
@@ -79,6 +85,8 @@ export async function GuideArticlePageContent({
     : undefined;
   if (!city || !article || !isPublicGuideSection(section)) notFound();
 
+  const siteSettings = await getSiteSettings();
+  const guideCardSortMode = siteSettings.guideCardSortMode;
   const isArabic = locale === "ar";
   const displayArticle = localizeGuideArticle(article, locale);
   const sectionArticles = getGuideArticlesForSection(city, section).map(
@@ -96,7 +104,9 @@ export async function GuideArticlePageContent({
     (typeof city.translations?.[locale]?.name === "string" &&
       city.translations[locale].name) ||
     (isArabic && city.slug === "karachi" ? "كراتشي" : city.name);
-  const cityBasePath = isArabic ? `/ar/city/${city.slug}` : `/en/city/${city.slug}`;
+  const cityBasePath = isArabic
+    ? `/ar/city/${city.slug}`
+    : `/en/city/${city.slug}`;
   const copy = isArabic
     ? {
         articleBadge: "مقال من دليل المدينة",
@@ -124,14 +134,29 @@ export async function GuideArticlePageContent({
         readArticle: "Read full article",
         route: "View itineraries",
       };
-  const contentBlocks =
+  const dedupedContentBlocks =
     displayArticle.blocks[0]?.type === "paragraph" &&
     sameText(displayArticle.blocks[0].text, displayArticle.summary)
       ? displayArticle.blocks.slice(1)
       : displayArticle.blocks;
+  const contentBlocks =
+    dedupedContentBlocks.length > 0
+      ? dedupedContentBlocks
+      : displayArticle.blocks;
+  const articleImageUrl = displayArticle.imageUrl?.trim();
   const itemLabels = isArabic
-    ? { discover: "اكتشف", map: "الخريطة", savePrefix: "حفظ", verified: "تم التحقق" }
-    : { discover: "Discover", map: "Map", savePrefix: "Save", verified: "Verified" };
+    ? {
+        discover: "اكتشف",
+        map: "الخريطة",
+        savePrefix: "حفظ",
+        verified: "تم التحقق",
+      }
+    : {
+        discover: "Discover",
+        map: "Map",
+        savePrefix: "Save",
+        verified: "Verified",
+      };
   const allItems = getGuideItems(city);
   const preferredRails: GuideItem["kind"][] = [
     "place",
@@ -139,17 +164,26 @@ export async function GuideArticlePageContent({
     "shopping",
     "restaurant",
   ];
+  const railItemsForKind = (kind: GuideItem["kind"]) =>
+    allItems
+      .filter((item) => item.kind === kind)
+      .filter((item) => !isArabic || hasArabicGuideItemCopy(item));
   const railKinds = [
     ...preferredRails,
     ...guideKindOrder.filter((kind) => !preferredRails.includes(kind)),
   ]
-    .filter((kind) => allItems.some((item) => item.kind === kind))
+    .filter((kind) => railItemsForKind(kind).length > 0)
     .slice(0, 4);
   const relatedRails = railKinds.map((kind) => {
-    const kindItems = allItems.filter((item) => item.kind === kind);
+    const kindItems = sortGuideItemsForCards(
+      railItemsForKind(kind),
+      guideCardSortMode,
+    );
     return {
       href: `${cityBasePath}/section/${kindItems[0].sectionSlug}`,
-      items: kindItems.slice(0, 10).map((item) => localizeGuideItem(item, locale)),
+      items: kindItems
+        .slice(0, 10)
+        .map((item) => localizeGuideItem(item, locale)),
       kind,
     };
   });
@@ -208,8 +242,23 @@ export async function GuideArticlePageContent({
 
         <section className="border-t border-ink/10 bg-paper py-10 lg:py-12">
           <div className="mx-auto grid max-w-7xl gap-10 px-5 lg:grid-cols-[minmax(0,1fr)_340px]">
-            <article className="min-w-0 rounded-lg border border-ink/10 bg-white px-5 py-6 md:px-8">
-              <GuideContent blocks={contentBlocks} locale={locale} />
+            <article className="min-w-0 overflow-hidden rounded-lg border border-ink/10 bg-white">
+              {articleImageUrl ? (
+                <div className="relative aspect-[16/9] w-full bg-paper-deep">
+                  <Image
+                    alt={displayArticle.imageAlt ?? displayArticle.title}
+                    className="object-cover"
+                    fill
+                    priority
+                    quality={90}
+                    sizes="(min-width: 1024px) 1040px, 100vw"
+                    src={articleImageUrl}
+                  />
+                </div>
+              ) : null}
+              <div className="px-5 py-6 md:px-8">
+                <GuideContent blocks={contentBlocks} locale={locale} />
+              </div>
             </article>
 
             <aside className="space-y-5 lg:sticky lg:top-24 lg:self-start">
@@ -239,7 +288,10 @@ export async function GuideArticlePageContent({
               ) : null}
 
               <Card className="border-0 bg-ink p-6 text-white">
-                <Compass aria-hidden="true" className="h-6 w-6 text-irhal-orange" />
+                <Compass
+                  aria-hidden="true"
+                  className="h-6 w-6 text-irhal-orange"
+                />
                 <h3 className="mt-3 text-lg font-black">{copy.planTitle}</h3>
                 <p className="mt-2 text-sm leading-6 text-white/75">
                   {copy.planBody}
@@ -287,7 +339,9 @@ export async function GuideArticlePageContent({
                           {related.summary}
                         </p>
                         <div className="mt-auto pt-5">
-                          <DiscoverPill label={isArabic ? "اكتشف" : "Discover"} />
+                          <DiscoverPill
+                            label={isArabic ? "اكتشف" : "Discover"}
+                          />
                         </div>
                       </CardContent>
                     </Card>
@@ -309,6 +363,8 @@ export async function GuideArticlePageContent({
             key={rail.kind}
             labels={itemLabels}
             pathPrefix={isArabic ? "/ar" : "/en"}
+            preserveOrder
+            sortMode={guideCardSortMode}
             subtitle={copy.itemRailSubtitle}
             title={railTitle(rail.kind)}
           />

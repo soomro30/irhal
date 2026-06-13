@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 
 type SiteSearchBoxProps = {
   className?: string;
+  citySlug?: string;
   initialQuery?: string;
   locale?: SearchLocale;
   placeholder: string;
@@ -33,6 +34,7 @@ const resultsViewportPaddingPx = 16;
 
 export function SiteSearchBox({
   className,
+  citySlug,
   initialQuery = "",
   locale = "en",
   placeholder,
@@ -62,8 +64,9 @@ export function SiteSearchBox({
       locale,
       q: trimmedQuery,
     });
+    if (citySlug) params.set("city", citySlug);
     return `/api/search?${params.toString()}`;
-  }, [locale, trimmedQuery]);
+  }, [citySlug, locale, trimmedQuery]);
 
   const updateResultsRect = useCallback(() => {
     const wrapper = wrapperRef.current;
@@ -162,12 +165,14 @@ export function SiteSearchBox({
 
   const submitSearch = () => {
     if (trimmedQuery) {
-      router.push(`${searchPath}?q=${encodeURIComponent(trimmedQuery)}`);
+      const params = new URLSearchParams({ q: trimmedQuery });
+      if (citySlug) params.set("city", citySlug);
+      router.push(`${searchPath}?${params.toString()}`);
       setIsOpen(false);
       return;
     }
 
-    router.push(searchPath);
+    router.push(citySlug ? `${searchPath}?city=${citySlug}` : searchPath);
     setIsOpen(false);
   };
 
@@ -175,7 +180,7 @@ export function SiteSearchBox({
     isOpen && resultsRect
       ? createPortal(
           <div
-            className="fixed z-[1000] overflow-hidden rounded-2xl border border-ink/10 bg-white text-ink shadow-2xl"
+            className="fixed z-[1000] overflow-hidden rounded-2xl border border-ink/10 bg-white text-ink shadow-[0_24px_70px_rgba(17,17,17,0.14)]"
             dir={dir}
             id="site-search-results"
             ref={resultsRef}
@@ -206,7 +211,7 @@ export function SiteSearchBox({
                             alt=""
                             className="object-cover"
                             fill
-                            sizes="48px"
+                            sizes="160px"
                             src={result.image}
                           />
                         ) : (
@@ -254,7 +259,7 @@ export function SiteSearchBox({
 
   return (
     <div className={cn("relative", className)} dir={dir} ref={wrapperRef}>
-      <div className="rounded-full bg-white p-1.5 shadow-2xl">
+      <div className="rounded-full border border-ink/35 bg-white p-1.5 shadow-[0_18px_50px_rgba(17,17,17,0.12)] transition focus-within:border-coastal">
         <div className="flex min-h-12 items-center gap-3">
           <Search aria-hidden="true" className="ms-3 h-5 w-5 shrink-0 text-ink/55" />
           <input
@@ -302,7 +307,8 @@ export function SiteSearchBox({
             value={query}
           />
           <Button
-            className="rounded-full bg-[#0b74f0] px-8 text-base hover:bg-irhal-red"
+            className="px-8 text-base"
+            variant="coastal"
             onClick={submitSearch}
             size="lg"
             type="button"

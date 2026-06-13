@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 620" role="img" aria-label="Restaurant placeholder image">
+  <rect width="900" height="620" fill="#f2dfc5"/>
+  <circle cx="455" cy="340" r="175" fill="#f8fafc"/>
+  <circle cx="455" cy="340" r="118" fill="#b45309"/>
+  <path d="M360 330c80-64 156-60 205 0-45 60-134 67-205 0z" fill="#facc15"/>
+  <path d="M205 155h32v330h-32zM175 155h22v120h-22zM245 155h22v120h-22zM650 150c70 80 70 165 0 245v90h-35V150z" fill="#20262b"/>
+  <text x="52" y="82" font-family="Arial, sans-serif" font-size="38" font-weight="700" fill="#20262b">Food</text>
+</svg>

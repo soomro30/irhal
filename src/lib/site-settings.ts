@@ -5,6 +5,12 @@ import { cache } from "react";
 
 type CMSDoc = Record<string, unknown>;
 
+export type GuideCardSortMode =
+  | "media"
+  | "more-description"
+  | "recent-update"
+  | "name";
+
 export type PublicSiteSettings = {
   analyticsEnabled: boolean;
   bingSiteVerification?: string;
@@ -15,6 +21,7 @@ export type PublicSiteSettings = {
   ga4MeasurementId?: string;
   googleSiteVerification?: string;
   googleTagManagerId?: string;
+  guideCardSortMode: GuideCardSortMode;
   organizationLogoUrl?: string;
   organizationName: string;
   organizationUrl: string;
@@ -37,6 +44,7 @@ const fallbackSettings = (): PublicSiteSettings => {
     defaultSeoDescription:
       "Muslim-friendly city guides with maps, halal-aware planning, local areas, and practical travel essentials.",
     defaultSeoTitle: "Irhal AI Travel",
+    guideCardSortMode: "media",
     organizationName: "Irhal",
     organizationUrl: url,
     sameAs: [],
@@ -102,6 +110,16 @@ const sameAsUrls = (value: unknown) =>
       }
     });
 
+const normalizeGuideCardSortMode = (value: unknown): GuideCardSortMode => {
+  const mode = asString(value);
+  return mode === "name" ||
+    mode === "recent-update" ||
+    mode === "more-description" ||
+    mode === "media"
+    ? mode
+    : "media";
+};
+
 const normalizeSiteSettings = (doc: CMSDoc): PublicSiteSettings => {
   const fallback = fallbackSettings();
   const siteUrl = normalizeUrl(doc.siteUrl, fallback.siteUrl);
@@ -121,6 +139,7 @@ const normalizeSiteSettings = (doc: CMSDoc): PublicSiteSettings => {
     googleTagManagerId: analyticsEnabled
       ? validGtmId(doc.googleTagManagerId)
       : undefined,
+    guideCardSortMode: normalizeGuideCardSortMode(doc.guideCardSortMode),
     organizationLogoUrl: mediaUrl(doc.organizationLogo) || undefined,
     organizationName: asString(doc.organizationName) || asString(doc.siteName) || "Irhal",
     organizationUrl,

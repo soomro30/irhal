@@ -4,6 +4,8 @@ import { Camera, ChevronLeft, ChevronRight, X } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
+import { genericGuidePlaceholderImage } from "@/lib/image-placeholders";
+
 type DetailMediaGalleryProps = {
   alt: string;
   dir: "ltr" | "rtl";
@@ -16,7 +18,7 @@ type DetailMediaGalleryProps = {
   };
 };
 
-const fallbackImage = "/images/karachi-guide/place.svg";
+const fallbackImage = genericGuidePlaceholderImage;
 
 export function DetailMediaGallery({
   alt,
@@ -80,7 +82,8 @@ export function DetailMediaGallery({
             className="object-cover transition duration-500 group-hover:scale-[1.02]"
             fill
             preload
-            sizes="(min-width: 1024px) 780px, 100vw"
+            quality={90}
+            sizes="(min-width: 1024px) 1040px, 100vw"
             src={safeImages[0]}
           />
           <span className="absolute bottom-4 right-4 inline-flex items-center gap-2 rounded-full bg-white px-3 py-2 text-xs font-black text-travel-navy shadow-sm rtl:left-4 rtl:right-auto">
@@ -101,7 +104,8 @@ export function DetailMediaGallery({
               className="object-cover transition duration-500 group-hover:scale-[1.02]"
               fill
               preload
-              sizes="(min-width: 1024px) 560px, 100vw"
+              quality={90}
+              sizes="(min-width: 1024px) 860px, 100vw"
               src={safeImages[0]}
             />
           </button>
@@ -131,7 +135,8 @@ export function DetailMediaGallery({
                     alt={`${alt} ${imageIndex + 1}`}
                     className="object-cover transition duration-500 group-hover:scale-[1.04]"
                     fill
-                    sizes="(min-width: 1024px) 180px, 50vw"
+                    quality={90}
+                    sizes="(min-width: 1024px) 720px, 70vw"
                     src={image}
                   />
                   {index === secondaryImages.length - 1 ? (
@@ -173,6 +178,7 @@ export function DetailMediaGallery({
               alt={`${alt} ${activeIndex + 1}`}
               className="object-contain"
               fill
+              quality={90}
               sizes="100vw"
               src={safeImages[activeIndex]}
             />
@@ -217,7 +223,8 @@ export function DetailMediaGallery({
                     alt={`${alt} ${index + 1}`}
                     className="object-cover"
                     fill
-                    sizes="96px"
+                    quality={90}
+                    sizes="384px"
                     src={image}
                   />
                 </button>

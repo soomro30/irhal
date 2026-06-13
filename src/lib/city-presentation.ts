@@ -1,5 +1,6 @@
 import type { CityGuide } from "./city-data";
 import type { GuideItem } from "./guide-items";
+import { genericGuidePlaceholderImage } from "./image-placeholders";
 
 export type ImageVisual = {
   image: string;
@@ -12,11 +13,14 @@ export type NeighbourhoodHighlight = {
   description: string;
   href: string;
   external: boolean;
+  image?: string;
+  imageAlt?: string;
+  objectPosition?: string;
 };
 
 type Locale = "en" | "ar";
 
-const GENERIC_FALLBACK_IMAGE = "/images/karachi-guide/place.svg";
+const GENERIC_FALLBACK_IMAGE = genericGuidePlaceholderImage;
 
 const approvedGuideItemFallbackImages: Record<
   string,
@@ -40,14 +44,13 @@ const approvedGuideItemFallback = (item: GuideItem) =>
   approvedGuideItemFallbackImages[`${item.kind}:${item.slug}`] ??
   approvedGuideItemFallbackImages[item.slug];
 
-const localizeKarachiNeighbourhood = (
-  citySlug: string,
+const localizeNeighbourhood = (
   item: Pick<NeighbourhoodHighlight, "description" | "name" | "slug"> & {
     translations?: CityGuide["translations"];
   },
   locale: Locale,
 ) => {
-  if (locale !== "ar" || citySlug !== "karachi") return item;
+  if (locale !== "ar") return item;
   const arabic = item.translations?.ar;
   const name = typeof arabic?.name === "string" ? arabic.name : undefined;
   const description =
@@ -68,6 +71,73 @@ const localizeKarachiNeighbourhood = (
     description: "وصف هذه المنطقة غير مكتمل في نظام إدارة المحتوى.",
     name: "منطقة قيد الترجمة",
     slug: item.slug,
+  };
+};
+
+const guideItemNeighborhoodSlug = (city: CityGuide, item: GuideItem) =>
+  item.neighborhoodSlug ??
+  city.guideItemNeighborhoods?.[`${item.kind}:${item.slug}`] ??
+  city.guideItemNeighborhoods?.[item.slug];
+
+const normalizeArea = (value: string) =>
+  value
+    .toLowerCase()
+    .replace(/&/g, " and ")
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const guideItemMatchesNeighborhood = (
+  city: CityGuide,
+  item: GuideItem,
+  neighborhood: Pick<CityGuide["neighborhoods"][number], "name" | "slug">,
+) => {
+  if (guideItemNeighborhoodSlug(city, item) === neighborhood.slug) return true;
+
+  const area = normalizeArea(item.area);
+  const name = normalizeArea(neighborhood.name);
+  const slug = normalizeArea(neighborhood.slug);
+
+  return (
+    Boolean(area) &&
+    (area.includes(name) || area.includes(slug) || name.includes(area))
+  );
+};
+
+const stableIndex = (value: string, length: number) => {
+  let hash = 0;
+  for (let index = 0; index < value.length; index += 1) {
+    hash = (hash * 31 + value.charCodeAt(index)) >>> 0;
+  }
+  return length > 0 ? hash % length : 0;
+};
+
+// Picks a real media-backed guide item to represent the neighbourhood.
+// Returns null when no matched item has approved media so the caller can
+// drop the neighbourhood from the carousel entirely instead of reusing the
+// city hero (which would mislead users with the wrong photo).
+const neighbourhoodRepresentativeImage = (
+  city: CityGuide,
+  neighbourhood: Pick<CityGuide["neighborhoods"][number], "name" | "slug">,
+) => {
+  const matched = (city.guideItems ?? []).filter((item) =>
+    guideItemMatchesNeighborhood(city, item, neighbourhood),
+  );
+  if (matched.length === 0) return null;
+
+  const candidatesWithMedia = matched.filter((item) => hasGuideItemMedia(item));
+  if (candidatesWithMedia.length === 0) return null;
+
+  const item =
+    candidatesWithMedia[
+      stableIndex(neighbourhood.slug, candidatesWithMedia.length)
+    ];
+  const visual = getGuideItemImage(item);
+  return {
+    image: visual.image,
+    imageAlt: item.imageAlt,
+    matchedCount: matched.length,
+    objectPosition: visual.objectPosition,
   };
 };
 
@@ -120,7 +190,7 @@ export const getGuideItemImage = (item: GuideItem): ImageVisual => {
     };
   }
   return {
-    image: item.imageUrl,
+    image: item.imageUrl || GENERIC_FALLBACK_IMAGE,
     objectPosition: "center",
   };
 };
@@ -140,9 +210,17 @@ export const getNeighbourhoodHighlights = (
   localePrefix: string,
   locale: Locale = "en",
 ): NeighbourhoodHighlight[] => {
-  return city.neighborhoods.map((neighbourhood) => {
-    const localized = localizeKarachiNeighbourhood(
-      city.slug,
+  const highlights: NeighbourhoodHighlight[] = [];
+  for (const neighbourhood of city.neighborhoods) {
+    const representativeImage = neighbourhoodRepresentativeImage(
+      city,
+      neighbourhood,
+    );
+    // Skip neighbourhoods with no mapped items or no media — surfacing them
+    // would either show wrong fallback imagery or land users on an empty page.
+    if (!representativeImage) continue;
+
+    const localized = localizeNeighbourhood(
       {
         description: neighbourhood.operatingGuide,
         name: neighbourhood.name,
@@ -152,12 +230,16 @@ export const getNeighbourhoodHighlights = (
       locale,
     );
 
-    return {
+    highlights.push({
       slug: neighbourhood.slug,
       name: localized.name,
       description: localized.description,
       href: `${localePrefix}/city/${city.slug}/neighborhood/${neighbourhood.slug}`,
       external: false,
-    };
-  });
+      image: representativeImage.image,
+      imageAlt: representativeImage.imageAlt,
+      objectPosition: representativeImage.objectPosition,
+    });
+  }
+  return highlights;
 };

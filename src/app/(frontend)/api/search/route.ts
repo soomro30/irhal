@@ -4,6 +4,7 @@ import { searchSite } from "@/lib/site-search";
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const query = (searchParams.get("q") ?? "").trim();
+  const citySlug = (searchParams.get("city") ?? "").trim() || undefined;
   const localeParam = searchParams.get("locale");
   const locale: SearchLocale = localeParam === "ar" ? "ar" : "en";
   const limit = Math.min(Number(searchParams.get("limit") ?? 8) || 8, 30);
@@ -24,10 +25,11 @@ export async function GET(request: Request) {
   }
 
   try {
-    const results = await searchSite({ query, locale, limit });
+    const results = await searchSite({ citySlug, query, locale, limit });
 
     return Response.json(
       {
+        city: citySlug,
         query,
         locale,
         results,

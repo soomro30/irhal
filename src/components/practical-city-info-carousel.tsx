@@ -172,9 +172,9 @@ export function PracticalCityInfoCarousel({
                 href={card.href}
                 key={card.title}
               >
-                <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden bg-[#e9f4f3]">
+                <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-lg bg-[#e9f4f3] shadow-sm transition duration-300 group-hover:shadow-[0_14px_38px_rgba(17,17,17,0.10)]">
                   <div className="absolute left-3 top-3 rtl:left-auto rtl:right-3">
-                    <Badge className="rounded-md bg-[#16325c] px-2.5 py-1 text-xs font-bold leading-none text-white shadow-sm">
+                    <Badge className="bg-[#16325c] text-[11px] leading-none text-white shadow-sm">
                       {card.badge}
                     </Badge>
                   </div>

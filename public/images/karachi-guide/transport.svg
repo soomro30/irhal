@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600" role="img" aria-labelledby="title desc">
+  <title id="title">Transportation guide artwork</title>
+  <desc id="desc">A simple bus and route illustration.</desc>
+  <rect width="800" height="600" fill="#eef7f6"/>
+  <path d="M0 370c82-62 168-64 258-6 80 52 160 54 242 5 92-55 184-60 300-15v246H0z" fill="#cde7e2"/>
+  <path d="M210 172h320c64 0 96 34 96 98v118c0 43-35 78-78 78H192c-43 0-78-35-78-78V268c0-53 43-96 96-96z" fill="#fffaf0"/>
+  <rect x="172" y="224" width="382" height="106" rx="18" fill="#1e2d4b"/>
+  <rect x="194" y="246" width="92" height="62" rx="8" fill="#8fc5f7"/>
+  <rect x="314" y="246" width="92" height="62" rx="8" fill="#8fc5f7"/>
+  <rect x="434" y="246" width="92" height="62" rx="8" fill="#8fc5f7"/>
+  <rect x="176" y="352" width="388" height="28" rx="14" fill="#058044"/>
+  <circle cx="232" cy="466" r="44" fill="#1e2d4b"/>
+  <circle cx="516" cy="466" r="44" fill="#1e2d4b"/>
+  <circle cx="646" cy="142" r="42" fill="#ffad18"/>
+  <path d="M138 116c98-48 190-48 276 0 72 40 146 42 222 6" fill="none" stroke="#df1718" stroke-width="18" stroke-linecap="round"/>
+</svg>

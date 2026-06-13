@@ -2,7 +2,7 @@
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type CityHeroCarouselLabels = {
   previous: string;
@@ -11,51 +11,103 @@ type CityHeroCarouselLabels = {
 };
 
 type CityHeroCarouselProps = {
+  autoAdvanceMs?: number;
   images: string[];
   alt: string;
   dir?: "ltr" | "rtl";
+  backdropClassName?: string;
   frameClassName?: string;
+  imageClassName?: string;
+  mirrorForRtl?: boolean;
+  objectFit?: "contain" | "cover" | "fill";
   labels: CityHeroCarouselLabels;
   sizes?: string;
 };
 
 export function CityHeroCarousel({
+  autoAdvanceMs,
   images,
   alt,
+  backdropClassName,
   dir = "ltr",
   frameClassName = "absolute inset-0",
+  imageClassName = "object-cover object-center",
+  mirrorForRtl = true,
+  objectFit = "cover",
   labels,
   sizes = "100vw",
 }: CityHeroCarouselProps) {
   const safeImages = images.filter(Boolean);
   const total = safeImages.length;
   const [index, setIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
   const safeIndex = total > 0 ? Math.min(index, total - 1) : 0;
   const hasMultiple = total > 1;
   const currentImage = safeImages[safeIndex];
-
-  if (!currentImage) return null;
 
   const go = (delta: number) =>
     setIndex((current) => (current + delta + total) % total);
 
   const PreviousIcon = dir === "rtl" ? ChevronRight : ChevronLeft;
   const NextIcon = dir === "rtl" ? ChevronLeft : ChevronRight;
+  const imageTransform =
+    mirrorForRtl && dir === "rtl" ? "scaleX(-1)" : undefined;
+
+  useEffect(() => {
+    if (!autoAdvanceMs || autoAdvanceMs <= 0 || !hasMultiple || isPaused) {
+      return;
+    }
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return;
+    }
+
+    const timer = window.setInterval(() => {
+      setIndex((current) => (current + 1) % total);
+    }, autoAdvanceMs);
+
+    return () => window.clearInterval(timer);
+  }, [autoAdvanceMs, hasMultiple, isPaused, total]);
+
+  if (!currentImage) return null;
 
   return (
-    <div className={frameClassName}>
+    <div
+      className={frameClassName}
+      onBlur={() => setIsPaused(false)}
+      onFocus={() => setIsPaused(true)}
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
+      {backdropClassName ? (
+        <Image
+          alt=""
+          aria-hidden="true"
+          className={backdropClassName}
+          fill
+          quality={90}
+          sizes={sizes}
+          src={currentImage}
+          style={{
+            objectFit: "cover",
+            objectPosition: "center center",
+            transform: imageTransform,
+          }}
+        />
+      ) : null}
       <Image
         alt={hasMultiple ? `${alt} (${safeIndex + 1} of ${total})` : alt}
-        className="object-cover object-center"
+        className={imageClassName}
         fetchPriority={safeIndex === 0 ? "high" : "auto"}
         fill
         loading={safeIndex === 0 ? "eager" : "lazy"}
+        quality={90}
         sizes={sizes}
         src={currentImage}
         style={{
-          objectFit: "cover",
+          objectFit,
           objectPosition: "center center",
-          transform: dir === "rtl" ? "scaleX(-1)" : undefined,
+          transform: imageTransform,
         }}
       />
 

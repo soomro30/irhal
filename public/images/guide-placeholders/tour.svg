@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 620" role="img" aria-label="Tour placeholder image">
+  <rect width="900" height="620" fill="#e7e1d4"/>
+  <path d="M80 440c130-130 235-140 340-40s220 88 400-70v290H80z" fill="#93c5fd"/>
+  <path d="M120 205h660v300H120z" fill="#f8fafc"/>
+  <path d="M180 260h170v145H180zM395 260h170v145H395zM610 260h110v145H610z" fill="#20262b"/>
+  <path d="M200 150h500l80 55H120z" fill="#0f766e"/>
+  <circle cx="270" cy="505" r="48" fill="#111827"/><circle cx="640" cy="505" r="48" fill="#111827"/>
+  <text x="52" y="82" font-family="Arial, sans-serif" font-size="38" font-weight="700" fill="#20262b">Tours</text>
+</svg>

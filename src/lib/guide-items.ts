@@ -1,5 +1,6 @@
 import type { CityGuide, GuideBlock } from "./city-data";
 import { getGuideSection, getGuideTable } from "./city-data";
+import { getGuideItemImage, hasGuideItemMedia } from "./city-presentation";
 import karachiIrhalLegacyArticleUpdates from "../data/karachi-irhal-legacy-article-updates.json";
 
 export type GuideItemKind = "place" | "hotel" | "restaurant" | "masjid" | "shopping" | "tour" | "family" | "festival";
@@ -79,6 +80,8 @@ export type GuideArticle = {
   title: string;
   slug: string;
   summary: string;
+  imageAlt?: string;
+  imageUrl?: string;
   blocks: GuideBlock[];
   translations?: Record<string, Record<string, unknown>>;
 };
@@ -298,6 +301,20 @@ const asArabicParagraphs = (value: unknown): string[] | undefined => {
   return paragraphs && paragraphs.length > 0 ? paragraphs : undefined;
 };
 
+export const hasArabicGuideItemCopy = (item: GuideItem) => {
+  const translation = item.translations?.ar ?? {};
+  const hasTitle = hasArabicText(translation.title ?? translation.name);
+  const hasSummary = hasArabicText(
+    translation.summary ?? translation.description,
+  );
+  const hasBody =
+    Boolean(asArabicParagraphs(translation.overview)) ||
+    Boolean(asArabicParagraphs(translation.body)) ||
+    hasSummary;
+
+  return hasTitle && hasSummary && hasBody;
+};
+
 const arabicKindLabel: Record<GuideItemKind, string> = {
   family: "عائلي",
   festival: "فعالية",
@@ -403,9 +420,97 @@ export const getGuideItemsByKind = (city: CityGuide, kind: GuideItemKind) =>
 export const getGuideItem = (city: CityGuide, kind: GuideItemKind, slug: string) =>
   getGuideItemsByKind(city, kind).find((item) => item.slug === slug);
 
+const canonicalArticleByGuideItemSlug: Record<
+  string,
+  { articleSlug: string; sectionSlug: string }
+> = {
+  "london-currency-and-exchange-rates": {
+    articleSlug: "exchange-rates",
+    sectionSlug: "visitor-information",
+  },
+  "london-fast-facts": {
+    articleSlug: "fast-facts",
+    sectionSlug: "visitor-information",
+  },
+  "driving-tips-for-london": {
+    articleSlug: "driving-tips",
+    sectionSlug: "transportation-and-getting-around",
+  },
+  "london-buses": {
+    articleSlug: "buses",
+    sectionSlug: "transportation-and-getting-around",
+  },
+  "london-history": {
+    articleSlug: "city-back-then",
+    sectionSlug: "city-information",
+  },
+  "london-public-holidays": {
+    articleSlug: "public-holidays-england-and-wales-2026",
+    sectionSlug: "visitor-information",
+  },
+  "london-today": {
+    articleSlug: "city-today",
+    sectionSlug: "city-information",
+  },
+  "london-taxis": {
+    articleSlug: "taxis-and-ride-hailing",
+    sectionSlug: "transportation-and-getting-around",
+  },
+  "london-underground-tube": {
+    articleSlug: "underground-and-elizabeth-line",
+    sectionSlug: "transportation-and-getting-around",
+  },
+  "london-visa-information": {
+    articleSlug: "visa-and-eta-information",
+    sectionSlug: "visitor-information",
+  },
+  "london-weather-and-annual-temperature": {
+    articleSlug: "annual-temperature-and-rainfall",
+    sectionSlug: "visitor-information",
+  },
+  "when-to-go-to-london": {
+    articleSlug: "when-to-go",
+    sectionSlug: "visitor-information",
+  },
+};
+
+export const canonicalArticlePathForGuideItem = (
+  city: CityGuide,
+  item: GuideItem,
+) => {
+  const canonicalArticle = canonicalArticleByGuideItemSlug[item.slug];
+  if (!canonicalArticle || item.sectionSlug !== canonicalArticle.sectionSlug) {
+    return undefined;
+  }
+  return `/city/${city.slug}/section/${canonicalArticle.sectionSlug}/${canonicalArticle.articleSlug}`;
+};
+
 export const pathForGuideItem = (city: CityGuide, item: GuideItem) => {
+  const articlePath = canonicalArticlePathForGuideItem(city, item);
+  if (articlePath) return articlePath;
   if (item.kind === "family") return `/city/${city.slug}/family/${item.slug}`;
   return `/city/${city.slug}/${item.kind}/${item.slug}`;
+};
+
+const stripLeadingSectionNumber = (value: string) =>
+  value.replace(/^[0-9]+[.)]?\s*/, "").trim();
+
+export const isSectionIntroArticle = (
+  city: CityGuide,
+  sectionSlug: string,
+  article: Pick<GuideArticle, "slug" | "title">,
+) => {
+  const section = getGuideSection(city, sectionSlug);
+  const sectionTitle = stripLeadingSectionNumber(
+    section?.title ?? sectionCards.find((card) => card.slug === sectionSlug)?.title ?? sectionSlug,
+  );
+  const articleTitle = stripLeadingSectionNumber(article.title);
+
+  return (
+    article.slug === sectionSlug ||
+    article.slug === slugifyGuideItem(sectionTitle) ||
+    slugifyGuideItem(articleTitle) === slugifyGuideItem(sectionTitle)
+  );
 };
 
 const articleTablePurpose = (
@@ -526,6 +631,68 @@ const withGuideArticleTranslations = (
   return translations ? { ...article, translations } : article;
 };
 
+type ArticleMediaTarget = {
+  kind: GuideItemKind;
+  slug: string;
+};
+
+const articleMediaTargetsByCity: Record<
+  string,
+  Record<string, ArticleMediaTarget[]>
+> = {
+  london: {
+    "transportation-and-getting-around:buses": [
+      { kind: "tour", slug: "london-buses" },
+      { kind: "tour", slug: "big-bus-london-sightseeing-tour" },
+    ],
+    "transportation-and-getting-around:driving-tips": [
+      { kind: "shopping", slug: "seven-dials" },
+    ],
+    "transportation-and-getting-around:from-gatwick": [
+      { kind: "place", slug: "king-s-cross-and-st-pancras" },
+    ],
+    "transportation-and-getting-around:from-heathrow": [
+      { kind: "place", slug: "king-s-cross-and-st-pancras" },
+    ],
+    "transportation-and-getting-around:national-rail-and-overground": [
+      { kind: "place", slug: "king-s-cross-and-st-pancras" },
+    ],
+    "transportation-and-getting-around:taxis-and-ride-hailing": [
+      { kind: "shopping", slug: "seven-dials" },
+      { kind: "tour", slug: "london-taxis" },
+    ],
+    "transportation-and-getting-around:underground-and-elizabeth-line": [
+      { kind: "place", slug: "king-s-cross-and-st-pancras" },
+      { kind: "tour", slug: "london-underground-tube" },
+    ],
+  },
+};
+
+const withGuideArticleMedia = (
+  city: CityGuide,
+  article: GuideArticle,
+): GuideArticle => {
+  if (article.imageUrl?.trim()) return article;
+
+  const targets =
+    articleMediaTargetsByCity[city.slug]?.[
+      `${article.sectionSlug}:${article.slug}`
+    ] ?? [];
+  const item = targets
+    .map((target) => getGuideItem(city, target.kind, target.slug))
+    .find((candidate): candidate is GuideItem =>
+      Boolean(candidate && hasGuideItemMedia(candidate)),
+    );
+
+  if (!item) return article;
+
+  return {
+    ...article,
+    imageAlt: article.imageAlt || item.imageAlt,
+    imageUrl: getGuideItemImage(item).image,
+  };
+};
+
 export const getGuideArticlesForSection = (city: CityGuide, sectionSlug: string): GuideArticle[] => {
   const section = getGuideSection(city, sectionSlug);
   if (!section) return [];
@@ -551,7 +718,7 @@ export const getGuideArticlesForSection = (city: CityGuide, sectionSlug: string)
     }
 
     if (block.style === "Heading 2" || block.style === "Heading 3") {
-      const headingSlug = slugifyGuideItem(block.text);
+      const headingSlug = block.articleSlug || slugifyGuideItem(block.text);
       const continuesWhenToGo =
         sectionSlug === "visitor-information" &&
         current?.slug === "when-to-go" &&
@@ -573,6 +740,8 @@ export const getGuideArticlesForSection = (city: CityGuide, sectionSlug: string)
         title: block.text,
         slug: headingSlug,
         summary: "",
+        imageAlt: block.imageAlt,
+        imageUrl: block.imageUrl,
         blocks: [],
         contentSource: city.contentSource,
       };
@@ -598,12 +767,21 @@ export const getGuideArticlesForSection = (city: CityGuide, sectionSlug: string)
   }
 
   if (current) articles.push(current);
+  const hasSectionItems = getGuideItemsForSection(city, sectionSlug).length > 0;
   const normalizedArticles = articles
     .filter((article) => article.summary || article.blocks.length > 0)
+    .filter(
+      (article) =>
+        !hasSectionItems ||
+        !isSectionIntroArticle(city, sectionSlug, article),
+    )
     .map((article) =>
-      withGuideArticleTranslations(
+      withGuideArticleMedia(
         city,
-        withArticleSummary(withArticleTable(city, article)),
+        withGuideArticleTranslations(
+          city,
+          withArticleSummary(withArticleTable(city, article)),
+        ),
       ),
     );
 

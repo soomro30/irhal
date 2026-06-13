@@ -107,6 +107,9 @@ export type Itinerary = {
 };
 
 export type GuideParagraphBlock = {
+  articleSlug?: string;
+  imageAlt?: string;
+  imageUrl?: string;
   type: "paragraph";
   style: string;
   text: string;
@@ -406,7 +409,7 @@ export const cities: CityGuide[] = [
     country: "Pakistan",
     region: "Sindh",
     locale: "en",
-    lede: "Karachi is Pakistan's largest coastal city, a business capital, food powerhouse, and layered urban gateway where historic quarters, beach districts, shopping corridors, masjids, and family-friendly attractions need neighborhood-led navigation.",
+    lede: "Karachi is Pakistan's great Arabian Sea metropolis: a port city, business engine, food capital, shrine landscape, and restless coastal gateway all at once. First-time visitors should read it by neighborhood, moving from Saddar's colonial streets and M.A. Jinnah Road's old-city markets to Clifton, DHA, Sea View, Burns Road, family museums, major masjids, and late-evening restaurants with time built in for traffic, heat, and prayer breaks.",
     heroImageUrl: mediaFallback(
       "karachi-hero-mohatta-palace.webp",
       "/images/karachi-guide/place-mohatta-palace.jpg",
@@ -423,6 +426,19 @@ export const cities: CityGuide[] = [
     timezone: "Asia/Karachi",
     currency: "PKR",
     languages: ["Urdu", "English", "Sindhi"],
+    translations: {
+      ar: {
+        bestTimeToVisit: "نوفمبر إلى فبراير",
+        countryName: "باكستان",
+        currency: "الروبية الباكستانية",
+        description:
+          "كراتشي هي حاضرة باكستان الكبرى على بحر العرب؛ مدينة ميناء ومحرك تجاري وعاصمة للمذاق المحلي ومشهد عمراني تتجاور فيه الأضرحة والأسواق والأحياء الساحلية. ويستحسن للزائر أن يقرأها عبر أحيائها: من شوارع صدر ذات الذاكرة الاستعمارية وأسواق شارع محمد علي جناح في قلب المدينة القديمة، إلى كليفتون ودي إتش إيه وسي فيو وطريق بيرنز والمتاحف العائلية والمساجد الكبرى ومطاعم المساء، مع ترك هامش كافٍ للزحام والحرارة ومواقيت الصلاة.",
+        languages: "الأردية، الإنجليزية، السندية",
+        lede:
+          "كراتشي هي حاضرة باكستان الكبرى على بحر العرب؛ مدينة ميناء ومحرك تجاري وعاصمة للمذاق المحلي ومشهد عمراني تتجاور فيه الأضرحة والأسواق والأحياء الساحلية. ويستحسن للزائر أن يقرأها عبر أحيائها: من شوارع صدر ذات الذاكرة الاستعمارية وأسواق شارع محمد علي جناح في قلب المدينة القديمة، إلى كليفتون ودي إتش إيه وسي فيو وطريق بيرنز والمتاحف العائلية والمساجد الكبرى ومطاعم المساء، مع ترك هامش كافٍ للزحام والحرارة ومواقيت الصلاة.",
+        name: "كراتشي",
+      },
+    },
     latitude: 24.8607,
     longitude: 67.0011,
     mapUrl: googleMaps("Karachi Pakistan"),

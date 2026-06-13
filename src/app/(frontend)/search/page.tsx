@@ -21,7 +21,7 @@ export const metadata: Metadata = pageMetadata({
 
 export type SearchPageProps = {
   locale?: SearchLocale;
-  searchParams?: Promise<{ q?: string }>;
+  searchParams?: Promise<{ city?: string; q?: string }>;
 };
 
 const copy = {
@@ -53,9 +53,15 @@ export async function SearchPageContent({
 }: SearchPageProps) {
   const resolvedSearchParams = (await searchParams) ?? {};
   const query = (resolvedSearchParams.q ?? "").trim();
+  const citySlug = (resolvedSearchParams.city ?? "").trim() || undefined;
   const isArabic = locale === "ar";
   const t = copy[locale];
-  const results = await searchSite({ query, locale, limit: query ? 48 : 12 });
+  const results = await searchSite({
+    citySlug,
+    query,
+    locale,
+    limit: query ? 48 : 12,
+  });
 
   return (
     <PageShell
@@ -80,6 +86,7 @@ export async function SearchPageContent({
             </p>
             <SiteSearchBox
               className="mt-7"
+              citySlug={citySlug}
               initialQuery={query}
               key={`${locale}:${query}`}
               locale={locale}
@@ -115,7 +122,7 @@ export async function SearchPageContent({
                         alt=""
                         className="object-cover transition duration-500 group-hover:scale-105"
                         fill
-                        sizes="88px"
+                        sizes="256px"
                         src={result.image}
                       />
                     ) : (

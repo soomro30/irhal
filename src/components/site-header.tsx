@@ -31,6 +31,10 @@ const arabicCityNavLabels: Record<string, { country?: string; name: string }> = 
     country: "باكستان",
     name: "كراتشي",
   },
+  london: {
+    country: "المملكة المتحدة",
+    name: "لندن",
+  },
 };
 
 function getLocalizedCityNavItem(city: CityNavItem, isArabic: boolean): CityNavItem {
@@ -38,12 +42,19 @@ function getLocalizedCityNavItem(city: CityNavItem, isArabic: boolean): CityNavI
     return city;
   }
 
+  const arabic = city.translations?.ar;
+  const translatedName =
+    typeof arabic?.name === "string" && arabic.name ? arabic.name : undefined;
+  const translatedCountry =
+    typeof arabic?.countryName === "string" && arabic.countryName
+      ? arabic.countryName
+      : undefined;
   const labels = arabicCityNavLabels[city.slug];
 
   return {
     ...city,
-    country: labels?.country ?? city.country,
-    name: labels?.name ?? city.name,
+    country: translatedCountry ?? labels?.country ?? city.country,
+    name: translatedName ?? labels?.name ?? city.name,
   };
 }
 
@@ -111,7 +122,7 @@ export function SiteHeader({ cityItems, isArabic }: SiteHeaderProps) {
       };
 
   return (
-    <header className="sticky top-0 z-40 border-b border-ink/15 bg-white shadow-sm shadow-ink/5">
+    <header className="sticky top-0 z-40 border-b border-ink/10 bg-white shadow-[0_4px_20px_rgba(17,17,17,0.05)]">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-5">
         <div className="flex items-center gap-7">
           <Link
@@ -119,7 +130,7 @@ export function SiteHeader({ cityItems, isArabic }: SiteHeaderProps) {
             className="inline-flex items-center"
             href={homeHref}
           >
-            <span className="inline-flex items-center rounded-xl bg-irhal-red px-3 py-2 shadow-sm transition-shadow hover:shadow-md">
+            <span className="inline-flex items-center rounded-lg bg-irhal-red px-3 py-2 shadow-sm transition-shadow hover:shadow-md">
               <Image
                 alt="Irhal"
                 className="h-5 w-auto"

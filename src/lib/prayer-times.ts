@@ -3,9 +3,11 @@ import type { CityGuide } from "./city-data";
 const ALADHAN_BASE_URL = "https://api.aladhan.com/v1";
 const PRAYER_METHOD_BY_CITY: Record<string, number> = {
   karachi: 1,
+  london: 3,
 };
 const TIME_ZONE_BY_CITY: Record<string, string> = {
   karachi: "Asia/Karachi",
+  london: "Europe/London",
 };
 
 export type PrayerKey = "Fajr" | "Sunrise" | "Dhuhr" | "Asr" | "Maghrib" | "Isha";

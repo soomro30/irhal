@@ -172,7 +172,8 @@ export async function ItinerariesPageContent({
                     className="object-cover transition duration-500 group-hover:scale-105"
                     fill
                     loading={index < 3 ? "eager" : "lazy"}
-                    sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 390px"
+                    quality={90}
+                    sizes="(max-width: 768px) 100vw, (max-width: 1280px) 72vw, 960px"
                     src={
                       itineraryCardImages[itinerary.slug] ??
                       itineraryHeroImage({ city, itinerary, locale })

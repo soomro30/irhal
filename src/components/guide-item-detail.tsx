@@ -14,25 +14,24 @@ import Image from "next/image";
 import Link from "next/link";
 
 import type { CityGuide } from "@/lib/city-data";
-import {
-  getGuideItemImage,
-  getGuideItemImages,
-} from "@/lib/city-presentation";
+import { getGuideItemImage, getGuideItemImages } from "@/lib/city-presentation";
 import type { GuideItem } from "@/lib/guide-items";
 import {
   getGuideItems,
   getLocalizedGuideSectionCopy,
   guideKindOrder,
+  hasArabicGuideItemCopy,
   kindPlural,
   kindSingular,
   localizeGuideItem,
   pathForGuideItem,
 } from "@/lib/guide-items";
 import { breadcrumbJsonLd, guideItemJsonLd } from "@/lib/seo";
+import { getSiteSettings } from "@/lib/site-settings";
 import { DetailMediaGallery } from "./detail-media-gallery";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
-import { GuideItemRail } from "./guide-item-card";
+import { GuideItemRail, sortGuideItemsForCards } from "./guide-item-card";
 import { JsonLd } from "./json-ld";
 import { PageShell } from "./page-shell";
 
@@ -51,7 +50,7 @@ const priceSymbol = (value?: string) => {
 const comparableText = (value?: string) =>
   value?.replace(/\s+/g, " ").trim().toLowerCase() ?? "";
 
-export function GuideItemDetail({
+export async function GuideItemDetail({
   city,
   item,
   locale = "en",
@@ -60,6 +59,8 @@ export function GuideItemDetail({
   item: GuideItem;
   locale?: "en" | "ar";
 }) {
+  const siteSettings = await getSiteSettings();
+  const guideCardSortMode = siteSettings.guideCardSortMode;
   const isArabic = locale === "ar";
   const localePrefix = isArabic ? "/ar" : "/en";
   const cityName =
@@ -79,7 +80,9 @@ export function GuideItemDetail({
     | { overview?: string[]; address?: string }
     | undefined;
   const overviewParagraphs =
-    isArabic && Array.isArray(arTranslation?.overview) && arTranslation.overview.length > 0
+    isArabic &&
+    Array.isArray(arTranslation?.overview) &&
+    arTranslation.overview.length > 0
       ? arTranslation.overview
       : item.originalContent;
   const overviewAddress =
@@ -117,7 +120,8 @@ export function GuideItemDetail({
         overview: "نظرة عامة",
         planBody: `ابنِ مسارك، واعثر على الطعام الحلال وأماكن الصلاة، ونظّم أيامك في ${cityName}.`,
         planStop: "خطط لهذه المحطة",
-        planStopBody: "احفظ المكان ضمن مسارك، وراجِع الموقع والوقت المناسب قبل الانطلاق.",
+        planStopBody:
+          "احفظ المكان ضمن مسارك، وراجِع الموقع والوقت المناسب قبل الانطلاق.",
         planTitle: "خطط رحلتك",
         price: "السعر",
         quickFacts: "حقائق سريعة",
@@ -152,7 +156,8 @@ export function GuideItemDetail({
         overview: "Overview",
         planBody: `Build a route, find halal food and prayer spots, and map your days in ${cityName}.`,
         planStop: "Plan this stop",
-        planStopBody: "Save it into your route, check the location, and group nearby stops before you go.",
+        planStopBody:
+          "Save it into your route, check the location, and group nearby stops before you go.",
         planTitle: "Plan your trip",
         price: "Price",
         quickFacts: "Quick facts",
@@ -168,14 +173,24 @@ export function GuideItemDetail({
 
   const lang = isArabic ? "ar" : "en";
   const itemLabels = isArabic
-    ? { discover: "اكتشف", map: "الخريطة", savePrefix: "حفظ", verified: "تم التحقق" }
-    : { discover: "Discover", map: "Map", savePrefix: "Save", verified: "Verified" };
+    ? {
+        discover: "اكتشف",
+        map: "الخريطة",
+        savePrefix: "حفظ",
+        verified: "تم التحقق",
+      }
+    : {
+        discover: "Discover",
+        map: "Map",
+        savePrefix: "Save",
+        verified: "Verified",
+      };
 
   // Quick facts (curated, never a raw column dump).
-  const price = priceSymbol(item.budget) ?? priceSymbol(item.category);
-  const typeValue = priceSymbol(item.category)
-    ? kindSingular[item.kind][lang]
-    : item.category || kindSingular[item.kind][lang];
+  const price =
+    priceSymbol(item.budget) ??
+    (item.kind === "hotel" ? priceSymbol(item.category) : undefined);
+  const typeValue = item.category || kindSingular[item.kind][lang];
   const facts = [
     item.area ? { label: copy.area, value: item.area } : null,
     { label: copy.type, value: typeValue },
@@ -185,14 +200,20 @@ export function GuideItemDetail({
 
   // Cross-discovery: same-kind first ("more like this"), then other categories.
   const allItems = getGuideItems(city);
+  const relatedItemsForKind = (kind: GuideItem["kind"]) =>
+    allItems
+      .filter((other) => other.kind === kind && other.slug !== item.slug)
+      .filter((other) => !isArabic || hasArabicGuideItemCopy(other));
   const relatedKinds = guideKindOrder.filter(
-    (kind) =>
-      kind !== item.kind && allItems.some((other) => other.kind === kind),
+    (kind) => kind !== item.kind && relatedItemsForKind(kind).length > 0,
   );
 
   const sidebarItems = relatedKinds
     .flatMap((kind) =>
-      allItems.filter((other) => other.kind === kind).slice(0, 2),
+      sortGuideItemsForCards(
+        relatedItemsForKind(kind),
+        guideCardSortMode,
+      ).slice(0, 2),
     )
     .slice(0, 6)
     .map((other) => {
@@ -208,19 +229,26 @@ export function GuideItemDetail({
   const railKinds = [item.kind, ...relatedKinds].slice(0, 3);
   const relatedRails = railKinds
     .map((kind) => {
-      const kindItems = allItems.filter(
-        (other) => other.kind === kind && other.slug !== item.slug,
+      const kindItems = relatedItemsForKind(kind);
+      const sortedKindItems = sortGuideItemsForCards(
+        kindItems,
+        guideCardSortMode,
       );
-      if (kindItems.length === 0) return null;
+      if (sortedKindItems.length === 0) return null;
       return {
         kind,
-        href: `${localePrefix}/city/${city.slug}/section/${kindItems[0].sectionSlug}`,
-        items: kindItems.slice(0, 10).map((other) => localizeGuideItem(other, locale)),
+        href: `${localePrefix}/city/${city.slug}/section/${sortedKindItems[0].sectionSlug}`,
+        items: sortedKindItems.map((other) => localizeGuideItem(other, locale)),
       };
     })
     .filter(
-      (rail): rail is { kind: GuideItem["kind"]; href: string; items: GuideItem[] } =>
-        Boolean(rail),
+      (
+        rail,
+      ): rail is {
+        kind: GuideItem["kind"];
+        href: string;
+        items: GuideItem[];
+      } => Boolean(rail),
     );
 
   const railTitle = (kind: GuideItem["kind"]) =>
@@ -243,18 +271,21 @@ export function GuideItemDetail({
     >
       <JsonLd
         data={[
-          breadcrumbJsonLd([
-            { name: "Home", path: "/" },
-            { name: city.name, path: `/city/${city.slug}` },
-            {
-              name: sectionTitle,
-              path: `/city/${city.slug}/section/${item.sectionSlug}`,
-            },
-            {
-              name: item.title,
-              path: `/city/${city.slug}/${item.kind}/${item.slug}`,
-            },
-          ], locale),
+          breadcrumbJsonLd(
+            [
+              { name: "Home", path: "/" },
+              { name: city.name, path: `/city/${city.slug}` },
+              {
+                name: sectionTitle,
+                path: `/city/${city.slug}/section/${item.sectionSlug}`,
+              },
+              {
+                name: item.title,
+                path: `/city/${city.slug}/${item.kind}/${item.slug}`,
+              },
+            ],
+            locale,
+          ),
           guideItemJsonLd({
             citySlug: city.slug,
             cityName: city.name,
@@ -279,7 +310,10 @@ export function GuideItemDetail({
                 </h1>
                 <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-bold text-travel-navy/75">
                   <span className="inline-flex items-center gap-1.5">
-                    <ShieldCheck aria-hidden="true" className="h-4 w-4 text-coastal" />
+                    <ShieldCheck
+                      aria-hidden="true"
+                      className="h-4 w-4 text-coastal"
+                    />
                     {copy.cityGuide}
                   </span>
                   <span className="text-ink/30">•</span>
@@ -374,16 +408,17 @@ export function GuideItemDetail({
                     {copy.overview}
                   </h2>
                   <div className="mt-5 space-y-5">
-                    {(overviewParagraphs?.length ? overviewParagraphs : [item.description]).map(
-                      (paragraph, index) => (
-                        <p
-                          className="max-w-3xl text-lg leading-8 text-ink/80"
-                          key={`${item.slug}-para-${index}`}
-                        >
-                          {paragraph}
-                        </p>
-                      ),
-                    )}
+                    {(overviewParagraphs?.length
+                      ? overviewParagraphs
+                      : [item.description]
+                    ).map((paragraph, index) => (
+                      <p
+                        className="max-w-3xl text-lg leading-8 text-ink/80"
+                        key={`${item.slug}-para-${index}`}
+                      >
+                        {paragraph}
+                      </p>
+                    ))}
                   </div>
                 </article>
 
@@ -412,7 +447,12 @@ export function GuideItemDetail({
                     </p>
                     <div className="mt-5 grid gap-3">
                       {item.mapUrl ? (
-                        <Button asChild className="w-full rounded-full" size="lg" variant="blue">
+                        <Button
+                          asChild
+                          className="w-full rounded-full"
+                          size="lg"
+                          variant="blue"
+                        >
                           <a href={item.mapUrl}>
                             <MapPin aria-hidden="true" />
                             {copy.checkMap}
@@ -420,7 +460,12 @@ export function GuideItemDetail({
                           </a>
                         </Button>
                       ) : null}
-                      <Button asChild className="w-full rounded-full" size="lg" variant="outline">
+                      <Button
+                        asChild
+                        className="w-full rounded-full"
+                        size="lg"
+                        variant="outline"
+                      >
                         <Link href={`${cityBasePath}/itineraries`}>
                           <Route aria-hidden="true" />
                           {copy.itineraries}
@@ -446,7 +491,9 @@ export function GuideItemDetail({
                             className="mt-0.5 h-5 w-5 shrink-0 text-coastal"
                           />
                           <div>
-                            <p className="text-sm font-black text-travel-navy">{title}</p>
+                            <p className="text-sm font-black text-travel-navy">
+                              {title}
+                            </p>
                             <p className="mt-0.5 text-sm leading-5 text-travel-navy/65">
                               {body}
                             </p>
@@ -496,7 +543,7 @@ export function GuideItemDetail({
                                   alt={related.title}
                                   className="object-cover"
                                   fill
-                                  sizes="64px"
+                                  sizes="256px"
                                   src={related.image}
                                 />
                               </span>
@@ -538,7 +585,10 @@ export function GuideItemDetail({
                 items={rail.items}
                 key={rail.kind}
                 labels={itemLabels}
+                limit={10}
                 pathPrefix={localePrefix}
+                preserveOrder
+                sortMode={guideCardSortMode}
                 subtitle={copy.railSubtitle}
                 title={railTitle(rail.kind)}
               />

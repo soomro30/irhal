@@ -118,18 +118,34 @@ export const neighborhoodJsonLd = (
   city: CityGuide,
   neighborhood: Neighborhood,
   locale: PageLocale = "en",
-) => ({
-  "@context": "https://schema.org",
-  "@type": "Place",
-  name: `${neighborhood.name}, ${city.name}`,
-  description: neighborhood.operatingGuide,
-  url: localizedUrl(`/city/${city.slug}/neighborhood/${neighborhood.slug}`, locale),
-  geo: {
-    "@type": "GeoCoordinates",
-    latitude: neighborhood.latitude,
-    longitude: neighborhood.longitude,
-  },
-});
+) => {
+  const translation = neighborhood.translations?.[locale];
+  const neighborhoodName =
+    (typeof translation?.name === "string" && translation.name) ||
+    neighborhood.name;
+  const description =
+    (typeof translation?.description === "string" && translation.description) ||
+    (typeof translation?.operatingGuide === "string" &&
+      translation.operatingGuide) ||
+    neighborhood.operatingGuide;
+  const cityName = localizedCityName(city, locale);
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "Place",
+    name: `${neighborhoodName}, ${cityName}`,
+    description,
+    url: localizedUrl(
+      `/city/${city.slug}/neighborhood/${neighborhood.slug}`,
+      locale,
+    ),
+    geo: {
+      "@type": "GeoCoordinates",
+      latitude: neighborhood.latitude,
+      longitude: neighborhood.longitude,
+    },
+  };
+};
 
 const guideItemSchemaType: Record<string, string> = {
   family: "TouristAttraction",

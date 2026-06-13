@@ -135,6 +135,39 @@ export const SiteSettings: GlobalConfig = {
           ],
         },
         {
+          label: "Content Display",
+          fields: [
+            {
+              name: "guideCardSortMode",
+              type: "select",
+              defaultValue: "media",
+              options: [
+                {
+                  label: "Media first",
+                  value: "media",
+                },
+                {
+                  label: "More description first",
+                  value: "more-description",
+                },
+                {
+                  label: "Recent update first",
+                  value: "recent-update",
+                },
+                {
+                  label: "Name A-Z",
+                  value: "name",
+                },
+              ],
+              required: true,
+              admin: {
+                description:
+                  "Default ordering for public guide cards and rails. Media first gives photo-backed records priority for a more polished public page.",
+              },
+            },
+          ],
+        },
+        {
           label: "Organization Schema",
           fields: [
             {

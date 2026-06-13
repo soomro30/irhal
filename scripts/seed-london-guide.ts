@@ -7,6 +7,7 @@ import {
   assertSafeCityBaselineSeed,
   type SeedDbClient,
 } from "./lib/payload-seed-safety";
+import { londonItineraryDetailsBySlug } from "./lib/london-itinerary-details";
 
 nextEnv.loadEnvConfig(process.cwd());
 
@@ -67,11 +68,28 @@ type LondonGuideData = {
     audience: string;
     days: Array<{
       dayNumber: number;
+      description?: string;
+      start?: string;
+      transport?: string;
+      breakfast?: string;
+      lunch?: string;
+      dinner?: string;
+      pacing?: string;
       routeNotes: string;
       stops: string[];
       theme: string;
     }>;
     durationDays: number;
+    intro?: string;
+    planning?: {
+      stay?: string;
+      transport?: string;
+      meals?: {
+        breakfast?: string;
+        lunch?: string;
+        dinner?: string;
+      };
+    };
     slug: string;
     summary: string;
     title: string;
@@ -121,6 +139,72 @@ const source: Source = {
   type: "editorial",
   url: "local-docx-import",
   verifiedAt: "2026-05-29",
+};
+
+const londonItineraryStopSlugs: Record<string, string[]> = {
+  "classic-first-day": [
+    "place:westminster-abbey",
+    "place:palace-of-westminster-and-elizabeth-tower",
+    "place:buckingham-palace",
+    "place:trafalgar-square",
+    "place:covent-garden",
+    "tour:city-of-westminster-royal-walking-route",
+  ],
+  "muslim-heritage-day": [
+    "masjid:east-london-mosque-and-london-muslim-centre",
+    "place:whitechapel-road",
+    "masjid:brick-lane-jamme-masjid",
+    "place:old-spitalfields-market",
+    "shopping:whitechapel-market",
+    "restaurant:whitechapel-and-brick-lane",
+  ],
+  "family-museum-day": [
+    "family:natural-history-museum",
+    "family:science-museum",
+    "place:victoria-and-albert-museum",
+    "restaurant:comptoir-libanais-south-kensington",
+    "restaurant:khan-s-of-kensington",
+  ],
+  "royal-parks-and-mosque-day": [
+    "masjid:london-central-mosque-and-islamic-cultural-centre",
+    "tour:regent-s-park-mosque-and-marylebone-route",
+    "shopping:oxford-street",
+    "shopping:regent-street",
+    "place:hyde-park",
+    "restaurant:edgware-road-and-bayswater",
+  ],
+  "greenwich-day": [
+    "tour:thames-river-cruise-westminster-to-greenwich",
+    "place:cutty-sark",
+    "place:national-maritime-museum",
+    "place:greenwich-park",
+    "place:royal-observatory-greenwich",
+    "shopping:greenwich-market",
+  ],
+  "luxury-shopping-day": [
+    "shopping:harrods",
+    "shopping:harvey-nichols",
+    "shopping:sloane-street",
+    "shopping:bond-street-and-new-bond-street",
+    "shopping:selfridges",
+    "restaurant:mayfair-knightsbridge-and-south-kensington",
+  ],
+  "east-london-food-and-shopping-day": [
+    "place:westfield-stratford-city",
+    "shopping:green-street-upton-park",
+    "place:whitechapel-road",
+    "restaurant:whitechapel-and-brick-lane",
+    "restaurant:ilford-lane-and-gants-hill",
+    "restaurant:walthamstow-and-leyton",
+  ],
+  "sports-day": [
+    "place:wembley-stadium",
+    "tour:wembley-stadium-tour",
+    "place:wimbledon-lawn-tennis-museum",
+    "tour:wimbledon-tennis-tour",
+    "place:the-o2-and-greenwich-peninsula",
+    "restaurant:wembley-and-harrow",
+  ],
 };
 
 const pointSql =
@@ -726,18 +810,51 @@ const replaceCityChildrenBulk = async (client: DbClient, cityId: number) => {
     summary: item.description,
     title: item.title,
   }));
-  const itineraryRows = data.itineraries.map((itinerary) => ({
-    audience: itinerary.audience,
-    city_id: cityId,
-    days: itinerary.days,
-    duration_days: itinerary.durationDays,
-    seo_description: itinerary.summary,
-    seo_title: `${itinerary.title} | London`,
-    slug: itinerary.slug,
-    summary: itinerary.summary,
-    title: itinerary.title,
-    translations: {},
-  }));
+  const itineraryRows = data.itineraries.map((itinerary) => {
+    const enrichment = londonItineraryDetailsBySlug[itinerary.slug];
+    const enrichedDaysByNumber = new Map(
+      (enrichment?.days ?? []).map((day) => [day.dayNumber, day]),
+    );
+
+    return {
+      audience: itinerary.audience,
+      city_id: cityId,
+      days: itinerary.days.map((day) => ({
+        ...(enrichedDaysByNumber.get(day.dayNumber) ?? {}),
+        ...day,
+        routeNotes:
+          enrichedDaysByNumber.get(day.dayNumber)?.routeNotes ?? day.routeNotes,
+        stops:
+          day.stops.length > 0
+            ? day.stops
+            : (londonItineraryStopSlugs[itinerary.slug] ?? []),
+      })),
+      duration_days: itinerary.durationDays,
+      intro: enrichment?.intro ?? itinerary.intro ?? null,
+      planning_meals_breakfast:
+        enrichment?.planning.meals?.breakfast ??
+        itinerary.planning?.meals?.breakfast ??
+        null,
+      planning_meals_dinner:
+        enrichment?.planning.meals?.dinner ??
+        itinerary.planning?.meals?.dinner ??
+        null,
+      planning_meals_lunch:
+        enrichment?.planning.meals?.lunch ??
+        itinerary.planning?.meals?.lunch ??
+        null,
+      planning_stay:
+        enrichment?.planning.stay ?? itinerary.planning?.stay ?? null,
+      planning_transport:
+        enrichment?.planning.transport ?? itinerary.planning?.transport ?? null,
+      seo_description: itinerary.summary,
+      seo_title: `${itinerary.title} | London`,
+      slug: itinerary.slug,
+      summary: itinerary.summary,
+      title: itinerary.title,
+      translations: {},
+    };
+  });
 
   await client.query(
     `with rows as (
@@ -968,6 +1085,12 @@ const replaceCityChildrenBulk = async (client: DbClient, cityId: number) => {
          city_id integer,
          days jsonb,
          duration_days integer,
+         intro text,
+         planning_meals_breakfast text,
+         planning_meals_dinner text,
+         planning_meals_lunch text,
+         planning_stay text,
+         planning_transport text,
          seo_description text,
          seo_title text,
          slug text,
@@ -978,13 +1101,17 @@ const replaceCityChildrenBulk = async (client: DbClient, cityId: number) => {
      ),
      inserted as (
        insert into payload.itineraries (
-         title, slug, city_id, duration_days, audience, summary, translations,
+         title, slug, city_id, duration_days, audience, summary, intro,
+         planning_stay, planning_transport, planning_meals_breakfast,
+         planning_meals_lunch, planning_meals_dinner, translations,
          workflow_status, seo_title, seo_description, seo_robots,
          seo_schema_type, updated_at, created_at
        )
        select
          title, slug, city_id, duration_days,
-         audience::payload.enum_itineraries_audience, summary, translations,
+         audience::payload.enum_itineraries_audience, summary, intro,
+         planning_stay, planning_transport, planning_meals_breakfast,
+         planning_meals_lunch, planning_meals_dinner, translations,
          'published', seo_title, seo_description, 'index,follow',
          'TravelAction', now(), now()
        from rows
@@ -998,11 +1125,28 @@ const replaceCityChildrenBulk = async (client: DbClient, cityId: number) => {
        returning id, days
      ),
      day_rows as (
-       insert into payload.itineraries_days (_order, _parent_id, id, day_number, theme, route_notes)
+       insert into payload.itineraries_days (
+         _order, _parent_id, id, day_number, theme, description, start,
+         transport, breakfast, lunch, dinner, pacing, stop_slugs, route_notes
+       )
        select
          (day_item.ordinality - 1)::integer, itinerary_map.id,
          gen_random_uuid()::text, (day_item.day ->> 'dayNumber')::numeric,
-         day_item.day ->> 'theme', day_item.day ->> 'routeNotes'
+         day_item.day ->> 'theme',
+         day_item.day ->> 'description',
+         day_item.day ->> 'start',
+         day_item.day ->> 'transport',
+         day_item.day ->> 'breakfast',
+         day_item.day ->> 'lunch',
+         day_item.day ->> 'dinner',
+         day_item.day ->> 'pacing',
+         array_to_string(
+           array(
+             select jsonb_array_elements_text(day_item.day -> 'stops')
+           ),
+           E'\n'
+         ),
+         day_item.day ->> 'routeNotes'
        from itinerary_map
        cross join lateral jsonb_array_elements(itinerary_map.days) with ordinality as day_item(day, ordinality)
      )

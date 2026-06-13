@@ -109,7 +109,7 @@ export function SectionSidebar({
                       alt={item.title}
                       className="object-cover"
                       fill
-                      sizes="56px"
+                      sizes="160px"
                       src={item.image}
                     />
                   </span>

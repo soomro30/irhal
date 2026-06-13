@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600" role="img" aria-labelledby="title desc">
+  <title id="title">Visitor information guide artwork</title>
+  <desc id="desc">A simple travel document, passport stamp, and sun illustration.</desc>
+  <rect width="800" height="600" fill="#eef7f6"/>
+  <path d="M0 365c95-68 172-70 258-8 79 57 156 59 236 6 86-57 179-60 306-8v245H0z" fill="#cde7e2"/>
+  <rect x="180" y="126" width="310" height="350" rx="28" fill="#fffaf0"/>
+  <rect x="220" y="184" width="160" height="18" rx="9" fill="#1e2d4b"/>
+  <rect x="220" y="236" width="225" height="14" rx="7" fill="#7b879d"/>
+  <rect x="220" y="276" width="195" height="14" rx="7" fill="#7b879d"/>
+  <rect x="220" y="316" width="132" height="14" rx="7" fill="#7b879d"/>
+  <circle cx="572" cy="188" r="44" fill="#ffad18"/>
+  <circle cx="535" cy="337" r="86" fill="#058044"/>
+  <circle cx="535" cy="337" r="52" fill="#eef7f6"/>
+  <path d="M505 337h60M535 307v60" stroke="#1e2d4b" stroke-width="18" stroke-linecap="round"/>
+  <rect x="438" y="392" width="168" height="58" rx="29" fill="#df1718"/>
+  <text x="522" y="429" text-anchor="middle" fill="#fff" font-family="Arial, sans-serif" font-size="24" font-weight="700">INFO</text>
+</svg>

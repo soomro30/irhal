@@ -34,20 +34,20 @@ export const Media: CollectionConfig = {
       format: "webp",
       options: {
         effort: 6,
-        quality: 58,
+        quality: 82,
       },
     },
     imageSizes: [
       {
         name: "thumbnail",
-        width: 320,
-        height: 220,
+        width: 480,
+        height: 330,
         fit: "cover",
         formatOptions: {
           format: "webp",
           options: {
             effort: 6,
-            quality: 48,
+            quality: 70,
           },
         },
         position: "center",
@@ -55,14 +55,14 @@ export const Media: CollectionConfig = {
       },
       {
         name: "card",
-        width: 640,
-        height: 432,
+        width: 960,
+        height: 648,
         fit: "cover",
         formatOptions: {
           format: "webp",
           options: {
             effort: 6,
-            quality: 54,
+            quality: 78,
           },
         },
         position: "center",
@@ -70,14 +70,14 @@ export const Media: CollectionConfig = {
       },
       {
         name: "hero",
-        width: 1440,
-        height: 810,
+        width: 2400,
+        height: 1350,
         fit: "cover",
         formatOptions: {
           format: "webp",
           options: {
             effort: 6,
-            quality: 58,
+            quality: 82,
           },
         },
         position: "center",
@@ -87,9 +87,9 @@ export const Media: CollectionConfig = {
     mimeTypes: ["image/*", "application/pdf"],
     resizeOptions: {
       fit: "inside",
-      height: 1200,
+      height: 2400,
       position: "center",
-      width: 1800,
+      width: 3600,
       withoutEnlargement: true,
     },
     withMetadata: false,
